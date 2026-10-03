@@ -73,6 +73,15 @@ def fetch_overpasses(ee, lat: float, lon: float, start: str, end: str, outer_km:
     return list(overpasses.values())
 
 
+def run_site(ee, site: dict, start: str, end: str, settings: Settings | None = None) -> tuple[dict, dict]:
+    """Satellite screening result and mean-methane grid for one site."""
+    settings = settings or Settings()
+    ops = fetch_overpasses(ee, site["lat"], site["lon"], start, end, settings.outer_km)
+    result = classify(site["lat"], site["lon"], ops, settings)
+    grid = {"windowStart": start, "windowEnd": end, "cells": mean_grid(ops)}
+    return result, grid
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--project", required=True, help="Google Cloud project registered for Earth Engine")
@@ -84,7 +93,6 @@ def main() -> None:
     import ee
 
     ee.Initialize(project=args.project)
-    settings = Settings()
     sites = json.loads(SITES.read_text())
     results = json.loads(OUT.read_text()) if OUT.exists() else {}
     grids = json.loads(GRID_OUT.read_text()) if GRID_OUT.exists() else {}
@@ -93,9 +101,7 @@ def main() -> None:
         if args.site and site["id"] != args.site:
             continue
         print(f"{site['id']}: fetching overpasses")
-        ops = fetch_overpasses(ee, site["lat"], site["lon"], args.start, args.end, settings.outer_km)
-        results[site["id"]] = classify(site["lat"], site["lon"], ops, settings)
-        grids[site["id"]] = {"windowStart": args.start, "windowEnd": args.end, "cells": mean_grid(ops)}
+        results[site["id"]], grids[site["id"]] = run_site(ee, site, args.start, args.end)
         print(f"  -> {results[site['id']]['status']} ({results[site['id']]['overpassesUsed']} usable)")
 
     OUT.write_text(json.dumps(results, indent=2) + "\n")
