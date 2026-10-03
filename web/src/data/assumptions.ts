@@ -43,4 +43,7 @@ export const defaultAssumptions: Assumptions = {
   includeAccu: false,
   // Clean Energy Regulator, Quarterly Carbon Market Report March quarter 2026: generic ACCU spot AUD 36.28.
   accuPriceAud: 36,
+  // CER, simple method guide for the landfill gas method 2025: default baseline proportion
+  // starts at 0.30 to 0.40 depending on project type and rises 0.5% a year. Midpoint used.
+  accuBaselineProportion: 0.35,
 };

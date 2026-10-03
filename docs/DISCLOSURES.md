@@ -40,6 +40,7 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Australian cost premium (top of range) | up to × 1.4 | **Team assumption** |
 | Power price | AUD 75/MWh | AEMO QED Q2 2026 |
 | ACCU price | AUD 36 | CER QCMR March quarter 2026; method eligibility per DCCEEW landfill gas method |
+| ACCU baseline proportion | 0.35 | CER simple method guide, landfill gas method 2025 (default 0.30 to 0.40, rising 0.5%/yr): https://cer.gov.au/document/simple-method-guide-landfill-gas-method-2025-pdf |
 | k, L0 | 0.05 /yr, 100 m³/t | Screening defaults, to verify against NGA / LandGEM |
 
 ## Tools and services

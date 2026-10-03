@@ -47,6 +47,8 @@ export type Assumptions = {
   collectionOpexFractionOfCapex: number; // per year, of collection capex
   includeAccu: boolean;
   accuPriceAud: number; // only shown with an eligibility footnote
+  /** Share of methane deemed destroyed anyway under the ACCU landfill gas method; only capture above it earns credits. */
+  accuBaselineProportion: number;
 };
 
 export type SatelliteStatus = "elevated" | "neutral" | "inconclusive" | "not_run";
