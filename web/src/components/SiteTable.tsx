@@ -1,4 +1,5 @@
-import { fmtAudM, fmtCostPerT, fmtT } from "../format";
+import { fmtT } from "../format";
+import { useMoney } from "./currency";
 import type { Portfolio } from "../model/macc";
 import type { Site, SiteResult } from "../model/types";
 
@@ -12,6 +13,7 @@ type Props = {
 
 /** Table version of the MACC: doubles as the site picker and the chart's text alternative. */
 export function SiteTable({ sites, results, portfolio, selectedId, onSelect }: Props) {
+  const { currency, fmtAudM, fmtCostPerT } = useMoney();
   const order = portfolio.bars.map((b) => b.siteId);
   const rows = [...results].sort((a, b) => {
     const ia = order.indexOf(a.siteId);
@@ -26,7 +28,7 @@ export function SiteTable({ sites, results, portfolio, selectedId, onSelect }: P
       <thead>
         <tr>
           <th>Site</th>
-          <th className="r">AUD/tCO₂-e</th>
+          <th className="r">{currency}/tCO₂-e</th>
           <th className="r">tCO₂-e/yr</th>
           <th className="r">Capex (mid)</th>
           <th>Funded</th>

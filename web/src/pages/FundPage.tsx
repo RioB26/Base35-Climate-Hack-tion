@@ -5,7 +5,8 @@ import { Macc } from "../components/Macc";
 import { PageHead } from "../components/Nav";
 import { SiteTable } from "../components/SiteTable";
 import { Stat } from "../components/Stat";
-import { fmtAudM, fmtCostPerT, fmtInt, fmtT, shortName } from "../format";
+import { fmtInt, fmtT, shortName } from "../format";
+import { useMoney } from "../components/currency";
 import { cop31Score } from "../model/cop31";
 import type { Portfolio } from "../model/macc";
 import { potentialAccuAud } from "../model/project";
@@ -27,10 +28,18 @@ type Props = {
 };
 
 export function FundPage(p: Props) {
+  const { fmtMoney, fmtAudM, fmtCostPerT } = useMoney();
   const { site, result: r, assumptions: a } = p;
   const name = shortName(site.name);
   const noProject = !Number.isFinite(r.netCostAudPerTCO2e);
-  const score = cop31Score(site, r, a);
+  const rawScore = cop31Score(site, r, a);
+  const score = rawScore ? {
+    ...rawScore,
+    parts: rawScore.parts.map((part) => part.key === "cost" ? {
+      ...part,
+      value: `${fmtMoney(r.netCostAudPerTCO2e)} vs ACCU ${fmtMoney(a.accuPriceAud)}`,
+    } : part),
+  } : null;
   const nz = site.state === "NZ";
   const toFix = () => p.go({ page: "fix", siteId: site.id });
 
@@ -64,11 +73,11 @@ export function FundPage(p: Props) {
 
           <div className="stats fund-stats">
             <Stat label="Electricity" value={`${fmtT(r.electricityMWhPerYear / 1000)} GWh/yr`} sub={`${(r.electricKW / 1000).toFixed(1)} MW of engines on captured gas only`} tone="sky" />
-            <Stat label="Power sales" value={`${fmtAudM(r.annualRevenueAud)}/yr`} sub={`at AUD ${a.powerPriceAudPerMWh}/MWh; running costs ${fmtAudM(r.annualOpexAud)}/yr`} />
+            <Stat label="Power sales" value={`${fmtAudM(r.annualRevenueAud)}/yr`} sub={`at ${fmtMoney(a.powerPriceAudPerMWh)}/MWh; running costs ${fmtAudM(r.annualOpexAud)}/yr`} />
             <Stat
               label="Carbon credits"
               value={nz ? "NZ ETS" : `${fmtAudM(potentialAccuAud(site, r.generationTCH4PerYear, a))}/yr`}
-              sub={nz ? "not modelled for NZ sites" : `potential ACCUs* at AUD ${a.accuPriceAud}`}
+              sub={nz ? "not modelled for NZ sites" : `potential ACCUs* at ${fmtMoney(a.accuPriceAud)}`}
             />
             <Stat label="Net cost per tonne" value={fmtCostPerT(r.netCostAudPerTCO2e)} sub={`${fmtCostPerT(r.netCostAudPerTCO2eRange[0])} to ${fmtCostPerT(r.netCostAudPerTCO2eRange[1])}, excluding credits`} tone="accent" />
             <Stat
@@ -80,8 +89,8 @@ export function FundPage(p: Props) {
           {!nz && (
             <p className="insight">
               {r.netCostAudPerTCO2e < a.accuPriceAud
-                ? `At ${fmtCostPerT(r.netCostAudPerTCO2e)} a tonne, this costs less than the AUD ${a.accuPriceAud} carbon credit price, so credits could make it viable even where electricity alone does not. Western Downs' Winfields Road landfill funded its flare entirely through ACCUs in 2025.`
-                : `At ${fmtCostPerT(r.netCostAudPerTCO2e)} a tonne, this costs more than the AUD ${a.accuPriceAud} carbon credit price.`}
+                ? `At ${fmtCostPerT(r.netCostAudPerTCO2e)} a tonne, this costs less than the ${fmtMoney(a.accuPriceAud)} carbon credit price, so credits could make it viable even where electricity alone does not. Western Downs' Winfields Road landfill funded its flare entirely through ACCUs in 2025.`
+                : `At ${fmtCostPerT(r.netCostAudPerTCO2e)} a tonne, this costs more than the ${fmtMoney(a.accuPriceAud)} carbon credit price.`}
             </p>
           )}
         </>

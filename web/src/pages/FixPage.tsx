@@ -3,7 +3,8 @@ import { PageHead } from "../components/Nav";
 import { SliderGroup } from "../components/Sliders";
 import { defaultAssumptions } from "../data/assumptions";
 import { regionOf } from "../data";
-import { fmtAudM, fmtCostPerT, fmtInt } from "../format";
+import { fmtInt } from "../format";
+import { useMoney } from "../components/currency";
 import { sizeClass, stillOperating, wasteInPlace } from "../model/size";
 import type { Assumptions, Site, SiteResult } from "../model/types";
 import type { Route } from "../route";
@@ -15,6 +16,7 @@ type Props = { site: Site; result: SiteResult; assumptions: Assumptions; setAssu
 const NOW = 2025;
 
 export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Props) {
+  const { fmtAudM, fmtCostPerT } = useMoney();
   const size = sizeClass(site, NOW);
   const operating = stillOperating(site, NOW);
   const cap = Math.round(site.existingCapture * 100);

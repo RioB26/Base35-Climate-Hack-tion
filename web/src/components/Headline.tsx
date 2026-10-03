@@ -1,5 +1,6 @@
 import type { Portfolio } from "../model/macc";
-import { fmtAudM, fmtT } from "../format";
+import { fmtT } from "../format";
+import { useMoney } from "./currency";
 
 type Props = {
   portfolio: Portfolio;
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function Headline({ portfolio, totalSites, horizonYear, budget, maxBudget, budgetShare, onBudgetShare }: Props) {
+  const { currency, fmtAudM } = useMoney();
   const n = portfolio.fundedCount;
   return (
     <section className="headline">
@@ -43,7 +45,7 @@ export function Headline({ portfolio, totalSites, horizonYear, budget, maxBudget
           aria-valuetext={fmtAudM(budget)}
         />
         <span className="scale muted">
-          <span>AUD 0</span>
+          <span>{currency} 0</span>
           <span>{fmtAudM(maxBudget)}</span>
         </span>
       </label>

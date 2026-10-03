@@ -3,6 +3,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef } from "react";
 import { shortName } from "../format";
 import type { Site } from "../model/types";
+import { CurrencyAnchor } from "./currency";
 import { bundledStyle } from "./basemap";
 
 type Props = {
@@ -103,6 +104,7 @@ export default function GlobeView({ sites, target, onPick, onArrive }: Props) {
   return (
     <div className="globe-wrap">
       <div ref={container} className="globe" aria-label="Globe showing landfills in Australia and New Zealand" />
+      <CurrencyAnchor />
     </div>
   );
 }
