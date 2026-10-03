@@ -1,55 +1,33 @@
 {
-  "illustrative-a": {
-    "overpassesUsed": 30,
-    "windowStart": "2024-10-01T04:11",
-    "windowEnd": "2025-09-30T03:49",
-    "deltaPpb": 2.88,
-    "ci95Ppb": [
-      -1.51,
-      7.37
-    ],
-    "confidence": "high",
-    "status": "neutral",
-    "note": "No consistent downwind enhancement."
+  "mugga-lane": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
   },
-  "illustrative-b": {
-    "overpassesUsed": 45,
-    "windowStart": "2024-10-02T03:52",
-    "windowEnd": "2025-09-29T04:08",
-    "deltaPpb": 8.82,
-    "ci95Ppb": [
-      2.69,
-      15.92
-    ],
-    "confidence": "high",
-    "status": "elevated",
-    "note": "Downwind methane is consistently above upwind."
+  "lucas-heights": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
   },
-  "illustrative-c": {
-    "overpassesUsed": 28,
-    "windowStart": "2024-10-03T03:33",
-    "windowEnd": "2025-09-30T03:49",
-    "deltaPpb": 6.19,
-    "ci95Ppb": [
-      2.87,
-      9.73
-    ],
-    "confidence": "high",
-    "status": "elevated",
-    "note": "Downwind methane is consistently above upwind."
-  },
-  "illustrative-d": {
-    "overpassesUsed": 113,
-    "windowStart": "2024-10-01T05:52",
-    "windowEnd": "2025-09-30T05:31",
-    "deltaPpb": 1.08,
-    "ci95Ppb": [
-      -1.52,
-      3.65
-    ],
-    "confidence": "high",
-    "status": "neutral",
-    "note": "No consistent downwind enhancement."
+  "ravenhall": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
   },
   "redvale": {
     "overpassesUsed": 11,

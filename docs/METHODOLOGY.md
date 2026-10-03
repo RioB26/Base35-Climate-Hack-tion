@@ -41,6 +41,7 @@ Worked example (tested in `model.test.ts`): 1,000 m³/h landfill gas at 50% CH�
 - `opex/yr = engine O&M per MWh × MWh + collection O&M fraction × collection capex`.
 - **Net cost per tCO₂-e** is levelised over the project life: `(capex + PV(opex − electricity revenue)) / PV(abatement)`, discounted at the discount rate. It can be negative. ACCU revenue is excluded so the result can be compared against a carbon price. The MACC shows an ACCU reference line.
 - Simple payback is `capex / (first-year revenue − opex)`, with ACCU revenue included only when the toggle is on.
+- Potential ACCU revenue counts only capture above the higher of existing capture and the landfill gas method's default baseline proportion (0.35, the midpoint of 0.30 to 0.40 in the CER 2025 method guide).
 
 ## 5. Portfolio (MACC and budget)
 

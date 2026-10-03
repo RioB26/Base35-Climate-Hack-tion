@@ -116,3 +116,23 @@ def classify(site_lat: float, site_lon: float, overpasses: list[Overpass], s: Se
 
     confidence = "high" if len(deltas) >= 3 * s.min_overpasses else "medium" if len(deltas) >= s.min_overpasses else "low"
     return {**record, "status": status, "confidence": confidence, "note": note}
+
+
+def mean_grid(overpasses: list[Overpass], bin_deg: float = 0.05, min_samples: int = 3) -> list[list[float]]:
+    """Average XCH4 per grid cell across all overpasses, for the map layer.
+
+    Returns [lat, lon, ppb] per cell centre. Cells with fewer than `min_samples`
+    pixels are dropped. This is a picture of the area, not an emission estimate.
+    """
+    sums: dict[tuple[int, int], list[float]] = {}
+    for op in overpasses:
+        for px in op.pixels:
+            key = (math.floor(px.lat / bin_deg), math.floor(px.lon / bin_deg))
+            acc = sums.setdefault(key, [0.0, 0])
+            acc[0] += px.xch4_ppb
+            acc[1] += 1
+    return [
+        [round((i + 0.5) * bin_deg, 4), round((j + 0.5) * bin_deg, 4), round(total / n, 2)]
+        for (i, j), (total, n) in sorted(sums.items())
+        if n >= min_samples
+    ]
