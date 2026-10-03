@@ -3,3 +3,5 @@ __pycache__/
 .venv/
 .DS_Store
 supabase/.temp/
+.env
+.env.local
