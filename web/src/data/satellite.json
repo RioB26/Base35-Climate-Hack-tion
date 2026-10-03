@@ -1,33 +1,42 @@
 {
   "mugga-lane": {
-    "status": "not_run",
-    "overpassesUsed": 0,
-    "windowStart": null,
-    "windowEnd": null,
-    "deltaPpb": null,
-    "ci95Ppb": null,
-    "confidence": null,
-    "note": "Satellite pipeline not run yet for this site."
+    "overpassesUsed": 26,
+    "windowStart": "2024-10-01T04:11",
+    "windowEnd": "2025-09-29T04:08",
+    "deltaPpb": 2.6,
+    "ci95Ppb": [
+      -0.88,
+      5.72
+    ],
+    "confidence": "high",
+    "status": "neutral",
+    "note": "No consistent downwind enhancement."
   },
   "lucas-heights": {
-    "status": "not_run",
-    "overpassesUsed": 0,
-    "windowStart": null,
-    "windowEnd": null,
-    "deltaPpb": null,
-    "ci95Ppb": null,
-    "confidence": null,
-    "note": "Satellite pipeline not run yet for this site."
+    "overpassesUsed": 43,
+    "windowStart": "2024-10-01T04:11",
+    "windowEnd": "2025-09-30T03:49",
+    "deltaPpb": 11.2,
+    "ci95Ppb": [
+      3.39,
+      20.43
+    ],
+    "confidence": "high",
+    "status": "elevated",
+    "note": "Downwind methane is consistently above upwind."
   },
   "ravenhall": {
-    "status": "not_run",
-    "overpassesUsed": 0,
-    "windowStart": null,
-    "windowEnd": null,
-    "deltaPpb": null,
-    "ci95Ppb": null,
-    "confidence": null,
-    "note": "Satellite pipeline not run yet for this site."
+    "overpassesUsed": 40,
+    "windowStart": "2024-10-02T03:52",
+    "windowEnd": "2025-09-29T04:08",
+    "deltaPpb": 5.73,
+    "ci95Ppb": [
+      1.1,
+      11.12
+    ],
+    "confidence": "high",
+    "status": "elevated",
+    "note": "Downwind methane is consistently above upwind."
   },
   "redvale": {
     "overpassesUsed": 11,
