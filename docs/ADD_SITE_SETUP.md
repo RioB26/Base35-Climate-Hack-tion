@@ -24,7 +24,7 @@ Send the token to whoever owns the Supabase project. They store it with
 ## 3. Earth Engine service account
 
 1. In the Google Cloud project registered for Earth Engine: IAM & Admin → Service Accounts → create one (any name).
-2. Grant it the **Earth Engine Resource Writer** role (Viewer is not enough to run computations), plus **Service Usage Consumer**.
+2. Grant it **Service Usage Consumer** and **Earth Engine Resource Writer** (check Google's current Earth Engine access docs if a role name has changed).
 3. Register the service account for Earth Engine at https://code.earthengine.google.com/register (service account option). Without this, calls fail with a permission error even when IAM looks right.
 4. Create a JSON key for it (Keys → Add key → JSON).
 
