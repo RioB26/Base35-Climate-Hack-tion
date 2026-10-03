@@ -7,14 +7,14 @@ type Spec = { label: string; min: number; max: number; step: number; show: (v: n
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 
 const SPECS: Partial<Record<NumKey, Spec>> = {
-  captureEfficiency: { label: "Target capture", min: 0.5, max: 0.98, step: 0.01, show: pct, hint: "Share of generated methane collected once the project is built" },
-  commissioningYear: { label: "Commissioning year", min: 2026, max: 2032, step: 1, show: String },
-  engineEfficiency: { label: "Engine efficiency", min: 0.3, max: 0.45, step: 0.01, show: pct },
-  powerPriceAudPerMWh: { label: "Power price", min: 30, max: 200, step: 5, show: (v) => `AUD ${v}/MWh` },
-  capexMultiplier: { label: "Capex multiplier", min: 0.5, max: 2, step: 0.05, show: (v) => `× ${v.toFixed(2)}` },
-  discountRate: { label: "Discount rate", min: 0.03, max: 0.12, step: 0.005, show: (v) => `${(v * 100).toFixed(1)}%` },
-  projectLifeYears: { label: "Project life", min: 10, max: 25, step: 1, show: (v) => `${v} years` },
-  accuPriceAud: { label: "ACCU price", min: 0, max: 80, step: 1, show: (v) => `AUD ${v}` },
+  captureEfficiency: { label: "Target capture", min: 0.5, max: 0.98, step: 0.01, show: pct, hint: "Share of the site's methane collected once the project is built. Higher means more tonnes avoided at each site." },
+  commissioningYear: { label: "Commissioning year", min: 2026, max: 2032, step: 1, show: String, hint: "Year the project starts running. Later means fewer tonnes avoided by 2035." },
+  engineEfficiency: { label: "Engine efficiency", min: 0.3, max: 0.45, step: 0.01, show: pct, hint: "Share of the gas's energy the engines turn into electricity. Higher means more power to sell and a lower cost per tonne." },
+  powerPriceAudPerMWh: { label: "Power price", min: 30, max: 200, step: 5, show: (v) => `AUD ${v}/MWh`, hint: "What the electricity sells for, per megawatt-hour. Default is the NEM average (AEMO, Q2 2026). Higher lowers the cost per tonne." },
+  capexMultiplier: { label: "Capex multiplier", min: 0.5, max: 2, step: 0.05, show: (v) => `× ${v.toFixed(2)}`, hint: "Scales all build costs; × 1 is the US EPA benchmark in AUD. Higher raises the cost per tonne and fits fewer sites in the budget." },
+  discountRate: { label: "Discount rate", min: 0.03, max: 0.12, step: 0.005, show: (v) => `${(v * 100).toFixed(1)}%`, hint: "How much less future money and tonnes count than today's, per year. Higher makes the upfront cost weigh more and raises the cost per tonne." },
+  projectLifeYears: { label: "Project life", min: 10, max: 25, step: 1, show: (v) => `${v} years`, hint: "How long the plant runs and earns. Longer spreads the build cost over more tonnes and lowers the cost per tonne." },
+  accuPriceAud: { label: "ACCU price", min: 0, max: 80, step: 1, show: (v) => `AUD ${v}`, hint: "Price of one Australian carbon credit (one tonne of CO₂-e). It doesn't change the ranking: it sets the reference line in the chart, and adds revenue when the box below is ticked." },
 };
 
 type Props = { keys: NumKey[]; value: Assumptions; onChange: (a: Assumptions) => void };
