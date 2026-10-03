@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { SatelliteResult, Site } from "../model/types";
 import { seedGrid, seedSatellite, seedSites, type MethaneGrid } from "./seed";
-import { mergeById, mergeSites, NOT_RUN, statusMap, type SiteRow, type StatusInfo } from "./live";
+import { mapAddSiteResponse, mergeById, mergeSites, NOT_RUN, statusMap, type SiteRow, type StatusInfo } from "./live";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "./supabase";
 
 export type AddSiteInput = Record<string, unknown>;
@@ -15,6 +15,7 @@ type DataState = {
   /** False when the build has no Supabase settings, so sites cannot be added. */
   canAdd: boolean;
   addSite: (input: AddSiteInput, passcode: string) => Promise<AddSiteResult>;
+  retrySite: (id: string, passcode: string) => Promise<{ ok: true } | { ok: false; error: string }>;
 };
 
 const DataContext = createContext<DataState | null>(null);
@@ -71,20 +72,40 @@ export function DataProvider({ children }: { children: ReactNode }) {
       return { ok: false, errors: ["Could not reach the server. Check your connection and try again."] };
     }
     const body = await res.json().catch(() => ({}));
-    if (res.status !== 201) {
-      return { ok: false, errors: body.errors ?? [body.error ?? `Something went wrong (${res.status}).`] };
-    }
+    const mapped = mapAddSiteResponse<Site>(res.status, body);
+    if (!mapped.ok || !mapped.site) return mapped;
     // Show the site at once; realtime then streams the satellite status.
-    const s = body.site;
+    const s = mapped.site;
     setRows((prev) => [
       ...prev.filter((r) => r.id !== s.id),
       {
         id: s.id, name: s.name, state: s.state, lat: s.lat, lon: s.lon, acceptance: s.acceptance, k: s.k, l0: s.L0,
         existing_capture: s.existingCapture, illustrative: true, reported_emissions: null, notes: s.notes,
-        sources: s.sources, satellite_status: "running", error: null,
+        sources: s.sources, satellite_status: "running", error: null, created_at: new Date().toISOString(),
       },
     ]);
     return { ok: true, id: s.id };
+  }, []);
+
+  const retrySite = useCallback(async (id: string, passcode: string) => {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return { ok: false as const, error: "Retry is not set up in this build." };
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/retry-site`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "x-add-site-passcode": passcode,
+        },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) return { ok: true as const };
+      const body = await res.json().catch(() => ({}));
+      return { ok: false as const, error: body.error ?? `Something went wrong (${res.status}).` };
+    } catch {
+      return { ok: false as const, error: "Could not reach the server. Check your connection and try again." };
+    }
   }, []);
 
   const value = useMemo<DataState>(() => {
@@ -96,11 +117,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       sites,
       satelliteFor: (id) => satellite[id] ?? NOT_RUN,
       gridFor: (id) => grids[id],
-      statusFor: (id) => status[id] ?? { state: "done", error: null },
+      statusFor: (id) => status[id] ?? { state: "done", error: null, createdAt: null },
       canAdd: supabase !== null,
       addSite,
+      retrySite,
     };
-  }, [rows, satRows, gridRows, addSite]);
+  }, [rows, satRows, gridRows, addSite, retrySite]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { PageHead } from "../components/Nav";
 import { SignalChart } from "../components/SignalChart";
 import { regionOf, tanagerFor, useData } from "../data";
+import { isSlow } from "../data/live";
 import { fmtInt, fmtPpb, fmtT } from "../format";
 import { compareWithSatellite, SECTOR_EFFECTIVE_WIDTH_M } from "../model/discrepancy";
 import type { Assumptions, Site } from "../model/types";
@@ -12,7 +13,37 @@ import { Loading } from "../components/Mark";
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
 export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: Assumptions; go: (r: Route) => void }) {
-  const { satelliteFor, gridFor, statusFor } = useData();
+  const { satelliteFor, gridFor, statusFor, canAdd, retrySite } = useData();
+  const [retryMsg, setRetryMsg] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const onRetry = async () => {
+    let passcode: string | null = null;
+    try {
+      passcode = sessionStorage.getItem("add-site-passcode");
+    } catch {
+      /* storage unavailable */
+    }
+    if (!passcode) passcode = window.prompt("Passcode to retry this site:");
+    if (!passcode) return;
+    setRetrying(true);
+    setRetryMsg(null);
+    const res = await retrySite(site.id, passcode);
+    setRetrying(false);
+    if (res.ok) {
+      try {
+        sessionStorage.setItem("add-site-passcode", passcode);
+      } catch {
+        /* storage unavailable */
+      }
+    } else {
+      setRetryMsg(res.error);
+    }
+  };
   const annualSat = satelliteFor(site.id);
   const status = statusFor(site.id);
   const tanager = tanagerFor(site.id);
@@ -61,13 +92,25 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
           <article className="card">
             <h2 className="card-title">What the satellite saw</h2>
             {c.observedPpb === null ? (
+              <>
               <p className="muted">
                 {status.state === "running" || status.state === "pending"
-                  ? "Fetching Sentinel-5P data for this site. This usually takes a few minutes; the page updates by itself."
+                  ? isSlow(status, now)
+                    ? "This is taking longer than usual. The page updates by itself if the satellite job finishes; if it times out you can retry."
+                    : "Fetching Sentinel-5P data for this site. This usually takes a few minutes; the page updates by itself."
                   : status.state === "failed"
                     ? `The satellite check failed${status.error ? `: ${status.error}` : "."}`
                     : "The satellite check has not been run for this site yet."}
               </p>
+              {status.state === "failed" && canAdd && (
+                <p>
+                  <button type="button" className="ghost" onClick={onRetry} disabled={retrying}>
+                    {retrying ? "Retrying…" : "Retry"}
+                  </button>
+                  {retryMsg && <span className="small"> {retryMsg}</span>}
+                </p>
+              )}
+              </>
             ) : (
               <>
                 <p className="big-num">

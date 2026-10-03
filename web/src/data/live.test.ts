@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Site } from "../model/types";
-import { mergeById, mergeSites, rowToSite, statusMap, type SiteRow } from "./live";
+import { isSlow, mapAddSiteResponse, mergeById, mergeSites, rowToSite, statusMap, type SiteRow } from "./live";
 
 const seed: Site[] = [
   { id: "b", name: "B", state: "NSW", lat: -34, lon: 151, acceptance: [], k: 0.05, L0: 100, existingCapture: 0.4, illustrative: false, notes: "", sources: [] },
@@ -23,6 +23,7 @@ const row = (over: Partial<SiteRow> = {}): SiteRow => ({
   sources: [],
   satellite_status: "running",
   error: null,
+  created_at: "2026-10-04T00:00:00Z",
   ...over,
 });
 
@@ -50,11 +51,35 @@ describe("live data merge", () => {
 
   it("reports seed sites as done and database sites by their own status", () => {
     const st = statusMap(seed, [row({ satellite_status: "failed", error: "boom" })]);
-    expect(st.a).toEqual({ state: "done", error: null });
-    expect(st["new-site"]).toEqual({ state: "failed", error: "boom" });
+    expect(st.a).toEqual({ state: "done", error: null, createdAt: null });
+    expect(st["new-site"]).toEqual({ state: "failed", error: "boom", createdAt: "2026-10-04T00:00:00Z" });
   });
 
   it("merges result tables over the seed", () => {
     expect(mergeById({ a: 1 }, [{ site_id: "b", data: 2 }, { site_id: "a", data: 3 }])).toEqual({ a: 3, b: 2 });
+  });
+});
+
+describe("add-site response mapping", () => {
+  it("accepts a 201 with the site", () => {
+    expect(mapAddSiteResponse(201, { id: "x", site: { id: "x" } })).toEqual({ ok: true, id: "x", site: { id: "x" } });
+  });
+  it("treats a 502 with an id as saved, so the failed row shows on Check", () => {
+    expect(mapAddSiteResponse(502, { error: "could not start", id: "x" })).toEqual({ ok: true, id: "x" });
+  });
+  it("returns validation errors, or a fallback message", () => {
+    expect(mapAddSiteResponse(400, { errors: ["bad"] })).toEqual({ ok: false, errors: ["bad"] });
+    expect(mapAddSiteResponse(409, { error: "exists" })).toEqual({ ok: false, errors: ["exists"] });
+    expect(mapAddSiteResponse(500, {})).toEqual({ ok: false, errors: ["Something went wrong (500)."] });
+  });
+});
+
+describe("isSlow", () => {
+  const now = Date.parse("2026-10-04T01:00:00Z");
+  it("flags running sites older than 15 minutes only", () => {
+    expect(isSlow({ state: "running", error: null, createdAt: "2026-10-04T00:30:00Z" }, now)).toBe(true);
+    expect(isSlow({ state: "running", error: null, createdAt: "2026-10-04T00:50:00Z" }, now)).toBe(false);
+    expect(isSlow({ state: "done", error: null, createdAt: "2026-10-04T00:00:00Z" }, now)).toBe(false);
+    expect(isSlow({ state: "running", error: null, createdAt: null }, now)).toBe(false);
   });
 });
