@@ -66,6 +66,7 @@ export type SatelliteResult = {
   note: string;
   /** ERA5 wind over the usable overpasses, once the pipeline exports it. */
   wind?: { meanSpeedMs: number; fromDeg: number; rose: number[] };
+  periods?: Array<Omit<SatelliteResult, "periods"> & { period: string }>;
 };
 
 export type YearRow = {

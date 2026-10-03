@@ -45,6 +45,14 @@ python carbon_mapper.py --radius 15
 
 This queries the public Carbon Mapper source catalog, follows nearby Tanager plume IDs, and rewrites `web/src/data/tanager.json`. It cannot create observations where Tanager has not acquired or published a scene. For those sites, the result remains `no_public_coverage`; obtaining guaranteed coverage requires a Carbon Mapper/Planet tasking or research request, or licensed GHGSat/airborne data.
 
+The Sentinel-5P pipeline can also export monthly screening periods from the same timestamped overpasses and ERA5 wind:
+
+```bash
+python satellite.py --project YOUR_GCP_PROJECT --start 2024-10-01 --end 2025-10-01
+```
+
+Generated `satellite.json` records include a `periods` array. The Check page uses those periods when present and falls back to the annual result when a refreshed time series is unavailable or a selected period has too few usable passes.
+
 ## Live site (GitHub Pages)
 
 CI (`.github/workflows/ci.yml`) runs the tests and builds on every push and pull request, and deploys `main` to GitHub Pages. One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site then appears at https://riob26.github.io/Base35-Climate-Hack-tion/.

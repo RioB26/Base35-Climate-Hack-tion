@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { PageHead } from "../components/Nav";
 import { SignalChart } from "../components/SignalChart";
 import { regionOf, tanagerFor, useData } from "../data";
@@ -12,9 +12,23 @@ const SiteMap = lazy(() => import("../components/SiteMap"));
 
 export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: Assumptions; go: (r: Route) => void }) {
   const { satelliteFor, gridFor, statusFor } = useData();
-  const sat = satelliteFor(site.id);
+  const annualSat = satelliteFor(site.id);
   const status = statusFor(site.id);
   const tanager = tanagerFor(site.id);
+  const timeSeriesDates = [
+    ...tanager.observations.map((observation) => observation.observedAt.slice(0, 10)),
+    ...(annualSat.periods ?? []).map((period) => `${period.period}-28`),
+  ].sort();
+  const latestObservationDate = timeSeriesDates.at(-1) ?? annualSat.windowEnd?.slice(0, 10) ?? "";
+  const [selectedDate, setSelectedDate] = useState(latestObservationDate);
+  useEffect(() => {
+    setSelectedDate(latestObservationDate);
+  }, [site.id, latestObservationDate]);
+  const visibleTanager = useMemo(
+    () => ({ ...tanager, observations: tanager.observations.filter((observation) => observation.observedAt.slice(0, 10) <= selectedDate) }),
+    [tanager, selectedDate],
+  );
+  const sat = annualSat.periods?.filter((period) => period.period <= selectedDate.slice(0, 7)).at(-1) ?? annualSat;
   const c = useMemo(() => compareWithSatellite(site, sat, assumptions), [site, sat, assumptions]);
   const cap = Math.round(site.existingCapture * 100);
   const toFix = () => go({ page: "fix", siteId: site.id });
@@ -63,13 +77,18 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
                   95% range {c.observedCi![0].toFixed(1)} to {c.observedCi![1].toFixed(1)} ppb, from {sat.overpassesUsed}{" "}
                   Sentinel-5P passes, {sat.windowStart?.slice(0, 7)} to {sat.windowEnd?.slice(0, 7)}.
                 </p>
+                <p className="fine">
+                  {annualSat.periods?.length
+                    ? "This period uses the generated Sentinel-5P time series and timestamp-matched ERA5 wind."
+                    : "Monthly Sentinel-5P periods are not in this snapshot yet, so the slider uses the annual screening result until the pipeline is refreshed."}
+                </p>
                 <SignalChart c={c} />
               </>
             )}
           </article>
 
           <Verdict site={site} c={c} />
-          <TanagerEvidence site={site} tanager={tanager} comparison={c} />
+          <TanagerEvidence site={site} tanager={tanager} comparison={c} selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
           <div className="actions">
             <button type="button" className="cta" onClick={toFix}>
@@ -90,7 +109,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
 
         <div className="col sticky">
           <Suspense fallback={<div className="map map-loading">Loading map…</div>}>
-            <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} tanager={tanager} />
+            <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} tanager={visibleTanager} />
           </Suspense>
         </div>
       </div>

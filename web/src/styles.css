@@ -280,6 +280,13 @@ a.ghost:hover { border-color: var(--iron); }
 .evidence-layer small { margin-top: 2px; color: var(--muted); line-height: 1.35; }
 .evidence-layer b { color: var(--evergreen); font-size: 10px; font-weight: 700; }
 .evidence-layer.required b { color: var(--warn-text); }
+.year-scrubber { display: grid; gap: 7px; margin: 16px 0 0; padding: 12px; background: var(--surface-2); border-radius: 10px; }
+.year-scrubber > span:first-child, .year-scrubber-range { display: flex; justify-content: space-between; gap: 10px; }
+.year-scrubber > span:first-child { font-size: 12px; color: var(--ink); }
+.year-scrubber > span:first-child b { font-variant-numeric: tabular-nums; color: var(--evergreen); }
+.year-scrubber input[type="range"] { margin: 0; accent-color: var(--evergreen); cursor: pointer; }
+.year-scrubber-range { color: var(--muted); font-size: 10px; }
+.scrubber-note { margin-top: 7px; }
 .status-dot, .coverage-gap-dot { width: 8px; height: 8px; display: inline-block; border-radius: 50%; background: var(--tangerine); box-shadow: 0 0 0 4px rgba(196, 82, 53, .14); }
 .high-res-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 18px 0 10px; }
 .high-res-options span { display: grid; gap: 3px; padding: 11px; background: var(--surface-2); border-radius: 8px; }

@@ -20,7 +20,7 @@ import json
 from datetime import date, timedelta
 from pathlib import Path
 
-from sector_analysis import Overpass, Pixel, Settings, classify, mean_grid
+from sector_analysis import Overpass, Pixel, Settings, classify, classify_periods, mean_grid
 
 ROOT = Path(__file__).resolve().parent.parent
 SITES = ROOT / "web" / "src" / "data" / "sites.json"
@@ -79,7 +79,10 @@ def run_site(ee, site: dict, start: str, end: str, settings: Settings | None = N
     """Satellite screening result and mean-methane grid for one site."""
     settings = settings or Settings()
     ops = fetch_overpasses(ee, site["lat"], site["lon"], start, end, settings.outer_km)
-    result = classify(site["lat"], site["lon"], ops, settings)
+    result = {
+        **classify(site["lat"], site["lon"], ops, settings),
+        "periods": classify_periods(site["lat"], site["lon"], ops, settings),
+    }
     grid = {"windowStart": start, "windowEnd": end, "cells": mean_grid(ops)}
     return result, grid
 

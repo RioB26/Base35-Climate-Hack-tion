@@ -2,9 +2,9 @@ import type { Site } from "../model/types";
 import type { TanagerSite } from "../data";
 import type { Comparison } from "../model/discrepancy";
 
-type Props = { site: Site; tanager: TanagerSite; comparison: Comparison };
+type Props = { site: Site; tanager: TanagerSite; comparison: Comparison; selectedDate: string; onDateChange: (date: string) => void };
 
-export function TanagerEvidence({ site, tanager, comparison }: Props) {
+export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDateChange }: Props) {
   if (tanager.status === "not_checked") {
     return (
       <article className="card high-res-status">
@@ -40,7 +40,8 @@ export function TanagerEvidence({ site, tanager, comparison }: Props) {
     );
   }
 
-  const distances = tanager.observations.map((observation) => ({
+  const visibleObservations = tanager.observations.filter((observation) => observation.observedAt.slice(0, 10) <= selectedDate);
+  const distances = visibleObservations.map((observation) => ({
     ...observation,
     distanceKm: distanceKm(site.lat, site.lon, observation.lat, observation.lon),
   }));
@@ -56,13 +57,13 @@ export function TanagerEvidence({ site, tanager, comparison }: Props) {
   });
   const maxBandCount = Math.max(...bandCounts.map((band) => band.count), 1);
   const rates = distances.map((d) => d.emissionKgPerHour).filter((rate): rate is number => rate !== null);
-  const nearest = Math.min(...distances.map((d) => d.distanceKm));
+  const nearest = distances.length ? Math.min(...distances.map((d) => d.distanceKm)) : null;
   const regionalCorroboration =
     comparison.observedPpb !== null &&
     comparison.observedCi !== null &&
     comparison.observedCi[0] > 0 &&
     comparison.verdict === "higher";
-  const repeatObservations = new Set(tanager.observations.map((observation) => observation.observedAt.slice(0, 10))).size > 1;
+  const repeatObservations = new Set(visibleObservations.map((observation) => observation.observedAt.slice(0, 10))).size > 1;
   const availableEvidence = [true, regionalCorroboration, repeatObservations].filter(Boolean).length;
   const totalEvidenceChecks = 5;
 
@@ -74,8 +75,23 @@ export function TanagerEvidence({ site, tanager, comparison }: Props) {
         {tanager.plumeCount} <span className="unit">catalogued CH₄ plumes · {tanager.sourceCount} source clusters</span>
       </p>
       <p className="muted small">
-        Carbon Mapper public catalog · {tanager.observations.length} verified plume records shown · checked {tanager.catalogCheckedAt}.
+        Carbon Mapper public catalog · {visibleObservations.length} of {tanager.observations.length} verified plume records shown · through{" "}
+        {formatDate(selectedDate)}.
       </p>
+      <label className="year-scrubber">
+        <span><strong>Observation year</strong><b>{formatDate(selectedDate)}</b></span>
+        <input
+          type="range"
+          min={Date.parse(yearStart(tanager.observations))}
+          max={Date.parse(yearEnd(tanager.observations))}
+          value={Date.parse(selectedDate)}
+          step={86400000}
+          onChange={(event) => onDateChange(new Date(Number(event.target.value)).toISOString().slice(0, 10))}
+          aria-label="Show observations through date"
+        />
+        <span className="year-scrubber-range"><small>{formatDate(yearStart(tanager.observations))}</small><small>{formatDate(yearEnd(tanager.observations))}</small></span>
+      </label>
+      <p className="fine scrubber-note">The slider changes dated Tanager records and map points. Sentinel-5P remains a multi-pass annual screening result.</p>
       <p className="small">
         This panel only shows facility-scale detail where a real Tanager observation exists. The map points are catalogue source
         coordinates, not reconstructed plume polygons.
@@ -123,8 +139,8 @@ export function TanagerEvidence({ site, tanager, comparison }: Props) {
         </p>
         <ul className="evidence-checks">
           <li className="evidence-check pass">
-            <span aria-hidden="true">+</span>
-            <span><strong>Nearby source point</strong><small>Nearest catalogue point is {nearest.toFixed(1)} km from the registered landfill coordinate.</small></span>
+            <span aria-hidden="true">{nearest === null ? "·" : "+"}</span>
+            <span><strong>Nearby source point</strong><small>{nearest === null ? "No dated Tanager record is visible at this point in the year." : `Nearest catalogue point is ${nearest.toFixed(1)} km from the registered landfill coordinate.`}</small></span>
           </li>
           <li className={`evidence-check ${regionalCorroboration ? "pass" : "pending"}`}>
             <span aria-hidden="true">{regionalCorroboration ? "+" : "?"}</span>
@@ -138,7 +154,7 @@ export function TanagerEvidence({ site, tanager, comparison }: Props) {
             <span aria-hidden="true">{repeatObservations ? "+" : "?"}</span>
             <span><strong>Repeat observations</strong><small>
               {repeatObservations
-                ? `${new Set(tanager.observations.map((observation) => observation.observedAt.slice(0, 10))).size} observation dates are represented in the catalogue.`
+                ? `${new Set(visibleObservations.map((observation) => observation.observedAt.slice(0, 10))).size} observation dates are represented in the catalogue.`
                 : "Only one observation date is currently represented in the public catalogue."}
             </small></span>
           </li>
@@ -157,7 +173,7 @@ export function TanagerEvidence({ site, tanager, comparison }: Props) {
         </ul>
       </div>
       <div className="tanager-summary">
-        <span><strong>{nearest.toFixed(1)} km</strong><small>nearest source point</small></span>
+        <span><strong>{nearest === null ? "—" : `${nearest.toFixed(1)} km`}</strong><small>nearest source point</small></span>
         <span><strong>{rates.length ? `${Math.round(rates.reduce((sum, rate) => sum + rate, 0) / rates.length)} kg/h` : "—"}</strong><small>mean reported rate</small></span>
         <span><strong>~35 m</strong><small>typical Tanager GSD</small></span>
       </div>
@@ -173,7 +189,7 @@ export function TanagerEvidence({ site, tanager, comparison }: Props) {
       </div>
       <div className="tanager-list">
         <strong className="timeline-label">Observation timeline</strong>
-        {tanager.observations.map((observation) => (
+        {visibleObservations.map((observation) => (
           <div className="tanager-row" key={observation.plumeId}>
             <span>
               <strong>{formatDate(observation.observedAt)}</strong>
@@ -230,4 +246,12 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-AU", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(
     new Date(value),
   );
+}
+
+function yearStart(observations: TanagerSite["observations"]) {
+  return observations.reduce((earliest, observation) => observation.observedAt < earliest ? observation.observedAt : earliest, observations[0].observedAt).slice(0, 10);
+}
+
+function yearEnd(observations: TanagerSite["observations"]) {
+  return observations.reduce((latest, observation) => observation.observedAt > latest ? observation.observedAt : latest, observations[0].observedAt).slice(0, 10);
 }
