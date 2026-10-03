@@ -35,6 +35,10 @@ python satellite.py --project YOUR_GCP_PROJECT --start 2024-10-01 --end 2025-10-
 python -m unittest -v   # tests for the downwind/upwind statistic, no Earth Engine needed
 ```
 
+## Live site (GitHub Pages)
+
+CI (`.github/workflows/ci.yml`) runs the tests and builds on every push and pull request, and deploys `main` to GitHub Pages. One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site then appears at https://riob26.github.io/Base35-Climate-Hack-tion/.
+
 ## Repository layout
 
 ```
