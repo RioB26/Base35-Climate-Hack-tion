@@ -1,7 +1,8 @@
 import { fmtAudM, fmtCostPerT, fmtT } from "../format";
-import type { Assumptions, SiteResult } from "../model/types";
+import type { Assumptions, Site, SiteResult } from "../model/types";
 
-export function ActPanel({ result, assumptions }: { result: SiteResult; assumptions: Assumptions }) {
+export function ActPanel({ site, result, assumptions }: { site: Site; result: SiteResult; assumptions: Assumptions }) {
+  const isNz = site.state === "NZ";
   const [lo, hi] = result.capexAud;
   const [clo, chi] = result.netCostAudPerTCO2eRange;
   return (
@@ -31,7 +32,7 @@ export function ActPanel({ result, assumptions }: { result: SiteResult; assumpti
         </dd>
         <dt>Operating cost</dt>
         <dd>{fmtAudM(result.annualOpexAud)}/yr</dd>
-        {assumptions.includeAccu && (
+        {assumptions.includeAccu && !isNz && (
           <>
             <dt>Potential ACCU revenue*</dt>
             <dd>{fmtAudM(result.annualAccuRevenueAud)}/yr</dd>
@@ -42,7 +43,13 @@ export function ActPanel({ result, assumptions }: { result: SiteResult; assumpti
         <dt>Abated by {assumptions.horizonYear}</dt>
         <dd>{fmtT(result.abatementToHorizonTCO2e)} tCO₂-e</dd>
       </dl>
-      {assumptions.includeAccu && (
+      {assumptions.includeAccu && isNz && (
+        <p className="muted small">
+          ACCUs are Australian units and do not apply to NZ sites, which fall under the NZ ETS. Carbon revenue is not
+          modelled here. Power price and capex are shown in AUD from Australian placeholder assumptions.
+        </p>
+      )}
+      {assumptions.includeAccu && !isNz && (
         <p className="muted small">
           *Subject to project eligibility and registration under the current ACCU landfill gas method. Price is a
           placeholder.

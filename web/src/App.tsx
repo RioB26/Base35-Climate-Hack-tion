@@ -14,7 +14,7 @@ import { computeSite } from "./model/project";
 import type { Assumptions, SatelliteResult, Site } from "./model/types";
 
 const sites = sitesData as Site[];
-const satellite = satelliteData as Record<string, SatelliteResult>;
+const satellite = satelliteData as unknown as Record<string, SatelliteResult>;
 const notRun: SatelliteResult = {
   status: "not_run",
   overpassesUsed: 0,
@@ -100,7 +100,7 @@ export default function App() {
           <div className="panels">
             <SeePanel result={satellite[site.id] ?? notRun} />
             <ModelPanel site={site} result={result} assumptions={assumptions} />
-            <ActPanel result={result} assumptions={assumptions} />
+            <ActPanel site={site} result={result} assumptions={assumptions} />
           </div>
         </section>
       </main>
