@@ -17,6 +17,9 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Mugga Lane factsheet, ACT City Services (Aug 2025) | Mugga Lane tonnage, existing 4.24 MW / 37,000 MWh plant | https://www.cityservices.act.gov.au/__data/assets/pdf_file/0003/1653393/Mugga-Lane-Gas-to-Energy-factsheet-August2025-acc.pdf | Used; history and closure are proxies |
 | ABC News, 20 Nov 2023 | ~300,000 t/yr to ACT landfills | https://www.abc.net.au/news/2023-11-20/energy-generated-from-landfill-gas-to-power-canberra-homes/103124726 | Used |
 | Cleanaway Lucas Heights AEMR 2024 | 2024 tonnage, approved cap, 2037 closure | https://cleanaway2stor.blob.core.windows.net/cleanaway2-blob-container/2025/03/AEMR-SSD-6835-2024-Lucas-Heights-Landfill.pdf | Used; opening year, earlier tonnage, existing capture are proxies |
+| NZ Herald on Redvale extension | Redvale opening 1993, ~600,000 t/yr, consent to Dec 2028, ~95% capture (operator claim) | https://www.nzherald.co.nz/business/landfill-proposal-aucklands-biggest-landfill-set-to-stay-open-for-seven-to-eight-years-longer-than-expected-after-delays-for-new-facility/KPBOPWAYUFAKTAEYY553PFXZGQ/ | Used; tonnage history is a proxy |
+| Transwaste Canterbury Annual Report 2020 and renewable energy factsheet | Kate Valley 332,000 t (2019/20), >90% capture (operator claim), 4 MW, opened 2005, consented to 2040 | https://transwastecanterbury.co.nz/wp-content/uploads/2020/09/TCL-2020-Annual-Report-FINAL-240920_signed.pdf | Used; tonnage history is a proxy |
+| OpenFreeMap basemap tiles (OpenStreetMap data, ODbL) | Map background | https://openfreemap.org | Used at runtime |
 | Cleanaway Ravenhall site page | >2 Mt/yr processed, >200 ha | https://www.cleanaway.com.au/location/ravenhall | Used; history, closure, existing capture are proxies |
 | US EPA LMOP, LFG Energy Project Development Handbook ch. 4 (2021) | Collection/flare and engine capex and O&M (2020 USD) | https://www.epa.gov/system/files/documents/2021-07/pdh_chapter4.pdf | Used, converted to AUD |
 | AEMO Quarterly Energy Dynamics Q2 2026 | Default power price (NEM average AUD 74/MWh) | https://www.aemo.com.au/newsroom/media-release/qed-q2-2026 | Used |
@@ -58,4 +61,6 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Vite, @vitejs/plugin-react | MIT | Build tooling |
 | TypeScript | Apache-2.0 | Type checking |
 | Vitest | MIT | Tests |
+| MapLibre GL JS | BSD-3-Clause | Interactive map |
+| Fraunces and Inter fonts (Google Fonts) | SIL Open Font License | Typography |
 | earthengine-api | Apache-2.0 | Satellite pipeline |

@@ -11,9 +11,9 @@ type Props = {
   accuPrice: number;
 };
 
-const W = 640;
-const H = 300;
-const M = { top: 24, right: 16, bottom: 40, left: 64 };
+const W = 1000;
+const H = 380;
+const M = { top: 28, right: 16, bottom: 44, left: 72 };
 
 /** Marginal abatement cost curve drawn as variable-width bars in plain SVG. */
 export function Macc({ portfolio, results, sites, selectedId, onSelect, accuPrice }: Props) {

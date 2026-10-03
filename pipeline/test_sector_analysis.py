@@ -2,7 +2,7 @@ import math
 import random
 import unittest
 
-from sector_analysis import Overpass, Pixel, Settings, classify, distance_bearing, overpass_delta
+from sector_analysis import Overpass, Pixel, Settings, classify, distance_bearing, mean_grid, overpass_delta
 
 SITE = (-33.8, 150.9)
 
@@ -53,6 +53,13 @@ class SectorTests(unittest.TestCase):
         result = classify(*SITE, ops)
         self.assertEqual(result["status"], "inconclusive")
         self.assertEqual(result["overpassesUsed"], 3)
+
+    def test_mean_grid_averages_cells(self):
+        ops = [Overpass("d", 3, 3, [Pixel(-33.81, 150.91, 1900), Pixel(-33.82, 150.92, 1910), Pixel(-33.83, 150.93, 1920)])]
+        cells = mean_grid(ops, bin_deg=0.05, min_samples=3)
+        self.assertEqual(len(cells), 1)
+        self.assertAlmostEqual(cells[0][2], 1910)
+        self.assertEqual(mean_grid(ops, min_samples=4), [])
 
     def test_no_data(self):
         self.assertEqual(classify(*SITE, [])["status"], "inconclusive")

@@ -1,4 +1,5 @@
-"""Precompute the satellite screening signal for each site into web/src/data/satellite.json.
+"""Precompute the satellite screening signal for each site into web/src/data/satellite.json,
+plus a mean-methane grid around each site for the map (web/src/data/methaneGrid.json).
 
 Uses Google Earth Engine: Sentinel-5P L3 CH4 overpasses plus ERA5-Land wind at the
 overpass hour. The statistic itself lives in sector_analysis.py.
@@ -19,11 +20,12 @@ import json
 from datetime import date, timedelta
 from pathlib import Path
 
-from sector_analysis import Overpass, Pixel, Settings, classify
+from sector_analysis import Overpass, Pixel, Settings, classify, mean_grid
 
 ROOT = Path(__file__).resolve().parent.parent
 SITES = ROOT / "web" / "src" / "data" / "sites.json"
 OUT = ROOT / "web" / "src" / "data" / "satellite.json"
+GRID_OUT = ROOT / "web" / "src" / "data" / "methaneGrid.json"
 
 S5P = "COPERNICUS/S5P/OFFL/L3_CH4"
 S5P_BAND = "CH4_column_volume_mixing_ratio_dry_air_bias_corrected"
@@ -85,6 +87,7 @@ def main() -> None:
     settings = Settings()
     sites = json.loads(SITES.read_text())
     results = json.loads(OUT.read_text()) if OUT.exists() else {}
+    grids = json.loads(GRID_OUT.read_text()) if GRID_OUT.exists() else {}
 
     for site in sites:
         if args.site and site["id"] != args.site:
@@ -92,10 +95,12 @@ def main() -> None:
         print(f"{site['id']}: fetching overpasses")
         ops = fetch_overpasses(ee, site["lat"], site["lon"], args.start, args.end, settings.outer_km)
         results[site["id"]] = classify(site["lat"], site["lon"], ops, settings)
+        grids[site["id"]] = {"windowStart": args.start, "windowEnd": args.end, "cells": mean_grid(ops)}
         print(f"  -> {results[site['id']]['status']} ({results[site['id']]['overpassesUsed']} usable)")
 
     OUT.write_text(json.dumps(results, indent=2) + "\n")
-    print(f"wrote {OUT}")
+    GRID_OUT.write_text(json.dumps(grids) + "\n")
+    print(f"wrote {OUT} and {GRID_OUT}")
 
 
 if __name__ == "__main__":

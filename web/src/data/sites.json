@@ -5,7 +5,13 @@
     "state": "ACT",
     "lat": -35.37,
     "lon": 149.14,
-    "acceptance": [{ "fromYear": 1975, "toYear": 2035, "tonnesPerYear": 300000 }],
+    "acceptance": [
+      {
+        "fromYear": 1975,
+        "toYear": 2035,
+        "tonnesPerYear": 300000
+      }
+    ],
     "k": 0.05,
     "L0": 100,
     "existingCapture": 0.4,
@@ -23,8 +29,16 @@
     "lat": -34.04,
     "lon": 150.98,
     "acceptance": [
-      { "fromYear": 1987, "toYear": 2023, "tonnesPerYear": 850000 },
-      { "fromYear": 2024, "toYear": 2037, "tonnesPerYear": 890134 }
+      {
+        "fromYear": 1987,
+        "toYear": 2023,
+        "tonnesPerYear": 850000
+      },
+      {
+        "fromYear": 2024,
+        "toYear": 2037,
+        "tonnesPerYear": 890134
+      }
     ],
     "k": 0.05,
     "L0": 100,
@@ -41,7 +55,13 @@
     "state": "VIC",
     "lat": -37.77,
     "lon": 144.74,
-    "acceptance": [{ "fromYear": 2004, "toYear": 2040, "tonnesPerYear": 2000000 }],
+    "acceptance": [
+      {
+        "fromYear": 2004,
+        "toYear": 2040,
+        "tonnesPerYear": 2000000
+      }
+    ],
     "k": 0.05,
     "L0": 100,
     "existingCapture": 0.5,
@@ -49,6 +69,51 @@
     "notes": "Cleanaway's largest site, over 200 ha, processing over 2 Mt/yr; landfill gas is already used for electricity or renewable gas. PROXY: 2 Mt/yr since 2004, closure in 2040 and 50% existing capture are assumptions; not all tonnage processed is necessarily landfilled. Coordinates approximate.",
     "sources": [
       "Cleanaway, Ravenhall (Melbourne Regional Landfill) site page: https://www.cleanaway.com.au/location/ravenhall"
+    ]
+  },
+  {
+    "id": "redvale",
+    "name": "Redvale landfill, Auckland",
+    "state": "NZ",
+    "lat": -36.69,
+    "lon": 174.7,
+    "acceptance": [
+      {
+        "fromYear": 1993,
+        "toYear": 2028,
+        "tonnesPerYear": 600000
+      }
+    ],
+    "k": 0.05,
+    "L0": 100,
+    "existingCapture": 0.95,
+    "illustrative": true,
+    "notes": "Opened 1993; takes about 600,000 t/yr (around half of Auckland's waste); consent ends December 2028, with an extension to 2036 proposed. Operator reports about 95% of methane captured and used for electricity. PROXY: constant tonnage since 1993; the 95% capture is an operator claim, not independently verified. Coordinates approximate.",
+    "sources": [
+      "NZ Herald, Redvale extension and 95% capture: https://www.nzherald.co.nz/business/landfill-proposal-aucklands-biggest-landfill-set-to-stay-open-for-seven-to-eight-years-longer-than-expected-after-delays-for-new-facility/KPBOPWAYUFAKTAEYY553PFXZGQ/"
+    ]
+  },
+  {
+    "id": "kate-valley",
+    "name": "Kate Valley landfill, Canterbury",
+    "state": "NZ",
+    "lat": -43.03,
+    "lon": 172.84,
+    "acceptance": [
+      {
+        "fromYear": 2005,
+        "toYear": 2040,
+        "tonnesPerYear": 330000
+      }
+    ],
+    "k": 0.05,
+    "L0": 100,
+    "existingCapture": 0.9,
+    "illustrative": true,
+    "notes": "Opened 2005; received 332,000 t in 2019/20; consented to 2040. Four 1 MW generators exported 21,034 MWh in 2019/20; operator reports more than 90% of landfill gas captured. PROXY: constant 330 kt/yr; 90% capture is an operator claim. Coordinates approximate.",
+    "sources": [
+      "Transwaste Canterbury Annual Report 2020: https://transwastecanterbury.co.nz/wp-content/uploads/2020/09/TCL-2020-Annual-Report-FINAL-240920_signed.pdf",
+      "Transwaste, Kate Valley renewable energy factsheet: https://transwastecanterbury.co.nz/wp-content/uploads/2020/08/Kate-Valley-Renewable-Energy.pdf"
     ]
   }
 ]

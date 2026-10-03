@@ -9,11 +9,12 @@ For a handful of landfills it:
 1. **Models** methane generation with a first-order decay model (LandGEM-style, adjustable k and L0).
 2. **Costs** a capture-plus-electricity project as a range and computes the levelised **net cost per tCO₂-e abated**.
 3. **Ranks** sites on a marginal abatement cost curve. A budget slider shows which sites get funded and how much they abate by 2035.
-4. **Screens** each site with an independent Sentinel-5P signal (downwind minus upwind methane over many overpasses). This is a screening signal, never a measurement of facility emissions.
+4. **Maps** the sites (MapLibre with OpenFreeMap tiles) with the 10 and 30 km analysis rings, plus a mean Sentinel-5P methane layer once the pipeline has been run.
+5. **Screens** each site with an independent Sentinel-5P signal (downwind minus upwind methane over many overpasses). This is a screening signal, never a measurement of facility emissions.
 
 It is a **pre-feasibility screen**, not a business case or feasibility study. It ranks candidates for detailed study.
 
-> **Status:** three real Australian landfills (Mugga Lane, Lucas Heights, Melbourne Regional Landfill) with sourced headline figures, but several inputs per site (waste history, closure year, existing capture) are **proxies**, flagged in the app and in `sites.json`. Costs are benchmarked against US EPA landfill gas project data converted to AUD.
+> **Status:** five real landfills, three in Australia (Mugga Lane, Lucas Heights, Melbourne Regional Landfill) and two in New Zealand (Redvale, Kate Valley), with sourced headline figures, but several inputs per site (waste history, closure year, existing capture) are **proxies**, flagged in the app and in `sites.json`. Costs are benchmarked against US EPA landfill gas project data converted to AUD.
 
 ## Run it
 
@@ -31,7 +32,7 @@ Satellite pipeline (needs a Google Earth Engine account and a Cloud project):
 cd pipeline
 pip install -r requirements.txt
 earthengine authenticate
-python satellite.py --project YOUR_GCP_PROJECT --start 2024-10-01 --end 2025-10-01
+python satellite.py --project YOUR_GCP_PROJECT --start 2024-10-01 --end 2025-10-01   # writes satellite.json and methaneGrid.json
 python -m unittest -v   # tests for the downwind/upwind statistic, no Earth Engine needed
 ```
 

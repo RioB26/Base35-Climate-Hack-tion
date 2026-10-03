@@ -90,6 +90,10 @@ describe("project", () => {
     const above = computeSite(site({ existingCapture: 0.5 }), on);
     expect(above.annualAccuRevenueAud).toBeCloseTo(above.generationTCH4PerYear * 0.25 * 28 * 10, 6);
   });
+  it("gives NZ sites no ACCU revenue", () => {
+    const r = computeSite(site({ state: "NZ" }), { ...a, includeAccu: true });
+    expect(r.annualAccuRevenueAud).toBe(0);
+  });
   it("capex range brackets the mid estimate", () => {
     const r = computeSite(site(), a);
     expect(r.netCostAudPerTCO2eRange[0]).toBeLessThan(r.netCostAudPerTCO2e);

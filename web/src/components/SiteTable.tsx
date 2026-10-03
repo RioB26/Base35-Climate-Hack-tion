@@ -21,6 +21,7 @@ export function SiteTable({ sites, results, portfolio, selectedId, onSelect }: P
   const funded = new Set(portfolio.bars.filter((b) => b.funded).map((b) => b.siteId));
 
   return (
+    <div className="table-wrap">
     <table className="sites">
       <thead>
         <tr>
@@ -49,11 +50,12 @@ export function SiteTable({ sites, results, portfolio, selectedId, onSelect }: P
               <td className="r">{fmtCostPerT(r.netCostAudPerTCO2e)}</td>
               <td className="r">{fmtT(r.avgAbatementTCO2ePerYear)}</td>
               <td className="r">{fmtAudM(r.capexMidAud)}</td>
-              <td>{funded.has(r.siteId) ? "Yes" : "No"}</td>
+              <td>{!Number.isFinite(r.netCostAudPerTCO2e) ? <span className="muted">No headroom</span> : funded.has(r.siteId) ? "Yes" : "No"}</td>
             </tr>
           );
         })}
       </tbody>
     </table>
+    </div>
   );
 }

@@ -28,5 +28,25 @@
     "ci95Ppb": null,
     "confidence": null,
     "note": "Satellite pipeline not run yet for this site."
+  },
+  "redvale": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
+  },
+  "kate-valley": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
   }
 }
