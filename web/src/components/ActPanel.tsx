@@ -44,8 +44,7 @@ export function ActPanel({ result, assumptions }: { result: SiteResult; assumpti
       </dl>
       {assumptions.includeAccu && (
         <p className="muted small">
-          *Subject to project eligibility and registration under the current ACCU landfill gas method. Price is a
-          placeholder.
+          *Subject to project eligibility and registration under the current ACCU landfill gas method. Price is the generic ACCU spot price.
         </p>
       )}
     </article>

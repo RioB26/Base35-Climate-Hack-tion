@@ -37,7 +37,7 @@ export function ModelPanel({ site, result, assumptions }: Props) {
       <Sparkline values={result.years.map((y) => y.generationTCH4)} highlight={horizonRows.length} />
       <p className="muted small">
         Methane generation {result.years[0].year} to {result.years[result.years.length - 1].year} (first-order decay,
-        k = {site.k}, L0 = {site.L0} m³/t){site.illustrative ? " · placeholder inputs" : ""}
+        k = {site.k}, L0 = {site.L0} m³/t){site.illustrative ? " · proxy inputs, see notes" : ""}
       </p>
     </article>
   );

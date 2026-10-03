@@ -17,7 +17,7 @@ const MAIN: Spec[] = [
 const ADVANCED: Spec[] = [
   { key: "commissioningYear", label: "Commissioning year", min: 2026, max: 2032, step: 1, show: String },
   { key: "projectLifeYears", label: "Project life", min: 10, max: 25, step: 1, show: (v) => `${v} years` },
-  { key: "accuPriceAud", label: "ACCU price (placeholder)", min: 0, max: 80, step: 1, show: (v) => `AUD ${v}` },
+  { key: "accuPriceAud", label: "ACCU price", min: 0, max: 80, step: 1, show: (v) => `AUD ${v}` },
 ];
 
 type Props = { value: Assumptions; onChange: (a: Assumptions) => void; onReset: () => void };

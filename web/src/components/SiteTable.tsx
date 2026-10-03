@@ -44,7 +44,7 @@ export function SiteTable({ sites, results, portfolio, selectedId, onSelect }: P
             >
               <td>
                 {s.name}
-                {s.illustrative && <span className="tag">placeholder</span>}
+                {s.illustrative && <span className="tag">proxy inputs</span>}
               </td>
               <td className="r">{fmtCostPerT(r.netCostAudPerTCO2e)}</td>
               <td className="r">{fmtT(r.avgAbatementTCO2ePerYear)}</td>

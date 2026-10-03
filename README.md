@@ -13,7 +13,7 @@ For a handful of landfills it:
 
 It is a **pre-feasibility screen**, not a business case or feasibility study. It ranks candidates for detailed study.
 
-> **Status:** the site and cost data in `web/src/data/` are **placeholders** until replaced with sourced inputs. The app shows a banner while any placeholder remains.
+> **Status:** three real Australian landfills (Mugga Lane, Lucas Heights, Melbourne Regional Landfill) with sourced headline figures, but several inputs per site (waste history, closure year, existing capture) are **proxies**, flagged in the app and in `sites.json`. Costs are benchmarked against US EPA landfill gas project data converted to AUD.
 
 ## Run it
 

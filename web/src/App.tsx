@@ -54,7 +54,7 @@ export default function App() {
 
       {anyIllustrative && (
         <div className="banner" role="note">
-          Placeholder data: sites and cost ranges are illustrative until replaced with sourced inputs.
+          Screening inputs: some site values are proxies (marked per site). Treat rankings as illustrative until the proxies are verified.
         </div>
       )}
 
@@ -114,9 +114,7 @@ export default function App() {
         <p>
           <strong>Pre-feasibility screening, not a business case.</strong> It ranks candidates for a detailed feasibility
           study. Emissions avoided use GWP100 = 28. Capex is shown as a range
-          {anyIllustrative
-            ? " (placeholder values, to be benchmarked against US EPA LFGcost-Web and Australian project data)"
-            : ", benchmarked against US EPA LFGcost-Web and Australian project data"}
+          {", benchmarked against US EPA landfill gas project costs converted to AUD (see docs/DISCLOSURES.md)"}
           . The satellite panel is a screening signal, not a facility-level emissions
           measurement: Sentinel-5P pixels are about 5.5 × 7 km and cannot attribute an enhancement to one facility.
         </p>
