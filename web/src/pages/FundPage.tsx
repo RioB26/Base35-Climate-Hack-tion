@@ -135,7 +135,7 @@ export function FundPage(p: Props) {
         <button type="button" className="ghost" onClick={toFix}>
           ← Change the answers
         </button>
-        <a className="cta" href="#/">
+        <a className="cta" href="#/landfills">
           Check another landfill
         </a>
       </div>

@@ -64,7 +64,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
             <button type="button" className="cta" onClick={toFix}>
               {c.verdict === "higher" ? "See what capture could fix →" : "Plan a capture project →"}
             </button>
-            <a className="ghost" href="#/">
+            <a className="ghost" href="#/landfills">
               ← Back to the globe
             </a>
           </div>
