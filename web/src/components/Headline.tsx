@@ -14,7 +14,7 @@ type Props = {
 export function Headline({ portfolio, totalSites, horizonYear, budget, maxBudget, budgetShare, onBudgetShare }: Props) {
   const n = portfolio.fundedCount;
   return (
-    <section className="headline card">
+    <section className="headline">
       <p className="big" aria-live="polite">
         {n === 0 ? (
           <>Raise the budget to fund the first site.</>

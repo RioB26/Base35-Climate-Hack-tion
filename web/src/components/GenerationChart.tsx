@@ -1,14 +1,13 @@
 import { fmtInt } from "../format";
 import type { YearRow } from "../model/types";
 
-type Props = { years: YearRow[]; horizonYear: number; capturedShare: number };
+type Props = { years: YearRow[]; horizonYear: number; capturedShare: number; width?: number; height?: number };
 
-const W = 1000;
-const H = 280;
-const M = { top: 16, right: 16, bottom: 28, left: 56 };
+const M = { top: 16, right: 16, bottom: 28, left: 76 };
 
 /** Methane generation over the project life, with the share the project captures shaded. */
-export function GenerationChart({ years, horizonYear, capturedShare }: Props) {
+export function GenerationChart({ years, horizonYear, capturedShare, width: W = 1000, height: H = 280 }: Props) {
+  const every = W < 700 ? 3 : 2;
   const max = Math.max(...years.map((y) => y.generationTCH4)) * 1.1 || 1;
   const iw = W - M.left - M.right;
   const ih = H - M.top - M.bottom;
@@ -41,7 +40,7 @@ export function GenerationChart({ years, horizonYear, capturedShare }: Props) {
         </g>
       )}
       {years.map((r, i) =>
-        i % 2 === 0 ? (
+        i % every === 0 ? (
           <text key={r.year} x={x(i)} y={H - 8} textAnchor="middle" className="tick">
             {r.year}
           </text>

@@ -21,6 +21,8 @@ export type Site = {
   existingCapture: number;
   /** True when inputs are placeholders or proxies rather than sourced site data. */
   illustrative: boolean;
+  /** Published site emissions, when a source exists. Without it the Check page uses the capture claim. */
+  reportedEmissions?: { tCH4PerYear: number; year: number; source: string };
   notes: string;
   sources: string[];
 };
@@ -62,6 +64,8 @@ export type SatelliteResult = {
   ci95Ppb: Range | null;
   confidence: "low" | "medium" | "high" | null;
   note: string;
+  /** ERA5 wind over the usable overpasses, once the pipeline exports it. */
+  wind?: { meanSpeedMs: number; fromDeg: number; rose: number[] };
 };
 
 export type YearRow = {

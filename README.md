@@ -4,13 +4,12 @@ An open pre-feasibility screen for landfill methane capture in Australia and New
 
 > Existing systems tell you where methane is. Methane Payback helps decide what to fund first, and what it could achieve by 2035.
 
-For a handful of landfills it:
+The app is four steps, one landfill at a time:
 
-1. **Models** methane generation with a first-order decay model (LandGEM-style, adjustable k and L0).
-2. **Costs** a capture-plus-electricity project as a range and computes the levelised **net cost per tCO₂-e abated**.
-3. **Ranks** sites on a marginal abatement cost curve. A budget slider shows which sites get funded and how much they abate by 2035.
-4. **Maps** the sites (MapLibre with OpenFreeMap tiles) with the 10 and 30 km analysis rings, plus a mean Sentinel-5P methane layer once the pipeline has been run.
-5. **Screens** each site with an independent Sentinel-5P signal (downwind minus upwind methane over many overpasses). This is a screening signal, never a measurement of facility emissions.
+1. **Find:** a globe with every landfill pinned and a search box. Picking one flies in to it.
+2. **Check:** the site's reported figures against an independent Sentinel-5P signal (downwind minus upwind methane over many overpasses), with a map of mean methane and the 10 to 30 km analysis area. If the satellite sees more than the reported capture explains, it shows by how much. This is a screening signal, never a measurement of facility emissions.
+3. **Fix:** a short questionnaire (target capture, start year, power price, costs, carbon credits) next to a 3D landfill model in three size classes. Methane comes from a first-order decay model (LandGEM-style, adjustable k and L0).
+4. **Fund:** the budget needed, electricity and money the project makes, the levelised **net cost per tCO₂-e abated**, a transparent COP31 alignment check, and a marginal abatement cost curve ranking every site with a budget slider.
 
 It is a **pre-feasibility screen**, not a business case or feasibility study. It ranks candidates for detailed study.
 
@@ -43,16 +42,17 @@ CI (`.github/workflows/ci.yml`) runs the tests and builds on every push and pull
 ## Repository layout
 
 ```
-web/src/model/      methane generation, project economics, MACC and budget logic (+ tests)
+web/src/model/      methane generation, project economics, MACC, satellite comparison, COP31 rubric (+ tests)
 web/src/data/       sites.json, assumptions.ts, satellite.json (inputs; every value needs a source)
-web/src/components/ UI: headline, MACC, site table, See / Model / Act panels, sliders
+web/src/pages/      the four steps: Find, Check, Fix, Fund
+web/src/components/ globe, site map, 3D landfill, charts, sliders
 pipeline/           Sentinel-5P + ERA5 screening pipeline (Earth Engine) and its tests
 docs/               METHODOLOGY.md, DISCLOSURES.md
 ```
 
 ## Updating data
 
-- **Sites:** edit `web/src/data/sites.json`. Set `illustrative: false` only when every input has a source in `sources`.
+- **Sites:** add or edit a row in `web/src/data/sites.json`; the globe, search and ranking pick it up. If a site publishes its emissions, add `reportedEmissions` with a source and the Check step uses it instead of the capture claim. Set `illustrative: false` only when every input has a source in `sources`.
 - **Costs and prices:** edit `web/src/data/assumptions.ts`. Replace each `PLACEHOLDER` with a sourced value and log it in `docs/DISCLOSURES.md`.
 - **Satellite:** run the pipeline, or leave a site as `"status": "not_run"`. Never write a status by hand.
 
