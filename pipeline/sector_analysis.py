@@ -85,10 +85,35 @@ def bootstrap_ci(values: list[float], samples: int, seed: int) -> tuple[float, f
     return means[int(0.025 * samples)], means[int(0.975 * samples) - 1]
 
 
+def wind_summary(overpasses: list[Overpass]) -> dict | None:
+    """Mean speed, prevailing direction and an 8-sector rose for the map's wind arrow.
+
+    `fromDeg` is where the wind comes from (meteorological convention), from the
+    vector mean of unit wind directions. `rose` counts passes by the direction the
+    wind came from: N, NE, E, SE, S, SW, W, NW.
+    """
+    if not overpasses:
+        return None
+    speeds = [math.hypot(op.u_ms, op.v_ms) for op in overpasses]
+    sx = sum(op.u_ms / sp for op, sp in zip(overpasses, speeds) if sp > 0)
+    sy = sum(op.v_ms / sp for op, sp in zip(overpasses, speeds) if sp > 0)
+    towards = math.degrees(math.atan2(sx, sy))
+    rose = [0] * 8
+    for op in overpasses:
+        frm = (math.degrees(math.atan2(-op.u_ms, -op.v_ms)) + 360) % 360
+        rose[int(((frm + 22.5) % 360) // 45)] += 1
+    return {
+        "meanSpeedMs": round(sum(speeds) / len(speeds), 2),
+        "fromDeg": round((towards + 180) % 360, 1),
+        "rose": rose,
+    }
+
+
 def classify(site_lat: float, site_lon: float, overpasses: list[Overpass], s: Settings | None = None) -> dict:
     """Aggregate overpasses into the satellite.json record for one site."""
     s = s or Settings()
-    deltas = [d for op in overpasses if (d := overpass_delta(site_lat, site_lon, op, s)) is not None]
+    usable = [(op, d) for op in overpasses if (d := overpass_delta(site_lat, site_lon, op, s)) is not None]
+    deltas = [d for _, d in usable]
     dates = sorted(op.date for op in overpasses)
     record = {
         "overpassesUsed": len(deltas),
@@ -98,6 +123,9 @@ def classify(site_lat: float, site_lon: float, overpasses: list[Overpass], s: Se
         "ci95Ppb": None,
         "confidence": "low",
     }
+    wind = wind_summary([op for op, _ in usable])
+    if wind:
+        record["wind"] = wind
     if len(deltas) < 2:
         return {**record, "status": "inconclusive", "note": "Too few usable overpasses for a signal."}
 

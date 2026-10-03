@@ -14,3 +14,6 @@ export const fmtCostPerT = (n: number) =>
   Number.isFinite(n) ? `${n < 0 ? "−" : ""}AUD ${Math.abs(n).toFixed(n > -10 && n < 10 ? 1 : 0)}` : "n/a";
 
 export const shortName = (name: string) => name.split(/[:,]/)[0].replace(/ landfill$/i, "");
+
+/** ppb with enough decimals that small expected signals don't round to zero. */
+export const fmtPpb = (v: number) => (Math.abs(v) < 1 ? v.toFixed(2) : v.toFixed(1));

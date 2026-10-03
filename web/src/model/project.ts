@@ -27,6 +27,15 @@ export function annualPhysics(methaneM3PerYear: number, existingCapture: number,
   };
 }
 
+/** Potential ACCU revenue (AUD/yr) for a year's methane generation, whether or not it is counted in payback. */
+export function potentialAccuAud(site: Site, generationT: number, a: Assumptions): number {
+  // ACCUs are an Australian scheme; NZ sites sit under the NZ ETS instead, which is not modelled.
+  if (site.state === "NZ") return 0;
+  // Credits only count capture above both the existing capture and the method's baseline proportion.
+  const creditableFraction = Math.max(0, a.captureEfficiency - Math.max(site.existingCapture, a.accuBaselineProportion));
+  return generationT * creditableFraction * a.gwp100 * a.accuPriceAud;
+}
+
 export function computeSite(site: Site, a: Assumptions): SiteResult {
   const life = Math.max(1, Math.round(a.projectLifeYears));
   const physics = Array.from({ length: life }, (_, i) => {
@@ -61,11 +70,7 @@ export function computeSite(site: Site, a: Assumptions): SiteResult {
   const first = physics[0];
   const firstOpex = opex(first.electricityMWh);
   const firstRevenue = revenue(first.electricityMWh);
-  // Credits only count capture above both the existing capture and the method's baseline proportion.
-  const creditableFraction = Math.max(0, a.captureEfficiency - Math.max(site.existingCapture, a.accuBaselineProportion));
-  const creditableTCO2e = first.generationT * creditableFraction * a.gwp100;
-  // ACCUs are an Australian scheme; NZ sites sit under the NZ ETS instead, which is not modelled.
-  const accu = a.includeAccu && site.state !== "NZ" ? creditableTCO2e * a.accuPriceAud : 0;
+  const accu = a.includeAccu ? potentialAccuAud(site, first.generationT, a) : 0;
   const netAnnual = firstRevenue + accu - firstOpex;
 
   const inHorizon = physics.filter((p) => p.year <= a.horizonYear);

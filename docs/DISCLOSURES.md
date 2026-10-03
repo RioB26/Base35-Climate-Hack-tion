@@ -19,7 +19,8 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Cleanaway Lucas Heights AEMR 2024 | 2024 tonnage, approved cap, 2037 closure | https://cleanaway2stor.blob.core.windows.net/cleanaway2-blob-container/2025/03/AEMR-SSD-6835-2024-Lucas-Heights-Landfill.pdf | Used; opening year, earlier tonnage, existing capture are proxies |
 | NZ Herald on Redvale extension | Redvale opening 1993, ~600,000 t/yr, consent to Dec 2028, ~95% capture (operator claim) | https://www.nzherald.co.nz/business/landfill-proposal-aucklands-biggest-landfill-set-to-stay-open-for-seven-to-eight-years-longer-than-expected-after-delays-for-new-facility/KPBOPWAYUFAKTAEYY553PFXZGQ/ | Used; tonnage history is a proxy |
 | Transwaste Canterbury Annual Report 2020 and renewable energy factsheet | Kate Valley 332,000 t (2019/20), opened 2005, consented to 2040; capture of about 96% is an operator claim (North Canterbury News, 8 Aug 2024); 4.3 MW commissioned 2014 | https://transwastecanterbury.co.nz/wp-content/uploads/2020/09/TCL-2020-Annual-Report-FINAL-240920_signed.pdf | Used; tonnage history is a proxy |
-| OpenFreeMap basemap tiles (OpenStreetMap data, ODbL) | Map background | https://openfreemap.org | Used at runtime |
+| OpenFreeMap basemap tiles (OpenStreetMap data, ODbL) | Site map background | https://openfreemap.org | Used at runtime |
+| Natural Earth 1:50m land, via the world-atlas package | Globe on the Find step, and site map fallback | https://www.naturalearthdata.com | Public domain; bundled |
 | Cleanaway Ravenhall site page | >2 Mt/yr processed, >200 ha | https://www.cleanaway.com.au/location/ravenhall | Used; history, closure, existing capture are proxies |
 | US EPA LMOP, LFG Energy Project Development Handbook ch. 4 (2021) | Collection/flare and engine capex and O&M (2020 USD) | https://www.epa.gov/system/files/documents/2021-07/pdh_chapter4.pdf | Used, converted to AUD |
 | AEMO Quarterly Energy Dynamics Q2 2026 | Default power price (NEM average AUD 74/MWh) | https://www.aemo.com.au/newsroom/media-release/qed-q2-2026 | Used |
@@ -62,6 +63,8 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Vite, @vitejs/plugin-react | MIT | Build tooling |
 | TypeScript | Apache-2.0 | Type checking |
 | Vitest | MIT | Tests |
-| MapLibre GL JS | BSD-3-Clause | Interactive map |
+| MapLibre GL JS | BSD-3-Clause | Interactive map and globe |
+| three.js | MIT | 3D landfill model |
+| world-atlas, topojson-client | ISC | Bundled coastline for the globe |
 | Fraunces and Inter fonts (Google Fonts) | SIL Open Font License | Typography |
 | earthengine-api | Apache-2.0 | Satellite pipeline |

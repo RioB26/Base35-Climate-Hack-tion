@@ -59,3 +59,32 @@ Independent of the model; it never changes the tonnes.
 6. Classify: **Elevated** if the interval is above zero and ≥ 8 usable overpasses; **Neutral** if the interval spans zero with half-width < 10 ppb; otherwise **Inconclusive**.
 
 These thresholds are a team choice and should be revisited on real data. Other sources within 30 km (other landfills, agriculture, coal, wetlands) can produce enhancements; the signal cannot attribute them to the landfill.
+
+## 7. Reported versus satellite (Check step)
+
+Code: `web/src/model/discrepancy.ts`.
+
+1. **Reported emissions.** If a site has a published figure (`reportedEmissions`), use it. Otherwise use the model's methane for the satellite window's year times (1 − the operator's reported capture). None of the five current sites has a published figure, so this is a proxy.
+2. **Expected signal.** A simple mass balance: crosswind, a plume carries Q / u of methane per metre. Averaged over the pipeline's downwind sector (10 to 30 km, ±30°), it is spread over an effective width of 2 · tan 30° · 20 km ≈ 23 km. Divide by the moles of air in the column (surface pressure / g / molar mass of dry air) to get ppb. Wind u is the ERA5 mean over usable overpasses once the pipeline exports it (`wind` in satellite.json), otherwise an assumed 5 m/s.
+3. **Verdict.** Consistent if the expected signal lies inside the observed 95% interval; "satellite sees more" if it lies below; "sees less" if above. No verdict below 8 usable overpasses.
+4. **How big the gap is.** Observed minus expected (ppb), and the emission rate the observed signal would imply if the landfill were the only source. When that rate is more than the landfill's whole modelled generation, the app says other sources or a retrieval artefact must explain most of it.
+
+Limits: one source, no boundary-layer or chemistry modelling, 10 m wind rather than plume-height wind, and Sentinel-5P retrievals differ over land and sea, which matters for coastal sites. It is a screening flag for a closer look.
+
+## 8. COP31 alignment check (Fund step)
+
+Code: `web/src/model/cop31.ts`. Our own rubric, not an official COP31 metric. Four parts, 25 points each:
+
+| Part | Rule |
+|---|---|
+| Methane cut | Share of currently escaping methane the project stops. 30% (Global Methane Pledge, by 2030) earns 15; 45% (UNEP Global Methane Assessment, 1.5 °C pathway) earns 25; linear in between and below. |
+| Speed | 25 if commissioned by 2030, falling linearly to 0 at 2035. |
+| Cost per tonne | 25 × (1 − net cost / (2 × ACCU price)), clamped to 0 to 25: full at zero cost, half at the ACCU price. |
+| Electricity produced | 25 × (electricity revenue / operating cost), capped at 25: full when power sales pay for running the plant. |
+
+No score is shown when the site has no capture headroom at the chosen target.
+
+## 9. 3D model size classes (Fix step)
+
+Code: `web/src/model/size.ts`. Modelled waste in place to 2025: under 10 Mt is small, 10 to 30 Mt medium, 30 Mt and over large. The model is illustrative, not to scale. Wells shown are the existing capture share (grey) and the extra capture (orange) of a fixed number of well slots per size class.
+

@@ -5,6 +5,6 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   base: "./",
   plugins: [react()],
-  // MapLibre is lazy-loaded in its own chunk.
-  build: { chunkSizeWarningLimit: 1200 },
+  // MapLibre plus the bundled Natural Earth coastline, and three.js, each load lazily in their own chunk.
+  build: { chunkSizeWarningLimit: 1700 },
 });

@@ -2,7 +2,7 @@ import math
 import random
 import unittest
 
-from sector_analysis import Overpass, Pixel, Settings, classify, distance_bearing, mean_grid, overpass_delta
+from sector_analysis import Overpass, Pixel, Settings, classify, distance_bearing, mean_grid, overpass_delta, wind_summary
 
 SITE = (-33.8, 150.9)
 
@@ -60,6 +60,21 @@ class SectorTests(unittest.TestCase):
         self.assertEqual(len(cells), 1)
         self.assertAlmostEqual(cells[0][2], 1910)
         self.assertEqual(mean_grid(ops, min_samples=4), [])
+
+    def test_wind_summary_south_westerly(self):
+        # Wind from the south-west blows towards the north-east: u and v both positive.
+        ops = [Overpass("d", 3, 3), Overpass("d", 4, 4)]
+        w = wind_summary(ops)
+        self.assertAlmostEqual(w["fromDeg"], 225, places=3)
+        self.assertAlmostEqual(w["meanSpeedMs"], round((math.hypot(3, 3) + math.hypot(4, 4)) / 2, 2))
+        self.assertEqual(w["rose"], [0, 0, 0, 0, 0, 2, 0, 0])
+
+    def test_classify_exports_wind_of_usable_passes(self):
+        rng = random.Random(5)
+        ops = [ring(0, 5, plume_ppb=8, rng=rng) for _ in range(10)] + [ring(0.5, 0.5, plume_ppb=0, rng=rng)]
+        w = classify(*SITE, ops)["wind"]
+        self.assertAlmostEqual(w["fromDeg"], 180, places=3)
+        self.assertEqual(sum(w["rose"]), 10)
 
     def test_no_data(self):
         self.assertEqual(classify(*SITE, [])["status"], "inconclusive")
