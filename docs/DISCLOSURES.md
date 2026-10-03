@@ -56,7 +56,8 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Tool | Used for |
 |---|---|
 | Google Earth Engine (`earthengine-api`) | Satellite data access |
-| GitHub Pages and GitHub Actions | Hosting and CI |
+| GitHub Pages and GitHub Actions | Hosting and CI; Actions also runs the satellite screening for sites added in the app |
+| Supabase (free tier) | Stores user-added sites and their satellite results; Edge Function validates and saves new sites |
 
 ## Libraries
 
@@ -71,3 +72,4 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | world-atlas, topojson-client | ISC | Bundled coastline for the globe |
 | Fraunces and Inter fonts (Google Fonts) | SIL Open Font License | Typography |
 | earthengine-api | Apache-2.0 | Satellite pipeline |
+| @supabase/supabase-js | MIT | Reading sites and live status from Supabase |
