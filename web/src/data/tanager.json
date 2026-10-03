@@ -1,0 +1,160 @@
+{
+  "catalogCheckedAt": "2026-10-04",
+  "coverageRadiusKm": 15,
+  "source": "Carbon Mapper public catalog",
+  "licenseNote": "Verify Carbon Mapper Terms of Use before redistributing catalog imagery or derived records.",
+  "sites": {
+    "lucas-heights": {
+      "status": "observed",
+      "sourceCount": 1,
+      "plumeCount": 1,
+      "observations": [
+        {
+          "plumeId": "tan20260428t012252c14s4001-C",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2026-04-28T01:22:52.140Z",
+          "lat": -34.04019583788803,
+          "lon": 150.96856145627459,
+          "emissionKgPerHour": 322.55855771960915,
+          "emissionUncertaintyKgPerHour": 42.455866863829094
+        }
+      ]
+    },
+    "ravenhall": {
+      "status": "observed",
+      "sourceCount": 2,
+      "plumeCount": 11,
+      "observations": [
+        {
+          "plumeId": "tan20250310t005741c00s4001-A",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-03-10T00:57:41.000Z",
+          "lat": -37.78906885562399,
+          "lon": 144.72746489579413,
+          "emissionKgPerHour": 288.11918942464723,
+          "emissionUncertaintyKgPerHour": 168.8736964923866
+        },
+        {
+          "plumeId": "tan20250412t004808c00s4001-A",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-04-12T00:48:08.000Z",
+          "lat": -37.78907273421781,
+          "lon": 144.72747424952277,
+          "emissionKgPerHour": 166.53218854937634,
+          "emissionUncertaintyKgPerHour": 52.0712498629761
+        },
+        {
+          "plumeId": "tan20250412t004808c00s4001-C",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-04-12T00:48:08.000Z",
+          "lat": -37.7841634232188,
+          "lon": 144.72524023019668,
+          "emissionKgPerHour": 168.93130654758878,
+          "emissionUncertaintyKgPerHour": 57.6066875649761
+        },
+        {
+          "plumeId": "tan20250623t011049c36s4001-A",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-06-23T01:10:49.360Z",
+          "lat": -37.785121015469365,
+          "lon": 144.72429293112538,
+          "emissionKgPerHour": 167.69370650527654,
+          "emissionUncertaintyKgPerHour": 136.19197958242412
+        },
+        {
+          "plumeId": "tan20250623t011049c36s4001-B",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-06-23T01:10:49.360Z",
+          "lat": -37.78956910301656,
+          "lon": 144.72376691039335,
+          "emissionKgPerHour": 699.351244803631,
+          "emissionUncertaintyKgPerHour": 215.1908790833919
+        },
+        {
+          "plumeId": "tan20251101t011605c91s4001-B",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-11-01T01:16:05.910Z",
+          "lat": -37.7882040833385,
+          "lon": 144.71124650850345,
+          "emissionKgPerHour": 114.69134914152548,
+          "emissionUncertaintyKgPerHour": 35.785772659993995
+        },
+        {
+          "plumeId": "tan20251101t011605c91s4001-A",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-11-01T01:16:05.910Z",
+          "lat": -37.78424590761449,
+          "lon": 144.7250796110103,
+          "emissionKgPerHour": 253.6194203297297,
+          "emissionUncertaintyKgPerHour": 53.304428892529536
+        },
+        {
+          "plumeId": "tan20251101t011605c91s4001-C",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-11-01T01:16:05.910Z",
+          "lat": -37.78858419955069,
+          "lon": 144.72754956615205,
+          "emissionKgPerHour": 83.69744360446929,
+          "emissionUncertaintyKgPerHour": 41.962071925838295
+        },
+        {
+          "plumeId": "tan20251124t013305c74s4001-D",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-11-24T01:33:05.740Z",
+          "lat": -37.78095131524581,
+          "lon": 144.72281066271103,
+          "emissionKgPerHour": 342.0794523797144,
+          "emissionUncertaintyKgPerHour": 162.38316463526803
+        },
+        {
+          "plumeId": "tan20260205t012436c52s4001-A",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2026-02-05T01:24:36.520Z",
+          "lat": -37.79014153975388,
+          "lon": 144.72233725890317,
+          "emissionKgPerHour": null,
+          "emissionUncertaintyKgPerHour": null
+        },
+        {
+          "plumeId": "tan20251124t013305c74s4001-B",
+          "instrument": "Tanager",
+          "gas": "CH4",
+          "observedAt": "2025-11-24T01:33:05.740Z",
+          "lat": -37.78825705722193,
+          "lon": 144.7114397671815,
+          "emissionKgPerHour": null,
+          "emissionUncertaintyKgPerHour": null
+        }
+      ]
+    },
+    "mugga-lane": {
+      "status": "no_public_coverage",
+      "sourceCount": 0,
+      "plumeCount": 0,
+      "observations": []
+    },
+    "redvale": {
+      "status": "no_public_coverage",
+      "sourceCount": 0,
+      "plumeCount": 0,
+      "observations": []
+    },
+    "kate-valley": {
+      "status": "no_public_coverage",
+      "sourceCount": 0,
+      "plumeCount": 0,
+      "observations": []
+    }
+  }
+}

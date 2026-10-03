@@ -23,10 +23,6 @@ const TOP = 0.9; // a terrace's top is 90% of its base, leaving a flat ledge bef
 const HAZE_MAX = 260;
 
 const C = {
-  ground: "#c8d3bb",
-  cap: "#7f9970",
-  capTop: "#90a97f",
-  tip: "#8c7152",
   wellOld: "#5f6d69",
   wellNew: "#e58f65",
   shed: "#273c2c",
@@ -52,6 +48,94 @@ function rng(seed: number) {
 }
 
 const mat = (color: string) => new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.95 });
+
+type Surface = "cap" | "soil" | "ground";
+// Base colour plus speckle colours for each surface.
+const SURFACES: Record<Surface, { base: string; specks: string[]; strokes: boolean }> = {
+  cap: { base: "#86a074", specks: ["#6f8a5f", "#9cb487", "#7b9468", "#a9bd8f", "#5f7a52"], strokes: true },
+  soil: { base: "#8c7152", specks: ["#7a6045", "#a4876a", "#6b533b", "#b39a7c", "#8f8f86"], strokes: false },
+  ground: { base: "#c3cfb4", specks: ["#b2c1a1", "#d2dcc4", "#a9b897", "#cbd2b8", "#9fb08c"], strokes: true },
+};
+const TEX_PX = 256;
+
+/**
+ * Seamless surface texture drawn on a canvas: grass on capped ground, bare soil on the
+ * active cell. Generated at load, so there are no image files to download or license.
+ */
+function surfaceTexture(kind: Surface): THREE.CanvasTexture {
+  const { base, specks, strokes } = SURFACES[kind];
+  const c = document.createElement("canvas");
+  c.width = c.height = TEX_PX;
+  const g = c.getContext("2d")!;
+  const rand = rng(kind.length * 101);
+  // Draw at the wrapped positions too, so the tile has no seams.
+  const wrapped = (x: number, y: number, r: number, draw: (x: number, y: number) => void) => {
+    for (const dx of [-TEX_PX, 0, TEX_PX])
+      for (const dy of [-TEX_PX, 0, TEX_PX]) {
+        const px = x + dx;
+        const py = y + dy;
+        if (px > -r && px < TEX_PX + r && py > -r && py < TEX_PX + r) draw(px, py);
+      }
+  };
+  g.fillStyle = base;
+  g.fillRect(0, 0, TEX_PX, TEX_PX);
+  // Soft patches for variation at a larger scale.
+  for (let k = 0; k < 30; k++) {
+    const r = 20 + rand() * 50;
+    const col = specks[Math.floor(rand() * specks.length)];
+    wrapped(rand() * TEX_PX, rand() * TEX_PX, r, (x, y) => {
+      const grad = g.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, col + "55");
+      grad.addColorStop(1, col + "00");
+      g.fillStyle = grad;
+      g.fillRect(x - r, y - r, 2 * r, 2 * r);
+    });
+  }
+  // Fine grain: grass blades or soil crumbs and pebbles.
+  for (let k = 0; k < 2600; k++) {
+    g.fillStyle = g.strokeStyle = specks[Math.floor(rand() * specks.length)];
+    g.globalAlpha = 0.5 + rand() * 0.5;
+    const len = 2 + rand() * 4;
+    const ang = -Math.PI / 2 + (rand() - 0.5) * 1.2;
+    wrapped(rand() * TEX_PX, rand() * TEX_PX, 6, (x, y) => {
+      if (strokes) {
+        g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(x, y);
+        g.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+        g.stroke();
+      } else {
+        g.beginPath();
+        g.ellipse(x, y, len * 0.4, len * 0.3, ang, 0, Math.PI * 2);
+        g.fill();
+      }
+    });
+  }
+  g.globalAlpha = 1;
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
+/**
+ * Top-down UVs in world units, so grass and soil keep the same grain size on every
+ * size class: a large landfill shows more tiles, not bigger blades of grass.
+ */
+function planarUV(geo: THREE.BufferGeometry, metresPerTile: number) {
+  const pos = geo.attributes.position;
+  const uv = new Float32Array(pos.count * 2);
+  for (let k = 0; k < pos.count; k++) {
+    uv[k * 2] = pos.getX(k) / metresPerTile;
+    uv[k * 2 + 1] = pos.getZ(k) / metresPerTile;
+  }
+  geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+  return geo;
+}
+
+const textured = (map: THREE.Texture, tint = "#ffffff") =>
+  new THREE.MeshStandardMaterial({ map, color: tint, flatShading: true, roughness: 0.95 });
 
 /** Half-extents of terrace i's base and top faces. */
 const baseHalf = (w: number, d: number, i: number) => [(w / 2) * (1 - STEP * i), (d / 2) * (1 - STEP * i)];
@@ -128,28 +212,31 @@ export default function Landfill3D({ size, operating, existingCapture, targetCap
     Object.assign(sun.shadow.camera, { left: -18, right: 18, top: 18, bottom: -18 });
     scene.add(sun);
 
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(26, 48), mat(C.ground));
-    ground.rotation.x = -Math.PI / 2;
+    const tex = { cap: surfaceTexture("cap"), soil: surfaceTexture("soil"), ground: surfaceTexture("ground") };
+    const groundGeo = new THREE.CircleGeometry(26, 48);
+    groundGeo.rotateX(-Math.PI / 2);
+    const ground = new THREE.Mesh(planarUV(groundGeo, 5), textured(tex.ground));
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // Terraces: square frustums stretched to the footprint, capped soil getting lighter towards the top.
+    // Terraces: square frustums stretched to the footprint, grassed cap a little lighter towards the top.
     const { w, d, tiers } = DIMS[size];
     for (let i = 0; i < tiers; i++) {
       const [bx, bz] = baseHalf(w, d, i);
       const [tx] = topHalf(w, d, i);
       const geo = new THREE.CylinderGeometry((tx / bx) * Math.SQRT2, Math.SQRT2, TIER_H, 4, 1);
       geo.rotateY(Math.PI / 4);
-      const tier = new THREE.Mesh(geo, mat(i === tiers - 1 ? C.capTop : C.cap));
-      tier.scale.set(bx, 1, bz);
-      tier.position.y = i * TIER_H + TIER_H / 2;
+      geo.scale(bx, 1, bz);
+      geo.translate(0, i * TIER_H + TIER_H / 2, 0);
+      const tier = new THREE.Mesh(planarUV(geo, 3), textured(tex.cap, i === tiers - 1 ? "#ffffff" : "#e6eadf"));
       tier.castShadow = tier.receiveShadow = true;
       scene.add(tier);
     }
     const [topX, topZ] = topHalf(w, d, tiers - 1);
     if (operating) {
-      const tip = new THREE.Mesh(new THREE.BoxGeometry(topX * 0.9, 0.06, topZ * 1.2), mat(C.tip));
-      tip.position.set(topX * 0.45, tiers * TIER_H + 0.03, -topZ * 0.3);
+      const tipGeo = new THREE.BoxGeometry(topX * 0.9, 0.06, topZ * 1.2);
+      tipGeo.translate(topX * 0.45, tiers * TIER_H + 0.03, -topZ * 0.3);
+      const tip = new THREE.Mesh(planarUV(tipGeo, 2), textured(tex.soil));
       tip.receiveShadow = true;
       scene.add(tip);
       const truck = new THREE.Group();
@@ -295,6 +382,7 @@ export default function Landfill3D({ size, operating, existingCapture, targetCap
         const mt = m.material as THREE.Material | THREE.Material[] | undefined;
         (Array.isArray(mt) ? mt : mt ? [mt] : []).forEach((x) => x.dispose());
       });
+      Object.values(tex).forEach((t) => t.dispose());
       renderer.dispose();
       el.removeChild(renderer.domElement);
     };

@@ -1,11 +1,12 @@
 import { Suspense, lazy, useMemo } from "react";
 import { PageHead } from "../components/Nav";
 import { SignalChart } from "../components/SignalChart";
-import { regionOf, useData } from "../data";
+import { regionOf, tanagerFor, useData } from "../data";
 import { fmtInt, fmtPpb, fmtT } from "../format";
 import { compareWithSatellite, SECTOR_EFFECTIVE_WIDTH_M } from "../model/discrepancy";
 import type { Assumptions, Site } from "../model/types";
 import type { Route } from "../route";
+import { TanagerEvidence } from "../components/TanagerEvidence";
 
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
@@ -13,6 +14,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
   const { satelliteFor, gridFor, statusFor } = useData();
   const sat = satelliteFor(site.id);
   const status = statusFor(site.id);
+  const tanager = tanagerFor(site.id);
   const c = useMemo(() => compareWithSatellite(site, sat, assumptions), [site, sat, assumptions]);
   const cap = Math.round(site.existingCapture * 100);
   const toFix = () => go({ page: "fix", siteId: site.id });
@@ -67,6 +69,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
           </article>
 
           <Verdict site={site} c={c} />
+          <TanagerEvidence site={site} tanager={tanager} comparison={c} />
 
           <div className="actions">
             <button type="button" className="cta" onClick={toFix}>
@@ -87,7 +90,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
 
         <div className="col sticky">
           <Suspense fallback={<div className="map map-loading">Loading map…</div>}>
-            <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} />
+            <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} tanager={tanager} />
           </Suspense>
         </div>
       </div>

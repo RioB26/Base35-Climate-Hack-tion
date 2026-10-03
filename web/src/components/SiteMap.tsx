@@ -1,13 +1,13 @@
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import type { MethaneGrid } from "../data";
+import type { MethaneGrid, TanagerSite } from "../data";
 import { shortName } from "../format";
 import type { SatelliteResult, Site } from "../model/types";
 import { CurrencyAnchor } from "./currency";
 import { bundledStyle, compass, ring, sector } from "./basemap";
 
-type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined };
+type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined; tanager: TanagerSite };
 
 // Free vector street tiles, no API key: https://openfreemap.org. Falls back to bundled land.
 const STREETS = "https://tiles.openfreemap.org/styles/positron";
@@ -16,7 +16,7 @@ const LOW = "#fbe9df";
 const HIGH = "#a4512a";
 
 /** Site close-up: mean methane per grid cell, the 10 to 30 km analysis area and the prevailing wind. */
-export default function SiteMap({ site, sat, grid }: Props) {
+export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const [fallback, setFallback] = useState(false);
   const { cells, lo, hi } = cellRange(grid);
@@ -28,7 +28,7 @@ export default function SiteMap({ site, sat, grid }: Props) {
       container: container.current!,
       style: STREETS,
       center: [site.lon, site.lat],
-      zoom: 8.6,
+      zoom: tanager.observations.length > 0 || tanager.status === "no_public_coverage" ? 11.5 : 8.6,
       attributionControl: { compact: true },
       cooperativeGestures: true,
     });
@@ -44,32 +44,84 @@ export default function SiteMap({ site, sat, grid }: Props) {
     const { cells, lo, hi } = cellRange(grid);
     const addOverlays = () => {
       if (m.getSource("cells")) return;
-      m.addSource("cells", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: cells.map(([lat, lon, ppb]) => {
-            const h = CELL_DEG / 2;
-            return {
+      if (tanager.observations.length === 0 && tanager.status !== "no_public_coverage") {
+        m.addSource("cells", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: cells.map(([lat, lon, ppb]) => {
+              const h = CELL_DEG / 2;
+              return {
+                type: "Feature",
+                properties: { ppb, norm: hi > lo ? (ppb - lo) / (hi - lo) : 0.5 },
+                geometry: {
+                  type: "Polygon",
+                  coordinates: [[[lon - h, lat - h], [lon + h, lat - h], [lon + h, lat + h], [lon - h, lat + h], [lon - h, lat - h]]],
+                },
+              };
+            }),
+          },
+        });
+        m.addLayer({
+          id: "cells",
+          type: "fill",
+          source: "cells",
+          paint: {
+            "fill-color": ["interpolate", ["linear"], ["get", "norm"], 0, LOW, 1, HIGH],
+            "fill-opacity": 0.12,
+            "fill-outline-color": "rgba(255,255,255,0.16)",
+          },
+        });
+      }
+      if (tanager.observations.length > 0) {
+        m.addSource("tanager", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: tanager.observations.map((observation) => ({
               type: "Feature",
-              properties: { ppb, norm: hi > lo ? (ppb - lo) / (hi - lo) : 0.5 },
-              geometry: { type: "Polygon", coordinates: [[[lon - h, lat - h], [lon + h, lat - h], [lon + h, lat + h], [lon - h, lat + h], [lon - h, lat - h]]] },
-            };
-          }),
-        },
-      });
-      m.addLayer({
-        id: "cells",
-        type: "fill",
-        source: "cells",
-        paint: { "fill-color": ["interpolate", ["linear"], ["get", "norm"], 0, LOW, 1, HIGH], "fill-opacity": 0.5, "fill-outline-color": "rgba(255,255,255,0.6)" },
-      });
+              properties: {
+                plumeId: observation.plumeId,
+                rate: observation.emissionKgPerHour ?? -1,
+              },
+              geometry: { type: "Point", coordinates: [observation.lon, observation.lat] },
+            })),
+          },
+        });
+        m.addLayer({
+          id: "tanager-plumes",
+          type: "circle",
+          source: "tanager",
+          paint: {
+            "circle-color": "#c55235",
+            "circle-radius": 5,
+            "circle-stroke-color": "#fffaf3",
+            "circle-stroke-width": 2,
+            "circle-opacity": 1,
+          },
+        });
+      }
 
       const features: GeoJSON.Feature[] = [10, 30].map((km) => ({
         type: "Feature",
         properties: { kind: "ring" },
         geometry: { type: "LineString", coordinates: ring(site.lat, site.lon, km) },
       }));
+      if (tanager.observations.length > 0) {
+        for (const observation of tanager.observations) {
+          features.push({
+            type: "Feature",
+            properties: { kind: "tanager-link" },
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [site.lon, site.lat],
+                [observation.lon, observation.lat],
+              ],
+            },
+          });
+        }
+      }
       if (towards !== null) {
         features.push(
           { type: "Feature", properties: { kind: "down" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards, 30, 10, 30)] } },
@@ -91,6 +143,15 @@ export default function SiteMap({ site, sat, grid }: Props) {
         filter: ["==", ["get", "kind"], "ring"],
         paint: { "line-color": "#404f4c", "line-width": 1.2, "line-dasharray": [2, 2] },
       });
+      if (tanager.observations.length > 0) {
+        m.addLayer({
+          id: "tanager-links",
+          type: "line",
+          source: "analysis",
+          filter: ["==", ["get", "kind"], "tanager-link"],
+          paint: { "line-color": "#c55235", "line-width": 1.5, "line-dasharray": [1.5, 2], "line-opacity": 0.75 },
+        });
+      }
     };
     m.on("style.load", addOverlays);
 
@@ -98,10 +159,19 @@ export default function SiteMap({ site, sat, grid }: Props) {
     el.className = "pin selected";
     el.innerHTML = `<span class="pin-dot"></span><span class="pin-label">${shortName(site.name)}</span>`;
     new maplibregl.Marker({ element: el, anchor: "left" }).setLngLat([site.lon, site.lat]).addTo(m);
+    tanager.observations.forEach((observation, index) => {
+      const plume = document.createElement("div");
+      plume.className = "tanager-pin";
+      plume.innerHTML = `<span class="tanager-pin-dot"></span><span class="tanager-pin-label">Tanager plume ${index + 1}</span>`;
+      plume.setAttribute("aria-label", `Tanager plume ${index + 1}`);
+      new maplibregl.Marker({ element: plume, anchor: "left" })
+        .setLngLat([observation.lon, observation.lat])
+        .addTo(m);
+    });
 
     return () => m.remove();
     // One map per site; the page remounts this component when the site changes.
-  }, [site, grid, towards]);
+  }, [site, grid, towards, tanager]);
 
   return (
     <div className="map-wrap">
@@ -124,22 +194,48 @@ export default function SiteMap({ site, sat, grid }: Props) {
           </span>
         )}
       </div>
+      {tanager.status === "no_public_coverage" && (
+        <div className="map-coverage-empty">
+          <span className="status-dot" />
+          <strong>No high-resolution methane scene loaded</strong>
+          <small>{shortName(site.name)} is shown as a site target only. The regional Sentinel-5P layer is hidden here so it cannot be mistaken for a facility-scale plume.</small>
+        </div>
+      )}
       <div className="map-legend">
         {cells.length > 0 ? (
           <>
-            <span>Mean methane, Sentinel-5P cells (~5 km)</span>
-            <span className="ramp" style={{ background: `linear-gradient(90deg, ${LOW}, ${HIGH})` }} />
-            <span className="scale">
-              <span>{lo.toFixed(0)} ppb</span>
-              <span>{hi.toFixed(0)} ppb</span>
-            </span>
+            {tanager.status !== "no_public_coverage" && tanager.observations.length === 0 && (
+              <>
+                <span>
+                  Regional context · Sentinel-5P cells (~5 km)
+                </span>
+                <span className="ramp" style={{ background: `linear-gradient(90deg, ${LOW}, ${HIGH})` }} />
+                <span className="scale">
+                  <span>{lo.toFixed(0)} ppb</span>
+                  <span>{hi.toFixed(0)} ppb</span>
+                </span>
+              </>
+            )}
           </>
         ) : (
           <span className="muted">No methane grid for this site yet.</span>
         )}
+        {tanager.observations.length > 0 && (
+          <span>Facility-scale source points · Tanager observations</span>
+        )}
+        {tanager.observations.length === 0 && (
+          <span className="coverage-gap">
+            <span className="coverage-gap-dot" /> High-resolution observation required · Sentinel-5P only
+          </span>
+        )}
         <span className="legend-row">
           <span className="swatch ring" /> 10 and 30 km analysis area
         </span>
+        {tanager.observations.length > 0 && (
+          <span className="legend-row">
+            <span className="swatch tanager" /> Tanager plume record
+          </span>
+        )}
         {towards !== null && (
           <span className="legend-row">
             <span className="swatch down" /> downwind <span className="swatch up" /> upwind

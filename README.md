@@ -35,6 +35,16 @@ python satellite.py --project YOUR_GCP_PROJECT --start 2024-10-01 --end 2025-10-
 python -m unittest -v   # tests for the downwind/upwind statistic, no Earth Engine needed
 ```
 
+The Check step also includes a curated snapshot of the Carbon Mapper public catalog for **Tanager** high-resolution methane observations. The snapshot currently contains plume records near Lucas Heights and Ravenhall; Mugga Lane, Redvale and Kate Valley have an explicit `no_public_coverage` state. Tanager records are corroborating plume evidence, not a replacement for the engineering model or Sentinel-5P screening.
+
+To refresh the high-resolution catalog search for **all five landfills**, run:
+
+```bash
+python carbon_mapper.py --radius 15
+```
+
+This queries the public Carbon Mapper source catalog, follows nearby Tanager plume IDs, and rewrites `web/src/data/tanager.json`. It cannot create observations where Tanager has not acquired or published a scene. For those sites, the result remains `no_public_coverage`; obtaining guaranteed coverage requires a Carbon Mapper/Planet tasking or research request, or licensed GHGSat/airborne data.
+
 ## Live site (GitHub Pages)
 
 CI (`.github/workflows/ci.yml`) runs the tests and builds on every push and pull request, and deploys `main` to GitHub Pages. One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site then appears at https://riob26.github.io/Base35-Climate-Hack-tion/.
@@ -67,7 +77,9 @@ User-added sites are marked as using proxy inputs (default k and L0 unless chang
 
 - **Sites:** add or edit a row in `web/src/data/sites.json`; the globe, search and ranking pick it up. If a site publishes its emissions, add `reportedEmissions` with a source and the Check step uses it instead of the capture claim. Set `illustrative: false` only when every input has a source in `sources`.
 - **Costs and prices:** edit `web/src/data/assumptions.ts`. Replace each `PLACEHOLDER` with a sourced value and log it in `docs/DISCLOSURES.md`.
-- **Satellite:** run the pipeline, or leave a site as `"status": "not_run"`. Never write a status by hand.
+- **Satellite:** run the Sentinel-5P pipeline, or leave a site as `"status": "not_run"`. Never write a status by hand.
+- **Tanager:** update `web/src/data/tanager.json` only from a recorded Carbon Mapper catalog query, retaining the observation ID, timestamp, coordinates, emission estimate and uncertainty. Recheck the Carbon Mapper Terms of Use before redistributing records or imagery.
+- **High-resolution refresh:** run `python carbon_mapper.py --radius 15` from `pipeline/` after verifying the catalog and licensing terms.
 
 ## Honest limits
 
