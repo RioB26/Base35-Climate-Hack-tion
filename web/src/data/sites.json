@@ -1,0 +1,58 @@
+[
+  {
+    "id": "illustrative-a",
+    "name": "Illustrative A: large metro, partial capture",
+    "state": "NSW",
+    "lat": -33.8,
+    "lon": 150.9,
+    "acceptance": [{ "fromYear": 1990, "toYear": 2040, "tonnesPerYear": 600000 }],
+    "k": 0.05,
+    "L0": 100,
+    "existingCapture": 0.5,
+    "illustrative": true,
+    "notes": "Placeholder profile for a large metro landfill that already captures some gas. Replace with a real site and sourced inputs.",
+    "sources": ["PLACEHOLDER"]
+  },
+  {
+    "id": "illustrative-b",
+    "name": "Illustrative B: mid-size metro, no capture",
+    "state": "VIC",
+    "lat": -37.8,
+    "lon": 144.8,
+    "acceptance": [{ "fromYear": 2000, "toYear": 2045, "tonnesPerYear": 300000 }],
+    "k": 0.05,
+    "L0": 100,
+    "existingCapture": 0,
+    "illustrative": true,
+    "notes": "Placeholder profile for an operating mid-size landfill with no gas capture.",
+    "sources": ["PLACEHOLDER"]
+  },
+  {
+    "id": "illustrative-c",
+    "name": "Illustrative C: closed regional landfill",
+    "state": "QLD",
+    "lat": -27.6,
+    "lon": 152.9,
+    "acceptance": [{ "fromYear": 1975, "toYear": 2015, "tonnesPerYear": 80000 }],
+    "k": 0.05,
+    "L0": 100,
+    "existingCapture": 0,
+    "illustrative": true,
+    "notes": "Placeholder profile for a closed landfill whose generation is declining.",
+    "sources": ["PLACEHOLDER"]
+  },
+  {
+    "id": "illustrative-d",
+    "name": "Illustrative D: small regional council site",
+    "state": "WA",
+    "lat": -31.9,
+    "lon": 116.0,
+    "acceptance": [{ "fromYear": 1995, "toYear": 2040, "tonnesPerYear": 40000 }],
+    "k": 0.05,
+    "L0": 100,
+    "existingCapture": 0,
+    "illustrative": true,
+    "notes": "Placeholder profile for a small operating council landfill.",
+    "sources": ["PLACEHOLDER"]
+  }
+]
