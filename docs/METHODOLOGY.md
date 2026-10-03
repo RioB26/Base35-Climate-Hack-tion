@@ -71,7 +71,25 @@ Code: `web/src/model/discrepancy.ts`.
 
 Limits: one source, no boundary-layer or chemistry modelling, 10 m wind rather than plume-height wind, and Sentinel-5P retrievals differ over land and sea, which matters for coastal sites. It is a screening flag for a closer look.
 
-## 8. COP31 alignment check (Fund step)
+## 8. High-resolution Tanager evidence
+
+The Check step includes a dated snapshot from the [Carbon Mapper public catalog](https://data.carbonmapper.org/). Tanager records are searched within a 15 km radius of each landfill coordinate and displayed as plume points with the catalogued observation time and, where available, automated emission rate and uncertainty.
+
+This layer is intentionally separate from the model and Sentinel-5P result:
+
+- A Tanager plume is high-resolution observational evidence, not a direct annual landfill emission measurement.
+- A missing public record means no catalogued coverage was found in the checked radius, not that the site has no methane.
+- A record without an emission estimate remains useful as a detection but cannot be treated as a quantified rate.
+
+The Check page also groups every snapshot record into distance bands from the registered landfill coordinate. This is a
+transparent screening profile: the coordinate is not a surveyed landfill boundary, and a catalog point is not
+necessarily the physical plume origin. Facility attribution still requires boundary geometry, wind alignment, repeated
+source locations, and alternative-source controls. Tanager's metre-scale ground sampling distance describes the
+observation product; it does not mean the catalog point itself is a metre-scale plume footprint.
+- The current snapshot has records near Lucas Heights and Ravenhall; the other three sites are marked `no_public_coverage`.
+- Source points and rates should be revalidated before being used in investment, compliance or public claims.
+
+## 9. COP31 alignment check (Fund step)
 
 Code: `web/src/model/cop31.ts`. Our own rubric, not an official COP31 metric. Four parts, 25 points each:
 
@@ -84,7 +102,16 @@ Code: `web/src/model/cop31.ts`. Our own rubric, not an official COP31 metric. Fo
 
 No score is shown when the site has no capture headroom at the chosen target.
 
-## 9. 3D model size classes (Fix step)
+## 10. 3D model size classes (Fix step)
 
 Code: `web/src/model/size.ts`. Modelled waste in place to 2025: under 10 Mt is small, 10 to 30 Mt medium, 30 Mt and over large. The model is illustrative, not to scale. Wells shown are the existing capture share (grey) and the extra capture (orange) of a fixed number of well slots per size class.
+### Multi-resolution methane evidence
 
+The product separates evidence by what each sensor can support:
+
+- **Sentinel-5P/TROPOMI** is used for regional, multi-pass downwind-versus-upwind screening. Its approximately 5–7 km footprint is not treated as facility attribution.
+- **Carbon Mapper/Tanager** is used for facility-scale corroboration where a public catalogue observation exists. A catalogue source point is not presented as a plume polygon.
+- **Sentinel-2** is reserved for site context such as landfill boundaries, infrastructure and nearby land use. It does not measure methane directly.
+- **GHGSat or plume geometry from a licensed high-resolution product** is required for a stronger attribution assessment: plume footprint, origin, acquisition-time wind and repeated detections.
+
+Until the boundary and plume geometry layers are available, the app reports nearby high-resolution evidence and regional corroboration separately and keeps landfill attribution unresolved.
