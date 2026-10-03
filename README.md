@@ -60,6 +60,19 @@ pipeline/           Sentinel-5P + ERA5 screening pipeline (Earth Engine) and its
 docs/               METHODOLOGY.md, DISCLOSURES.md
 ```
 
+## Adding a landfill from the app
+
+The Find page has an **Add a landfill** button. It posts to a Supabase Edge Function, which validates the site, saves it, and starts a GitHub Action that runs the Sentinel-5P screening (`pipeline/run_site.py`) and writes the result back. The page shows progress live. Everything is on free tiers.
+
+One-time setup:
+
+1. **Supabase project:** apply `supabase/migrations/0001_sites.sql`, then `SUPABASE_URL=... SUPABASE_SERVICE_KEY=... python pipeline/seed_supabase.py` to load the five existing sites.
+2. **Edge Function:** `supabase functions deploy add-site`, then `supabase secrets set ADD_SITE_PASSCODE=... GH_DISPATCH_TOKEN=... GH_REPO=owner/repo`. The token is a fine-grained GitHub token with Actions: write on this repo only.
+3. **Earth Engine:** create a service account, register it with Earth Engine, and store its JSON key as the repo secret `EE_SERVICE_ACCOUNT_KEY`. Also set repo secrets `EE_PROJECT`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` and `SUPABASE_ANON_KEY`.
+4. **Local dev:** put `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `web/.env.local`. Without them the app runs on the bundled data and the button is hidden.
+
+User-added sites are marked as using proxy inputs (default k and L0 unless changed, the waste history as entered). Free Supabase projects pause after a week of inactivity; the bundled data keeps the app working meanwhile. To re-run a failed site, use the **Satellite screening** workflow's "Run workflow" button with the site id.
+
 ## Updating data
 
 - **Sites:** add or edit a row in `web/src/data/sites.json`; the globe, search and ranking pick it up. If a site publishes its emissions, add `reportedEmissions` with a source and the Check step uses it instead of the capture claim. Set `illustrative: false` only when every input has a source in `sources`.

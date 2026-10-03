@@ -5,6 +5,19 @@ import type { Comparison } from "../model/discrepancy";
 type Props = { site: Site; tanager: TanagerSite; comparison: Comparison };
 
 export function TanagerEvidence({ site, tanager, comparison }: Props) {
+  if (tanager.status === "not_checked") {
+    return (
+      <article className="card high-res-status">
+        <div className="status-kicker"><span className="status-dot" /> High-resolution layer</div>
+        <h2 className="card-title">Tanager coverage not checked</h2>
+        <p className="muted small">
+          Carbon Mapper&apos;s catalog has not been searched for {site.name.split(",")[0]} yet, so there is no high-resolution
+          evidence either way. The map shows Sentinel-5P regional context only.
+        </p>
+      </article>
+    );
+  }
+
   if (tanager.status === "no_public_coverage") {
     return (
       <article className="card high-res-status">
