@@ -10,11 +10,8 @@ const LABEL: Record<SatelliteResult["status"], string> = {
 /** Independent satellite screening signal. Never shown as tonnes, never fed into the model. */
 export function SeePanel({ result }: { result: SatelliteResult }) {
   return (
-    <article className="panel">
-      <h3>
-        <span className="step">See</span> Satellite screening signal
-      </h3>
-      <p>
+    <article className="see-card">
+      <p className="see-status">
         <span className={`badge ${result.status}`}>{LABEL[result.status]}</span>
         {result.confidence && <span className="muted"> · confidence {result.confidence}</span>}
       </p>

@@ -11,9 +11,9 @@ type Props = {
   accuPrice: number;
 };
 
-const W = 640;
-const H = 300;
-const M = { top: 24, right: 16, bottom: 40, left: 64 };
+const W = 1000;
+const H = 380;
+const M = { top: 28, right: 16, bottom: 44, left: 72 };
 
 /** Marginal abatement cost curve drawn as variable-width bars in plain SVG. */
 export function Macc({ portfolio, results, sites, selectedId, onSelect, accuPrice }: Props) {
@@ -74,7 +74,7 @@ export function Macc({ portfolio, results, sites, selectedId, onSelect, accuPric
             <rect x={x0} y={top} width={Math.max(1, x1 - x0)} height={Math.max(1, bottom - top)} rx={2} />
             <line x1={cx} x2={cx} y1={y(hi)} y2={y(lo)} className="whisker" />
             <text x={cx} y={Math.min(top, y(hi)) - 6} textAnchor="middle" className="barlabel">
-              {name.replace("Illustrative ", "")} {b.funded ? "✓" : ""}
+              {name} {b.funded ? "✓" : ""}
             </text>
           </g>
         );
@@ -83,7 +83,7 @@ export function Macc({ portfolio, results, sites, selectedId, onSelect, accuPric
       <line x1={M.left} x2={W - M.right} y1={y(0)} y2={y(0)} className="zero" />
       <line x1={M.left} x2={W - M.right} y1={y(accuPrice)} y2={y(accuPrice)} className="accu" />
       <text x={W - M.right} y={y(accuPrice) - 4} textAnchor="end" className="tick">
-        ACCU price reference (AUD {accuPrice}, placeholder)
+        ACCU spot price reference (AUD {accuPrice})
       </text>
     </svg>
   );

@@ -40,13 +40,15 @@ export type Assumptions = {
   gwp20: number; // 80.8, IPCC AR6 biogenic methane, secondary view only
   methaneDensityKgPerM3: number;
   methaneLhvKWhPerM3: number;
-  // Cost ranges. PLACEHOLDERS until benchmarked against LFGcost-Web and Australian data.
+  // Cost ranges, benchmarked against US EPA landfill gas project costs (see assumptions.ts).
   collectionCapexAudPerM3h: Range; // gas collection and flare, per m3/h of methane captured
   engineCapexAudPerKW: Range; // generation plant, per kW electric
   engineOpexAudPerMWh: number;
   collectionOpexFractionOfCapex: number; // per year, of collection capex
   includeAccu: boolean;
-  accuPriceAud: number; // PLACEHOLDER, only shown with an eligibility footnote
+  accuPriceAud: number; // only shown with an eligibility footnote
+  /** Share of methane deemed destroyed anyway under the ACCU landfill gas method; only capture above it earns credits. */
+  accuBaselineProportion: number;
 };
 
 export type SatelliteStatus = "elevated" | "neutral" | "inconclusive" | "not_run";

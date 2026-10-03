@@ -1,6 +1,52 @@
 {
-  "illustrative-a": { "status": "not_run", "overpassesUsed": 0, "windowStart": null, "windowEnd": null, "deltaPpb": null, "ci95Ppb": null, "confidence": null, "note": "Satellite pipeline not run yet for this site." },
-  "illustrative-b": { "status": "not_run", "overpassesUsed": 0, "windowStart": null, "windowEnd": null, "deltaPpb": null, "ci95Ppb": null, "confidence": null, "note": "Satellite pipeline not run yet for this site." },
-  "illustrative-c": { "status": "not_run", "overpassesUsed": 0, "windowStart": null, "windowEnd": null, "deltaPpb": null, "ci95Ppb": null, "confidence": null, "note": "Satellite pipeline not run yet for this site." },
-  "illustrative-d": { "status": "not_run", "overpassesUsed": 0, "windowStart": null, "windowEnd": null, "deltaPpb": null, "ci95Ppb": null, "confidence": null, "note": "Satellite pipeline not run yet for this site." }
+  "mugga-lane": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
+  },
+  "lucas-heights": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
+  },
+  "ravenhall": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
+  },
+  "redvale": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
+  },
+  "kate-valley": {
+    "status": "not_run",
+    "overpassesUsed": 0,
+    "windowStart": null,
+    "windowEnd": null,
+    "deltaPpb": null,
+    "ci95Ppb": null,
+    "confidence": null,
+    "note": "Satellite pipeline not run yet for this site."
+  }
 }

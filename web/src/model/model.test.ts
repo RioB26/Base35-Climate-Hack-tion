@@ -82,6 +82,18 @@ describe("project", () => {
     const hi = computeSite(site(), { ...a, powerPriceAudPerMWh: 150 });
     expect(hi.netCostAudPerTCO2e).toBeLessThan(lo.netCostAudPerTCO2e);
   });
+  it("credits ACCUs only above the method baseline", () => {
+    const on = { ...a, includeAccu: true, accuPriceAud: 10, accuBaselineProportion: 0.35 };
+    const r = computeSite(site({ existingCapture: 0 }), on);
+    const expected = r.generationTCH4PerYear * (0.75 - 0.35) * 28 * 10;
+    expect(r.annualAccuRevenueAud).toBeCloseTo(expected, 6);
+    const above = computeSite(site({ existingCapture: 0.5 }), on);
+    expect(above.annualAccuRevenueAud).toBeCloseTo(above.generationTCH4PerYear * 0.25 * 28 * 10, 6);
+  });
+  it("gives NZ sites no ACCU revenue", () => {
+    const r = computeSite(site({ state: "NZ" }), { ...a, includeAccu: true });
+    expect(r.annualAccuRevenueAud).toBe(0);
+  });
   it("capex range brackets the mid estimate", () => {
     const r = computeSite(site(), a);
     expect(r.netCostAudPerTCO2eRange[0]).toBeLessThan(r.netCostAudPerTCO2e);

@@ -61,7 +61,11 @@ export function computeSite(site: Site, a: Assumptions): SiteResult {
   const first = physics[0];
   const firstOpex = opex(first.electricityMWh);
   const firstRevenue = revenue(first.electricityMWh);
-  const accu = a.includeAccu ? first.abatedTCO2e * a.accuPriceAud : 0;
+  // Credits only count capture above both the existing capture and the method's baseline proportion.
+  const creditableFraction = Math.max(0, a.captureEfficiency - Math.max(site.existingCapture, a.accuBaselineProportion));
+  const creditableTCO2e = first.generationT * creditableFraction * a.gwp100;
+  // ACCUs are an Australian scheme; NZ sites sit under the NZ ETS instead, which is not modelled.
+  const accu = a.includeAccu && site.state !== "NZ" ? creditableTCO2e * a.accuPriceAud : 0;
   const netAnnual = firstRevenue + accu - firstOpex;
 
   const inHorizon = physics.filter((p) => p.year <= a.horizonYear);
