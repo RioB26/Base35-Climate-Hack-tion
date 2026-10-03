@@ -1,15 +1,18 @@
 import { hrefFor, STEPS, type Route } from "../route";
 import { shortName } from "../format";
 import type { Site } from "../model/types";
+import { Mark } from "./Mark";
 
 /** Brand plus the Find → Check → Fix → Fund stepper. Later steps unlock once a landfill is picked. */
 export function Nav({ route, site }: { route: Route; site: Site | null }) {
   const current = STEPS.findIndex((s) => s.page === route.page);
   return (
     <nav className="nav">
-      <a href="#/" className="brand">
-        <span className="brand-mark" aria-hidden="true" />
-        Methane Payback
+      <a href="#/" className="brand" aria-label="Sentinel Sniff, back to Find">
+        <Mark size={40} className="brand-mark" />
+        <span className="wordmark">
+          Sentinel <em>Sniff</em>
+        </span>
       </a>
       <ol className="stepper">
         {STEPS.map((s, i) => {

@@ -1,8 +1,13 @@
-# Methane Payback
+<img src="web/public/brand/lockup-horizontal-light.svg" alt="Sentinel Sniff" width="390" />
+
+# Sentinel Sniff
+
+**Which tip do we fix first?** FIND · CHECK · FIX · FUND
+
 
 An open pre-feasibility screen for landfill methane capture in Australia and New Zealand, built for Climate Hack-tion 2026 (challenge area: **zero waste and methane reduction**, theme "Build for 2035").
 
-> Existing systems tell you where methane is. Methane Payback helps decide what to fund first, and what it could achieve by 2035.
+> Existing systems tell you where methane is. Sentinel Sniff helps decide what to fund first, and what it could achieve by 2035.
 
 The app is four steps, one landfill at a time:
 
