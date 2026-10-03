@@ -2,6 +2,12 @@
 
 Code is the source of truth: `web/src/model/` and `pipeline/sector_analysis.py`. This file explains it in words.
 
+## Project context
+
+Landfill gas comes from decomposing organic waste and contains methane and CO₂. Capture wells, pipes and gas treatment can supply engines that generate electricity. Existing systems are the baseline; this tool models additional capture. Burning methane still produces CO₂. The simplified methane abatement calculation below is not a complete lifecycle assessment and does not add grid-electricity displacement savings. Waste prevention and diversion remain complementary actions.
+
+Sources: [US EPA landfill gas overview](https://www.epa.gov/lmop/basic-information-about-landfill-gas) and [US EPA landfill gas questions](https://www.epa.gov/lmop/frequent-questions-about-landfill-gas).
+
 ## 1. Methane generation (first-order decay)
 
 For waste `M_i` (tonnes) accepted in year `i`, methane generated in year `t` is

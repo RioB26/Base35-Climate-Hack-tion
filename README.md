@@ -4,6 +4,16 @@ An open pre-feasibility screen for landfill methane capture in Australia and New
 
 > Existing systems tell you where methane is. Methane Payback helps decide what to fund first, and what it could achieve by 2035.
 
+## The problem and our solution
+
+Organic waste buried in landfills decomposes without oxygen and produces landfill gas, including methane and carbon dioxide. Escaping methane contributes to climate change and loses a potential fuel. Wells and pipes can collect that gas; after treatment, it can fuel electricity generation. Some landfills in our dataset already do this, so we screen opportunities for **additional capture**, rather than treating every site as a new power plant.
+
+Methane Payback is the decision tool: satellite and wind data flag regional signals for investigation, while a separate landfill model estimates additional capture, electricity, costs, potential revenue and payback. It helps compare what to investigate and fund towards 2035. Gas combustion still emits CO₂; the methane reduction estimate is not a complete lifecycle footprint or an estimate of avoided grid emissions. Gas recovery complements keeping organic waste out of landfill.
+
+Background: [US EPA landfill gas overview](https://www.epa.gov/lmop/basic-information-about-landfill-gas) and [landfill gas questions, including waste diversion](https://www.epa.gov/lmop/frequent-questions-about-landfill-gas). The project addresses the waste and methane theme of [Climate Hack-tion's Build for 2035 challenge](https://sustainable.org.nz/learn/events/climate-hack-tion-challenge-build-for-2035/), run ahead of COP31; it is not an official COP31 tool.
+
+The homepage introduces the project, satellite screening and estimated project benefits. **Explore landfills** opens the globe at `#/landfills`; the brand link returns home at `#/`. The two illustrations in `web/src/assets/` can be replaced with project imagery.
+
 The app is four steps, one landfill at a time:
 
 1. **Find:** a globe with every landfill pinned and a search box. Picking one flies in to it.

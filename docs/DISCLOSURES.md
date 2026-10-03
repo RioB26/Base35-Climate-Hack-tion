@@ -7,12 +7,14 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Tool | Used for |
 |---|---|
 | Claude (Anthropic), via Claude Code | Project research and planning; scaffolding the web app, model, tests, satellite pipeline and these docs. All output reviewed by the team. |
-| Codex (OpenAI) | Currency selector implementation and verification; reviewed against the app styling and existing model. |
+| Codex (OpenAI) | Currency selector and homepage implementation, original SVG illustrations and verification; reviewed against the app styling and existing model. |
 
 ## Datasets and APIs
 
 | Dataset | Used for | Source | Status |
 |---|---|---|---|
+| US EPA, Basic Information about Landfill Gas and Frequent Questions | Homepage explanation of methane formation, capture-to-electricity, combustion and waste diversion | https://www.epa.gov/lmop/basic-information-about-landfill-gas ; https://www.epa.gov/lmop/frequent-questions-about-landfill-gas | Background verified 4 Oct 2026 |
+| Sustainable Business Network, Climate Hack-tion: Build for 2035 | Event and COP31 context | https://sustainable.org.nz/learn/events/climate-hack-tion-challenge-build-for-2035/ | Event brief checked 4 Oct 2026 |
 | Sentinel-5P TROPOMI L3 CH₄ (Copernicus, via Google Earth Engine `COPERNICUS/S5P/OFFL/L3_CH4`) | Satellite screening signal | ESA / Copernicus | Run for all five sites, 2024-10-01 to 2025-10-01 |
 | Frankfurter daily reference exchange rates | Display conversion from AUD to NZD, USD, EUR, GBP, CAD, CHF and JPY; rate dates shown in the selector | https://frankfurter.dev/ | Fetched at runtime; AUD remains available if rates fail |
 | ISO 4217 currency codes (SIX maintenance agency) | Currency identifiers and names | https://www.six-group.com/en/products-services/financial-information/market-reference-data/data-standards.html | Eight current currency codes used |
