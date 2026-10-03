@@ -35,14 +35,17 @@ def init_earth_engine():
     return ee
 
 
-def process(db, ee, site_id: str, start: str, end: str) -> bool:
-    """Screen one site and record the outcome. Returns True on success; failures are recorded, not raised."""
+def process(db, init_ee, site_id: str, start: str, end: str) -> bool:
+    """Screen one site and record the outcome. Returns True on success; failures are recorded, not raised.
+
+    init_ee is called inside the guard so an Earth Engine auth failure is reported to the UI too.
+    """
     site = db.get_site(site_id)
     if site is None:
         raise SystemExit(f"site {site_id!r} not found")
     db.set_status(site_id, "running")
     try:
-        result, grid = screen_site(ee, site, start, end)
+        result, grid = screen_site(init_ee(), site, start, end)
         db.upsert("satellite_results", "site_id", {"site_id": site_id, "data": result})
         db.upsert("methane_grid", "site_id", {"site_id": site_id, "data": grid})
     except Exception as e:  # noqa: BLE001 - any failure must reach the UI instead of leaving "running"
@@ -58,9 +61,14 @@ def main() -> None:
     ap.add_argument("--site", required=True)
     ap.add_argument("--start", default=(today - timedelta(days=365)).isoformat())
     ap.add_argument("--end", default=today.isoformat())
+    ap.add_argument("--fail", metavar="REASON", help="only mark the site failed (used by the workflow when the job dies early)")
     args = ap.parse_args()
 
-    ok = process(Supabase.from_env(), init_earth_engine(), args.site, args.start, args.end)
+    db = Supabase.from_env()
+    if args.fail:
+        db.set_status(args.site, "failed", args.fail[:500])
+        raise SystemExit(0)
+    ok = process(db, init_earth_engine, args.site, args.start, args.end)
     raise SystemExit(0 if ok else 1)
 
 

@@ -30,6 +30,8 @@ jobs:
           cache-dependency-path: pipeline/requirements.txt
       - run: pip install -r pipeline/requirements.txt
       - name: Screen site
+        # Shorter than the job so a timeout still reaches the failure step below.
+        timeout-minutes: 25
         working-directory: pipeline
         env:
           SITE: ${{ github.event.client_payload.siteId || inputs.site }}
@@ -38,3 +40,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python run_site.py --site "$SITE"
+      # Setup problems (bad secret, pip failure) happen before run_site can report, so say it here.
+      - name: Mark site failed
+        if: failure()
+        working-directory: pipeline
+        env:
+          SITE: ${{ github.event.client_payload.siteId || inputs.site }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python run_site.py --site "$SITE" --fail "Satellite job failed before finishing. See the workflow run for details."
