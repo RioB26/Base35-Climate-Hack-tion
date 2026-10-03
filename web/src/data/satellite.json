@@ -30,23 +30,29 @@
     "note": "Satellite pipeline not run yet for this site."
   },
   "redvale": {
-    "status": "not_run",
-    "overpassesUsed": 0,
-    "windowStart": null,
-    "windowEnd": null,
-    "deltaPpb": null,
-    "ci95Ppb": null,
-    "confidence": null,
-    "note": "Satellite pipeline not run yet for this site."
+    "overpassesUsed": 11,
+    "windowStart": "2024-10-04T01:32",
+    "windowEnd": "2025-09-30T02:08",
+    "deltaPpb": 1.87,
+    "ci95Ppb": [
+      -6.75,
+      10.42
+    ],
+    "confidence": "medium",
+    "status": "neutral",
+    "note": "No consistent downwind enhancement."
   },
   "kate-valley": {
-    "status": "not_run",
-    "overpassesUsed": 0,
-    "windowStart": null,
-    "windowEnd": null,
-    "deltaPpb": null,
-    "ci95Ppb": null,
-    "confidence": null,
-    "note": "Satellite pipeline not run yet for this site."
+    "overpassesUsed": 20,
+    "windowStart": "2024-10-08T01:57",
+    "windowEnd": "2025-09-30T02:08",
+    "deltaPpb": 13.79,
+    "ci95Ppb": [
+      4.42,
+      23.38
+    ],
+    "confidence": "medium",
+    "status": "elevated",
+    "note": "Downwind methane is consistently above upwind."
   }
 }

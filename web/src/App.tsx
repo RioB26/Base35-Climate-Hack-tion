@@ -21,8 +21,8 @@ import type { Assumptions, SatelliteResult, Site } from "./model/types";
 const MapView = lazy(() => import("./components/MapView"));
 
 const sites = sitesData as Site[];
-const satellite = satelliteData as Record<string, SatelliteResult>;
-const methaneGrid = methaneGridData as MethaneGrid;
+const satellite = satelliteData as unknown as Record<string, SatelliteResult>;
+const methaneGrid = methaneGridData as unknown as MethaneGrid;
 const notRun: SatelliteResult = {
   status: "not_run",
   overpassesUsed: 0,
