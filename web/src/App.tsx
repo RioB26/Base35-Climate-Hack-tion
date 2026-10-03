@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { CurrencyProvider, CurrencySelector } from "./components/currency";
 import { Nav } from "./components/Nav";
 import { sites } from "./data";
 import { defaultAssumptions } from "./data/assumptions";
@@ -30,7 +31,7 @@ export default function App() {
   const result = site ? results.find((r) => r.siteId === site.id)! : null;
 
   return (
-    <>
+    <CurrencyProvider>
       <Nav route={route} site={site} />
       {route.page === "find" && <FindPage sites={sites} go={go} />}
       {route.page === "check" && site && <CheckPage site={site} assumptions={assumptions} go={go} />}
@@ -52,6 +53,7 @@ export default function App() {
           go={go}
         />
       )}
-    </>
+      <CurrencySelector />
+    </CurrencyProvider>
   );
 }

@@ -1,4 +1,5 @@
-import { fmtCostPerT, fmtT, shortName } from "../format";
+import { fmtT, shortName } from "../format";
+import { useMoney } from "./currency";
 import type { Portfolio } from "../model/macc";
 import type { Site, SiteResult } from "../model/types";
 
@@ -17,6 +18,7 @@ const M = { top: 28, right: 16, bottom: 44, left: 72 };
 
 /** Marginal abatement cost curve drawn as variable-width bars in plain SVG. */
 export function Macc({ portfolio, results, sites, selectedId, onSelect, accuPrice }: Props) {
+  const { currency, convert, fmtMoney, fmtCostPerT } = useMoney();
   const bars = portfolio.bars;
   if (bars.length === 0) return <p className="muted">No site has abatement under the current assumptions.</p>;
 
@@ -39,12 +41,12 @@ export function Macc({ portfolio, results, sites, selectedId, onSelect, accuPric
         <g key={t}>
           <line x1={M.left} x2={W - M.right} y1={y(t)} y2={y(t)} className="gridline" />
           <text x={M.left - 6} y={y(t) + 4} textAnchor="end" className="tick">
-            {t}
+            {Number(convert(t).toFixed(1))}
           </text>
         </g>
       ))}
       <text x={14} y={M.top + ih / 2} transform={`rotate(-90 14 ${M.top + ih / 2})`} textAnchor="middle" className="axis">
-        Net AUD per tCO₂-e
+        Net {currency} per tCO₂-e
       </text>
       <text x={M.left + iw / 2} y={H - 6} textAnchor="middle" className="axis">
         Abatement, tCO₂-e per year (cumulative, average over project life)
@@ -83,7 +85,7 @@ export function Macc({ portfolio, results, sites, selectedId, onSelect, accuPric
       <line x1={M.left} x2={W - M.right} y1={y(0)} y2={y(0)} className="zero" />
       <line x1={M.left} x2={W - M.right} y1={y(accuPrice)} y2={y(accuPrice)} className="accu" />
       <text x={W - M.right} y={y(accuPrice) - 4} textAnchor="end" className="tick">
-        ACCU spot price reference (AUD {accuPrice})
+        ACCU spot price reference ({fmtMoney(accuPrice)})
       </text>
     </svg>
   );

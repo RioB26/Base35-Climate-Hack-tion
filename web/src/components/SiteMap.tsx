@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { MethaneGrid } from "../data";
 import { shortName } from "../format";
 import type { SatelliteResult, Site } from "../model/types";
+import { CurrencyAnchor } from "./currency";
 import { bundledStyle, compass, ring, sector } from "./basemap";
 
 type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined };
@@ -105,6 +106,7 @@ export default function SiteMap({ site, sat, grid }: Props) {
   return (
     <div className="map-wrap">
       <div ref={container} className="map" />
+      <CurrencyAnchor />
       <div className="wind-card">
         {wind && towards !== null ? (
           <>

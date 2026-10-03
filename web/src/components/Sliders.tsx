@@ -1,3 +1,4 @@
+import { useMoney } from "./currency";
 import type { Assumptions } from "../model/types";
 
 type NumKey = { [K in keyof Assumptions]: Assumptions[K] extends number ? K : never }[keyof Assumptions];
@@ -21,6 +22,12 @@ type Props = { keys: NumKey[]; value: Assumptions; onChange: (a: Assumptions) =>
 
 /** A group of sliders for one stage of the analysis. */
 export function SliderGroup({ keys, value, onChange }: Props) {
+  const { fmtMoney } = useMoney();
+  const display = (key: NumKey) => {
+    if (key === "powerPriceAudPerMWh") return `${fmtMoney(value[key])}/MWh`;
+    if (key === "accuPriceAud") return fmtMoney(value[key]);
+    return SPECS[key]!.show(value[key]);
+  };
   return (
     <div className="sliders">
       {keys.map((key) => {
@@ -29,7 +36,7 @@ export function SliderGroup({ keys, value, onChange }: Props) {
           <label key={key} className="slider">
             <span className="slider-head">
               <span>{s.label}</span>
-              <strong>{s.show(value[key])}</strong>
+              <strong>{display(key)}</strong>
             </span>
             <input
               type="range"
@@ -37,6 +44,7 @@ export function SliderGroup({ keys, value, onChange }: Props) {
               max={s.max}
               step={s.step}
               value={value[key]}
+              aria-valuetext={display(key)}
               onChange={(e) => onChange({ ...value, [key]: Number(e.target.value) })}
             />
             {s.hint && <span className="slider-hint">{s.hint}</span>}
