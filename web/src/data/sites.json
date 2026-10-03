@@ -54,5 +54,45 @@
     "illustrative": true,
     "notes": "Placeholder profile for a small operating council landfill.",
     "sources": ["PLACEHOLDER"]
+  },
+  {
+    "id": "redvale",
+    "name": "Redvale Landfill (Auckland)",
+    "state": "NZ",
+    "lat": -36.664,
+    "lon": 174.629,
+    "acceptance": [{ "fromYear": 1993, "toYear": 2036, "tonnesPerYear": 600000 }],
+    "k": 0.067,
+    "L0": 61,
+    "existingCapture": 0.95,
+    "illustrative": false,
+    "notes": "Operating regional landfill taking about half of Auckland's waste. Operator reports about 95% of methane captured and used for power (about 9 MW of engines), so the project case is incremental only. Consented to 2028; the 2036 end year assumes the proposed 7-8 year extension. Tonnage is a flat 600,000 t/yr (operator range 600,000-800,000), which ignores the early ramp-up. k and L0 are NZ ETS default-composition values, not site measurements.",
+    "sources": [
+      "NZ Herald, Redvale extension (opening 1993, ~600,000 t/yr, 95% capture, closure 2028 extended to 2036): https://www.nzherald.co.nz/business/landfill-proposal-aucklands-biggest-landfill-set-to-stay-open-for-seven-to-eight-years-longer-than-expected-after-delays-for-new-facility/KPBOPWAYUFAKTAEYY553PFXZGQ/",
+      "WM NZ, Redvale proposal (600,000-800,000 t/yr): https://www.wm.nz/globalassets/004-wm-new-zealand/0013-consultation/ARL_Phase3.pdf",
+      "Bioenergy Facilities, Redvale (nine 1 MW generators): https://www.bioenergyfacilities.org/facility/redvale-landfill",
+      "Coordinates: Wikipedia, Redvale Landfill (36°39'51\"S 174°37'44\"E)",
+      "k and L0: waste-weighted from NZ ETS Schedule 3 default composition, as reproduced in MfE Landfill Gas Capture Management final report: https://environment.govt.nz/assets/publications/Waste/landfill-gas-management-final-report-.pdf"
+    ]
+  },
+  {
+    "id": "kate-valley",
+    "name": "Kate Valley Landfill (Canterbury)",
+    "state": "NZ",
+    "lat": -43.0996,
+    "lon": 172.8363,
+    "acceptance": [{ "fromYear": 2005, "toYear": 2040, "tonnesPerYear": 350000 }],
+    "k": 0.067,
+    "L0": 61,
+    "existingCapture": 0.96,
+    "illustrative": false,
+    "notes": "Operating regional landfill serving Canterbury, opened 2005, expected to run to about 2040. Operator reports about 96% of methane captured, with 4.3 MW of gas engines commissioned in 2014, so the project case is incremental only. Tonnage is a flat 350,000 t/yr (actual 321,000 t in 2018/19 and 332,000 t in 2019/20). k and L0 are NZ ETS default-composition values, not site measurements.",
+    "sources": [
+      "Transwaste Canterbury, Kate Valley (350,000 t/yr, 2005 opening, four 1 MW generators): https://transwastecanterbury.co.nz/kate-valley/",
+      "Transwaste Canterbury 2020 annual report (321,000 t in 2018/19, 332,000 t in 2019/20): https://transwastecanterbury.co.nz/wp-content/uploads/2020/09/TCL-2020-Annual-Report-FINAL-240920_signed.pdf",
+      "North Canterbury News, 8 Aug 2024 (about 96% of methane captured and destroyed): https://digital.ncnews.co.nz/html5/shared/ShowArticle.aspx?doc=HUR%2F2024%2F08%2F08&entity=Ar01501&sk=36CE9F3D&mode=text",
+      "Wikipedia, Kate Valley Landfill (coordinates 43°05'59\"S 172°50'11\"E, expected closure circa 2040, 4.3 MW commissioned 2014): https://en.wikipedia.org/wiki/Kate_Valley_Landfill",
+      "k and L0: waste-weighted from NZ ETS Schedule 3 default composition, as reproduced in MfE Landfill Gas Capture Management final report: https://environment.govt.nz/assets/publications/Waste/landfill-gas-management-final-report-.pdf"
+    ]
   }
 ]
