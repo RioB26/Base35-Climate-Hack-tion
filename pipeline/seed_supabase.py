@@ -31,6 +31,8 @@ def site_row(s: dict) -> dict:
         "notes": s["notes"],
         "sources": s["sources"],
         "satellite_status": "done",
+        # Backdated so the add-site rate limit only counts sites users add, not the bundled ones.
+        "created_at": "2020-01-01T00:00:00Z",
     }
 
 
