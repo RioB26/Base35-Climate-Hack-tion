@@ -7,12 +7,15 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Tool | Used for |
 |---|---|
 | Claude (Anthropic), via Claude Code | Project research and planning; scaffolding the web app, model, tests, satellite pipeline and these docs. All output reviewed by the team. |
+| Codex (OpenAI) | Currency selector implementation and verification; reviewed against the app styling and existing model. |
 
 ## Datasets and APIs
 
 | Dataset | Used for | Source | Status |
 |---|---|---|---|
 | Sentinel-5P TROPOMI L3 CH₄ (Copernicus, via Google Earth Engine `COPERNICUS/S5P/OFFL/L3_CH4`) | Satellite screening signal | ESA / Copernicus | Run for all five sites, 2024-10-01 to 2025-10-01 |
+| Frankfurter daily reference exchange rates | Display conversion from AUD to NZD, USD, EUR, GBP, CAD, CHF and JPY; rate dates shown in the selector | https://frankfurter.dev/ | Fetched at runtime; AUD remains available if rates fail |
+| ISO 4217 currency codes (SIX maintenance agency) | Currency identifiers and names | https://www.six-group.com/en/products-services/financial-information/market-reference-data/data-standards.html | Eight current currency codes used |
 | ERA5-Land hourly wind (`ECMWF/ERA5_LAND/HOURLY`) | Wind direction per overpass | ECMWF / Copernicus Climate Change Service | Run for all five sites, 2024-10-01 to 2025-10-01 |
 | Mugga Lane factsheet, ACT City Services (Aug 2025) | Mugga Lane tonnage, existing 4.24 MW / 37,000 MWh plant | https://www.cityservices.act.gov.au/__data/assets/pdf_file/0003/1653393/Mugga-Lane-Gas-to-Energy-factsheet-August2025-acc.pdf | Used; history and closure are proxies |
 | ABC News, 20 Nov 2023 | ~300,000 t/yr to ACT landfills | https://www.abc.net.au/news/2023-11-20/energy-generated-from-landfill-gas-to-power-canberra-homes/103124726 | Used |
