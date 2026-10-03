@@ -8,7 +8,7 @@ Usage:
     python run_site.py --site ID [--start 2024-10-01 --end 2025-10-01]
 
 Without EE_SERVICE_ACCOUNT_KEY it falls back to your local `earthengine authenticate` login.
-The window defaults to the trailing 12 months.
+The window defaults to the 12 months ending 90 days ago, because ERA5 wind data lags real time.
 """
 
 from __future__ import annotations
@@ -20,6 +20,8 @@ from datetime import date, timedelta
 
 from satellite import run_site as screen_site
 from supabase_io import Supabase
+
+ERA5_LAG_DAYS = 90
 
 
 def init_earth_engine():
@@ -56,11 +58,11 @@ def process(db, init_ee, site_id: str, start: str, end: str) -> bool:
 
 
 def main() -> None:
-    today = date.today()
+    end_default = date.today() - timedelta(days=ERA5_LAG_DAYS)
     ap = argparse.ArgumentParser()
     ap.add_argument("--site", required=True)
-    ap.add_argument("--start", default=(today - timedelta(days=365)).isoformat())
-    ap.add_argument("--end", default=today.isoformat())
+    ap.add_argument("--start", default=(end_default - timedelta(days=365)).isoformat())
+    ap.add_argument("--end", default=end_default.isoformat())
     ap.add_argument("--fail", metavar="REASON", help="only mark the site failed (used by the workflow when the job dies early)")
     args = ap.parse_args()
 

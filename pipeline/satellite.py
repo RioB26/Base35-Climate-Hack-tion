@@ -44,7 +44,7 @@ def fetch_overpasses(ee, lat: float, lon: float, start: str, end: str, outer_km:
         hour = era5.filterDate(t.update(minute=0, second=0), t.update(minute=0, second=0).advance(1, "hour")).first()
         wind = ee.Image(hour).reduceRegion(ee.Reducer.first(), site, 9000)
         samples = img.sample(region=region, scale=SAMPLE_SCALE_M, geometries=True, dropNulls=True)
-        return samples.map(
+        with_wind = samples.map(
             lambda f: f.set(
                 {
                     "date": t.format("YYYY-MM-dd'T'HH:mm"),
@@ -53,6 +53,8 @@ def fetch_overpasses(ee, lat: float, lon: float, start: str, end: str, outer_km:
                 }
             )
         )
+        # ERA5-Land lags real time by weeks; a pass with no wind hour yet is skipped, not fatal.
+        return ee.FeatureCollection(ee.Algorithms.If(hour, with_wind, ee.FeatureCollection([])))
 
     overpasses: dict[str, Overpass] = {}
     # Monthly chunks keep each getInfo under Earth Engine's element limits.
