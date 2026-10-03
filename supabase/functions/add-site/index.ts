@@ -80,5 +80,5 @@ Deno.serve(async (req) => {
     return reply(502, { error: "Site saved, but the satellite job could not be started.", id: s.id });
   }
 
-  return reply(201, { id: s.id });
+  return reply(201, { id: s.id, site: s });
 });

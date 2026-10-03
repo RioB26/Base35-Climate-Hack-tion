@@ -1,7 +1,7 @@
 import { Suspense, lazy, useMemo } from "react";
 import { PageHead } from "../components/Nav";
 import { SignalChart } from "../components/SignalChart";
-import { methaneGrid, regionOf, satelliteFor } from "../data";
+import { regionOf, useData } from "../data";
 import { fmtInt, fmtPpb, fmtT } from "../format";
 import { compareWithSatellite, SECTOR_EFFECTIVE_WIDTH_M } from "../model/discrepancy";
 import type { Assumptions, Site } from "../model/types";
@@ -10,7 +10,9 @@ import type { Route } from "../route";
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
 export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: Assumptions; go: (r: Route) => void }) {
+  const { satelliteFor, gridFor, statusFor } = useData();
   const sat = satelliteFor(site.id);
+  const status = statusFor(site.id);
   const c = useMemo(() => compareWithSatellite(site, sat, assumptions), [site, sat, assumptions]);
   const cap = Math.round(site.existingCapture * 100);
   const toFix = () => go({ page: "fix", siteId: site.id });
@@ -42,7 +44,13 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
           <article className="card">
             <h2 className="card-title">What the satellite saw</h2>
             {c.observedPpb === null ? (
-              <p className="muted">The satellite check has not been run for this site yet.</p>
+              <p className="muted">
+                {status.state === "running" || status.state === "pending"
+                  ? "Fetching Sentinel-5P data for this site. This usually takes a few minutes; the page updates by itself."
+                  : status.state === "failed"
+                    ? `The satellite check failed${status.error ? `: ${status.error}` : "."}`
+                    : "The satellite check has not been run for this site yet."}
+              </p>
             ) : (
               <>
                 <p className="big-num">
@@ -79,7 +87,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
 
         <div className="col sticky">
           <Suspense fallback={<div className="map map-loading">Loading map…</div>}>
-            <SiteMap key={site.id} site={site} sat={sat} grid={methaneGrid[site.id]} />
+            <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} />
           </Suspense>
         </div>
       </div>

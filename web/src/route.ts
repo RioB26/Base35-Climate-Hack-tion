@@ -22,6 +22,9 @@ export const hrefFor = (r: Route) => (r.page === "find" ? "#/" : `#/site/${r.sit
 export function useRoute(knownIds: string[]): [Route, (r: Route) => void] {
   const [route, setRoute] = useState(() => parseHash(window.location.hash, knownIds));
   useEffect(() => {
+    setRoute(parseHash(window.location.hash, knownIds));
+  }, [knownIds]);
+  useEffect(() => {
     const on = () => {
       setRoute(parseHash(window.location.hash, knownIds));
       window.scrollTo({ top: 0 });
