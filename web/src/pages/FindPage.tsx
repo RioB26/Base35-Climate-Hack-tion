@@ -71,6 +71,12 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
                   <span className="r-name">{s.name}</span>
                   <span className="r-meta">
                     {regionOf(s)} · {satelliteLabel(statusFor(s.id).state, satelliteFor(s.id).status)}
+                    {s.illustrative && (
+                      <>
+                        {" "}
+                        <span className="tag">proxy inputs</span>
+                      </>
+                    )}
                   </span>
                 </button>
               </li>
