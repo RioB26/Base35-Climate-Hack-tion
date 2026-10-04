@@ -7,6 +7,7 @@
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided by the platform.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { dispatchSite } from "../_shared/dispatch.ts";
 import { distanceKm, validateNewSite } from "./validate.ts";
 
 const MAX_NEW_SITES_PER_HOUR = 5;
@@ -49,6 +50,7 @@ Deno.serve(async (req) => {
   if (near) return reply(409, { error: `Within ${DUPLICATE_RADIUS_KM} km of existing site "${near.name}".` });
 
   const { error: insertError } = await db.from("sites").insert({
+    last_dispatch_at: new Date().toISOString(),
     id: s.id,
     name: s.name,
     state: s.state,
@@ -65,16 +67,7 @@ Deno.serve(async (req) => {
   });
   if (insertError) return reply(500, { error: "Could not save the site." });
 
-  const gh = await fetch(`https://api.github.com/repos/${Deno.env.get("GH_REPO")}/dispatches`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${Deno.env.get("GH_DISPATCH_TOKEN")}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
-      "User-Agent": "add-site-edge-function",
-    },
-    body: JSON.stringify({ event_type: "add-site", client_payload: { siteId: s.id } }),
-  });
+  const gh = await dispatchSite(s.id);
   if (!gh.ok) {
     await db.from("sites").update({ satellite_status: "failed", error: `Could not start satellite job (${gh.status}).` }).eq("id", s.id);
     return reply(502, { error: "Site saved, but the satellite job could not be started.", id: s.id });

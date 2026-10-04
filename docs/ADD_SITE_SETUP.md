@@ -64,3 +64,17 @@ economics run immediately, and the satellite panel fills in a few minutes later.
 
 If the job fails for any reason (bad key, Earth Engine quota, timeout), the site is marked
 `failed` with a message instead of staying on "running". Re-run it from the Actions tab.
+
+---
+
+## Admin housekeeping
+
+- **Remove a bad or spam site** (results cascade): `supabase db query "delete from sites where id = '<id>'" --linked`
+- **Rotate the passcode** (no redeploy needed): `supabase secrets set ADD_SITE_PASSCODE=<new>`
+- **Dispatch token expiry:** `GH_DISPATCH_TOKEN` expires about 90 days after 2026-10-04, around **2027-01-02**.
+  Create a new fine-grained token (Actions: write on this repo) and run `supabase secrets set GH_DISPATCH_TOKEN=<new>`.
+- **Retry a failed site:** the Check page shows a Retry button (passcode required), backed by the `retry-site`
+  function (`supabase functions deploy retry-site`). Retries are limited to one per 5 minutes per site.
+- **Stuck jobs:** migration `0002_stale_running.sql` adds a `pg_cron` job that marks sites `failed` after 45 minutes
+  in `pending`/`running`. Apply the migration (`supabase db push`) before deploying the updated `add-site`, which
+  now writes the `last_dispatch_at` column.
