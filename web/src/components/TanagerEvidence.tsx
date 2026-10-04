@@ -53,6 +53,15 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
     );
   }
 
+  if (!tanager.observations.length || !selectedDate) {
+    return (
+      <article className="card high-res-status">
+        <div className="status-kicker"><span className="status-dot" /> High-resolution layer</div>
+        <h2 className="card-title">Loading Tanager observations</h2>
+      </article>
+    );
+  }
+
   const visibleObservations = tanager.observations.filter((observation) => observation.observedAt.slice(0, 10) <= selectedDate);
   const distances = visibleObservations.map((observation) => ({
     ...observation,
@@ -256,9 +265,10 @@ function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-AU", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(
-    new Date(value),
-  );
+  const date = new Date(value);
+  // Intl throws a RangeError on an invalid date, which would blank the whole page.
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-AU", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(date);
 }
 
 function yearStart(observations: TanagerSite["observations"]) {
