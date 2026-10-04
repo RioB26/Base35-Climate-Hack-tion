@@ -8,6 +8,7 @@ import { useMoney } from "../components/currency";
 import { sizeClass, stillOperating, wasteInPlace } from "../model/size";
 import type { Assumptions, Site, SiteResult } from "../model/types";
 import type { Route } from "../route";
+import { Loading } from "../components/Mark";
 
 const Landfill3D = lazy(() => import("../components/Landfill3D"));
 
@@ -72,7 +73,7 @@ export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Pr
 
         <div className="col sticky">
           <div className="scene-card">
-            <Suspense fallback={<div className="landfill-3d fallback">Loading 3D model…</div>}>
+            <Suspense fallback={<Loading className="landfill-3d fallback" label="Loading 3D model…" />}>
               <Landfill3D size={size} operating={operating} existingCapture={site.existingCapture} targetCapture={a.captureEfficiency} />
             </Suspense>
             <div className="scene-legend">

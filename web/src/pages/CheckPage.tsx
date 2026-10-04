@@ -7,6 +7,7 @@ import { compareWithSatellite, SECTOR_EFFECTIVE_WIDTH_M } from "../model/discrep
 import type { Assumptions, Site } from "../model/types";
 import type { Route } from "../route";
 import { TanagerEvidence } from "../components/TanagerEvidence";
+import { Loading } from "../components/Mark";
 
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
@@ -108,7 +109,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
         </div>
 
         <div className="col sticky">
-          <Suspense fallback={<div className="map map-loading">Loading map…</div>}>
+          <Suspense fallback={<Loading className="map map-loading" label="Loading map…" />}>
             <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} tanager={visibleTanager} />
           </Suspense>
         </div>

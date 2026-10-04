@@ -3,6 +3,7 @@ import { AddSiteForm } from "../components/AddSiteForm";
 import { regionOf, useData } from "../data";
 import type { Route } from "../route";
 import type { Site } from "../model/types";
+import { Loading } from "../components/Mark";
 
 const GlobeView = lazy(() => import("../components/GlobeView"));
 
@@ -36,7 +37,7 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
   return (
     <>
       <section className="find">
-        <Suspense fallback={<div className="globe-wrap globe-loading">Loading globe…</div>}>
+        <Suspense fallback={<Loading className="globe-wrap globe-loading" label="Loading globe…" />}>
           <GlobeView sites={sites} target={target} onPick={setTarget} onArrive={(id) => go({ page: "check", siteId: id })} />
         </Suspense>
         <div className="find-card">
