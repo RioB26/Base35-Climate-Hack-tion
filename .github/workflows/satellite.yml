@@ -40,6 +40,13 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python run_site.py --site "$SITE"
+      - name: Export screened result
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: satellite-${{ github.event.client_payload.siteId || inputs.site }}
+          path: pipeline/satellite-export.json
+          if-no-files-found: error
       # Setup problems (bad secret, pip failure) happen before run_site can report, so say it here.
       - name: Mark site failed
         if: failure()

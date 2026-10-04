@@ -25,6 +25,7 @@ from supabase_io import Supabase
 
 ERA5_LAG_DAYS = 90
 TANAGER_RADIUS_KM = 15
+EXPORT_PATH = "satellite-export.json"
 
 
 def collect_plumes(db, site: dict) -> None:
@@ -56,6 +57,14 @@ def rejection_for(result: dict) -> str | None:
             f"and need at least {minimum} to check this site reliably."
         )
     return None
+
+
+def export_result(site_id: str, result: dict, grid: dict) -> None:
+    """Write a CI artifact without changing the bundled demo data automatically."""
+    path = os.environ.get("SATELLITE_EXPORT_PATH", EXPORT_PATH)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump({"siteId": site_id, "satellite": result, "grid": grid}, handle, indent=2)
+        handle.write("\n")
 
 
 def init_earth_engine():
@@ -90,6 +99,7 @@ def process(db, init_ee, site_id: str, start: str, end: str) -> bool:
             return True  # a handled outcome: exiting non-zero would make the workflow overwrite it with "failed"
         db.upsert("satellite_results", "site_id", {"site_id": site_id, "data": result})
         db.upsert("methane_grid", "site_id", {"site_id": site_id, "data": grid})
+        export_result(site_id, result, grid)
     except Exception as e:  # noqa: BLE001 - any failure must reach the UI instead of leaving "running"
         db.set_status(site_id, "failed", f"{type(e).__name__}: {e}"[:500])
         return False
