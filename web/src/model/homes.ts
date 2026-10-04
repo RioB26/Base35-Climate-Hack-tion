@@ -6,11 +6,15 @@ export const AU_HOME_KWH_PER_YEAR = 17 * 365;
 // MBIE Quarterly Survey of Domestic Electricity Prices models a household using about 8,000 kWh a year.
 export const NZ_HOME_KWH_PER_YEAR = 8000;
 
-export const homeKWhPerYear = (site: Site) => (site.state === "NZ" ? NZ_HOME_KWH_PER_YEAR : AU_HOME_KWH_PER_YEAR);
+/** Typical home's yearly use, or null where we have no sourced figure (Fiji). */
+export const homeKWhPerYear = (site: Site): number | null =>
+  site.state === "NZ" ? NZ_HOME_KWH_PER_YEAR : site.state === "FJ" ? null : AU_HOME_KWH_PER_YEAR;
 
-/** Typical homes the project's yearly electricity would supply. */
-export const homesPowered = (electricityMWhPerYear: number, site: Site) =>
-  Math.max(0, (electricityMWhPerYear * 1000) / homeKWhPerYear(site));
+/** Typical homes the project's yearly electricity would supply; 0 where there is no household figure. */
+export const homesPowered = (electricityMWhPerYear: number, site: Site) => {
+  const kWh = homeKWhPerYear(site);
+  return kWh ? Math.max(0, (electricityMWhPerYear * 1000) / kWh) : 0;
+};
 
 const UNITS = [1, 10, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000];
 

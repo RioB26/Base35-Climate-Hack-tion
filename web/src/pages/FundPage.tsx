@@ -9,6 +9,7 @@ import { Stat } from "../components/Stat";
 import { fmtInt, fmtT, shortName } from "../format";
 import { useMoney } from "../components/currency";
 import { cop31Score } from "../model/cop31";
+import { creditScheme, inAustralia } from "../model/country";
 import type { Portfolio } from "../model/macc";
 import { potentialAccuAud } from "../model/project";
 import type { Assumptions, Site, SiteResult } from "../model/types";
@@ -41,7 +42,7 @@ export function FundPage(p: Props) {
       value: `${fmtMoney(r.netCostAudPerTCO2e)} vs ACCU ${fmtMoney(a.accuPriceAud)}`,
     } : part),
   } : null;
-  const nz = site.state === "NZ";
+  const nz = !inAustralia(site);
   const toFix = () => p.go({ page: "fix", siteId: site.id });
 
   return (
@@ -77,8 +78,8 @@ export function FundPage(p: Props) {
             <Stat label="Power sales" value={`${fmtAudM(r.annualRevenueAud)}/yr`} sub={`at ${fmtMoney(a.powerPriceAudPerMWh)}/MWh; running costs ${fmtAudM(r.annualOpexAud)}/yr`} />
             <Stat
               label="Carbon credits"
-              value={nz ? "NZ ETS" : `${fmtAudM(potentialAccuAud(site, r.generationTCH4PerYear, a))}/yr`}
-              sub={nz ? "not modelled for NZ sites" : `potential ACCUs* at ${fmtMoney(a.accuPriceAud)}`}
+              value={nz ? creditScheme(site) : `${fmtAudM(potentialAccuAud(site, r.generationTCH4PerYear, a))}/yr`}
+              sub={nz ? "not modelled outside Australia" : `potential ACCUs* at ${fmtMoney(a.accuPriceAud)}`}
             />
             <Stat label="Net cost per tonne" value={fmtCostPerT(r.netCostAudPerTCO2e)} sub={`${fmtCostPerT(r.netCostAudPerTCO2eRange[0])} to ${fmtCostPerT(r.netCostAudPerTCO2eRange[1])}, excluding credits`} tone="accent" />
             <Stat
@@ -161,7 +162,7 @@ export function FundPage(p: Props) {
         )}
         <p>
           <strong>Pre-feasibility screening, not a business case.</strong> Emissions avoided use GWP100 = 28. Capex is a range
-          benchmarked against US EPA landfill gas project costs converted to AUD. NZ sites use the same AUD cost and power
+          benchmarked against US EPA landfill gas project costs converted to AUD. NZ and Fiji sites use the same AUD cost and power
           assumptions. Methods, sources and disclosures are in docs/ in the project repository.
         </p>
       </footer>

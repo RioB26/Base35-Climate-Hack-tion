@@ -12,6 +12,8 @@ Q(t) = Σ_{i ≤ t}  k · L0 · M_i · exp(−k · (t − i + 0.5))      [m³ CH
 
 with a mid-year convention. `k` (1/yr) and `L0` (m³ CH₄/t) are per-site inputs. Mass uses 0.717 kg/m³.
 
+The temperate sites use k = 0.05. Naboro (Fiji) uses k = 0.17, the IPCC 2019 Refinement default for bulk waste in tropical moist and wet climates (Vol. 5 Ch. 3, Table 3.3). With 70,000 t/yr from 2005 this gives about 690 m³/h of methane in 2016, against about 800 m³/h estimated by Mani et al. (2016). Fiji has no landfill credit scheme, so no credit revenue is modelled there, and no sourced household electricity figure was found, so the homes-powered card is hidden for Fiji.
+
 ## 2. Capture and emissions avoided
 
 ```

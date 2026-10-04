@@ -1,5 +1,6 @@
 import { methaneGeneratedM3 } from "./generation";
 import type { Assumptions, Range, Site, SiteResult, YearRow } from "./types";
+import { inAustralia } from "./country";
 
 const HOURS_PER_YEAR = 8760;
 
@@ -29,8 +30,8 @@ export function annualPhysics(methaneM3PerYear: number, existingCapture: number,
 
 /** Potential ACCU revenue (AUD/yr) for a year's methane generation, whether or not it is counted in payback. */
 export function potentialAccuAud(site: Site, generationT: number, a: Assumptions): number {
-  // ACCUs are an Australian scheme; NZ sites sit under the NZ ETS instead, which is not modelled.
-  if (site.state === "NZ") return 0;
+  // ACCUs are an Australian scheme; NZ sites sit under the NZ ETS and Fiji has no landfill credit scheme, neither modelled.
+  if (!inAustralia(site)) return 0;
   // Credits only count capture above both the existing capture and the method's baseline proportion.
   const creditableFraction = Math.max(0, a.captureEfficiency - Math.max(site.existingCapture, a.accuBaselineProportion));
   return generationT * creditableFraction * a.gwp100 * a.accuPriceAud;

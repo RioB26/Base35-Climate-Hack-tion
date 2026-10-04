@@ -10,6 +10,7 @@ describe("homes powered", () => {
     expect(homesPowered(6205, au)).toBeCloseTo(1000);
     expect(homesPowered(8000, nz)).toBeCloseTo(1000);
     expect(homesPowered(-5, au)).toBe(0);
+    expect(homesPowered(8000, { state: "FJ" } as Site)).toBe(0);
   });
 
   it("keeps the infographic to 50 icons or fewer", () => {

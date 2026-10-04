@@ -42,5 +42,6 @@ export const tanagerFor = (id: string): TanagerSite => {
   } as TanagerSite;
 };
 
-export const country = (s: Site) => (s.state === "NZ" ? "New Zealand" : "Australia");
-export const regionOf = (s: Site) => (s.state === "NZ" ? "New Zealand" : `${s.state}, Australia`);
+import { country, inAustralia } from "../model/country";
+export { country };
+export const regionOf = (s: Site) => (inAustralia(s) ? `${s.state}, Australia` : country(s));

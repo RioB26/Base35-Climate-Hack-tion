@@ -12,6 +12,7 @@ export function HomesPowered({ site, electricityMWhPerYear }: { site: Site; elec
   const icons = Array.from({ length: full + (part >= 0.1 ? 1 : 0) }, (_, i) => (i < full ? 1 : part));
   const rounded = homes >= 1000 ? Math.round(homes / 100) * 100 : Math.round(homes);
   const nz = site.state === "NZ";
+  const kWh = homeKWhPerYear(site) ?? 0;
 
   return (
     <article className="card homes">
@@ -21,7 +22,7 @@ export function HomesPowered({ site, electricityMWhPerYear }: { site: Site; elec
           Enough electricity for about <span className="num">{fmtInt(rounded)}</span> homes
         </p>
         <p className="small muted">
-          {fmtInt(electricityMWhPerYear)} MWh a year from the captured gas, at {fmtInt(homeKWhPerYear(site))} kWh a year for a typical{" "}
+          {fmtInt(electricityMWhPerYear)} MWh a year from the captured gas, at {fmtInt(kWh)} kWh a year for a typical{" "}
           {nz ? "New Zealand" : "Australian"} home ({nz ? "MBIE" : "energy.gov.au"}). Flaring the gas instead would cut the same
           methane but power none.
         </p>
