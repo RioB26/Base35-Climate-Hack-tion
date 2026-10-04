@@ -7,7 +7,7 @@ type Period = { fromYear: string; toYear: string; tonnesPerYear: string };
 const emptyPeriod = (): Period => ({ fromYear: "", toYear: "", tonnesPerYear: "" });
 const num = (s: string) => (s.trim() === "" ? NaN : Number(s));
 
-export function AddSiteForm({ onClose, onAdded }: { onClose: () => void; onAdded: (id: string) => void }) {
+export function AddSiteForm({ onClose, onAdded, onLeave }: { onClose: () => void; onAdded: (id: string) => void; onLeave: () => void }) {
   const { addSite } = useData();
   const [name, setName] = useState("");
   const [state, setState] = useState("");
@@ -47,6 +47,7 @@ export function AddSiteForm({ onClose, onAdded }: { onClose: () => void; onAdded
     const res = await addSite(input, passcode);
     setBusy(false);
     if (res.ok) onAdded(res.id);
+    else if (res.leave) onLeave();
     else setErrors(res.errors);
   }
 
