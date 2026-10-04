@@ -19,6 +19,10 @@ const HIGH = "#a4512a";
 /** Site close-up: mean methane per grid cell, the 10 to 30 km analysis area and the prevailing wind. */
 export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const container = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const analysisBaseRef = useRef<GeoJSON.Feature[]>([]);
+  const windMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const showWindRef = useRef(true);
   const [fallback, setFallback] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [mapLayer, setMapLayer] = useState<"low" | "high">("low");
@@ -27,6 +31,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const { cells, lo, hi } = cellRange(grid);
   const wind = sat.wind;
   const towards = wind ? (wind.fromDeg + 180) % 360 : null;
+  showWindRef.current = showWind;
 
   useEffect(() => {
     if (!container.current) return;
@@ -125,6 +130,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         properties: { kind: "ring" },
         geometry: { type: "LineString", coordinates: ring(site.lat, site.lon, km) },
       }));
+      analysisBaseRef.current = features.slice();
       if (hasHighResolution && mapLayer === "high") {
         for (const observation of tanager.observations) {
           features.push({
@@ -140,7 +146,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           });
         }
       }
-      if (showWind && towards !== null) {
+      if (showWindRef.current && towards !== null) {
         features.push(
           { type: "Feature", properties: { kind: "down" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards, 30, 10, 30)] } },
           { type: "Feature", properties: { kind: "up" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards + 180, 30, 10, 30)] } },
@@ -172,13 +178,14 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
       }
     };
     m.on("style.load", addOverlays);
+    mapRef.current = m;
 
     const el = document.createElement("div");
     el.className = "pin selected";
     el.innerHTML = '<span class="pin-dot"></span><span class="pin-label"></span>';
     el.querySelector<HTMLSpanElement>(".pin-label")!.textContent = shortName(site.name);
     new maplibregl.Marker({ element: el, anchor: "left" }).setLngLat([site.lon, site.lat]).addTo(m);
-    if (showWind && towards !== null) {
+    if (showWindRef.current && towards !== null) {
       [
         { label: "DOWNWIND", bearing: towards, className: "downwind" },
         { label: "UPWIND", bearing: (towards + 180) % 360, className: "upwind" },
@@ -187,9 +194,10 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         direction.className = `wind-direction ${className}`;
         direction.innerHTML = `<span class="wind-direction-arrow" style="transform: rotate(${bearing}deg)">➤</span><span>${label}</span>`;
         direction.setAttribute("aria-label", `${label.toLowerCase()} wind direction`);
-        new maplibregl.Marker({ element: direction, anchor: "center" })
+        const marker = new maplibregl.Marker({ element: direction, anchor: "center" })
           .setLngLat(offset(site.lat, site.lon, 23, bearing))
           .addTo(m);
+        windMarkersRef.current.push(marker);
       });
     }
     if (hasHighResolution && mapLayer === "high") tanager.observations.forEach((observation, index) => {
@@ -202,9 +210,33 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         .addTo(m);
     });
 
-    return () => m.remove();
+    return () => {
+      windMarkersRef.current = [];
+      analysisBaseRef.current = [];
+      mapRef.current = null;
+      m.remove();
+    };
     // One map per site; the page remounts this component when the site changes.
-  }, [site, grid, towards, tanager, mapLayer, hasHighResolution, showWind]);
+  }, [site, grid, towards, tanager, mapLayer, hasHighResolution]);
+
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    const source = m.getSource("analysis");
+    if (source?.type === "geojson" && "setData" in source && typeof source.setData === "function") {
+      const features = analysisBaseRef.current.slice();
+      if (showWind && towards !== null) {
+        features.push(
+          { type: "Feature", properties: { kind: "down" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards, 30, 10, 30)] } },
+          { type: "Feature", properties: { kind: "up" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards + 180, 30, 10, 30)] } },
+        );
+      }
+      source.setData({ type: "FeatureCollection", features });
+    }
+    windMarkersRef.current.forEach((marker) => {
+      marker.getElement().style.display = showWind ? "" : "none";
+    });
+  }, [showWind, site.lat, site.lon, towards]);
 
   if (unavailable) {
     return (
