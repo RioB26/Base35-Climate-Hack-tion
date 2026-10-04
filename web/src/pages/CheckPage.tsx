@@ -13,7 +13,7 @@ import { Loading } from "../components/Mark";
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
 export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: Assumptions; go: (r: Route) => void }) {
-  const { satelliteFor, gridFor, statusFor, tanagerFor, canAdd, retrySite } = useData();
+  const { satelliteFor, gridFor, statusFor, tanagerFor, loading, canAdd, retrySite } = useData();
   const [retryMsg, setRetryMsg] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -52,15 +52,20 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
     ...(annualSat.periods ?? []).map((period) => `${period.period}-28`),
   ].sort();
   const latestObservationDate = timeSeriesDates.at(-1) ?? annualSat.windowEnd?.slice(0, 10) ?? "";
-  const [selectedDate, setSelectedDate] = useState(latestObservationDate);
-  useEffect(() => {
-    setSelectedDate(latestObservationDate);
-  }, [site.id, latestObservationDate]);
+  // Keep only the user's pick in state and derive the rest: data arrives after the first render, and a
+  // stored date lagging behind it would be empty or out of range for a render.
+  const [picked, setPicked] = useState<{ siteId: string; date: string } | null>(null);
+  const pickedDate = picked?.siteId === site.id ? picked.date : null;
+  const selectedDate = pickedDate && pickedDate <= latestObservationDate ? pickedDate : latestObservationDate;
+  const setSelectedDate = (date: string) => setPicked({ siteId: site.id, date });
   const visibleTanager = useMemo(
     () => ({ ...tanager, observations: tanager.observations.filter((observation) => observation.observedAt.slice(0, 10) <= selectedDate) }),
     [tanager, selectedDate],
   );
-  const sat = annualSat.periods?.filter((period) => period.period <= selectedDate.slice(0, 7)).at(-1) ?? annualSat;
+  const periodAt = annualSat.periods?.filter((period) => period.period <= selectedDate.slice(0, 7)).at(-1);
+  // Until the user moves the slider, open on the latest month only if it has enough passes to say anything;
+  // otherwise the annual screening result is the better first view.
+  const sat = pickedDate ? periodAt ?? annualSat : periodAt && hasSignal(periodAt) ? periodAt : annualSat;
   const c = useMemo(() => compareWithSatellite(site, sat, assumptions), [site, sat, assumptions]);
   const cap = Math.round(site.existingCapture * 100);
   const toFix = () => go({ page: "fix", siteId: site.id });
@@ -102,7 +107,13 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
                     : "Fetching Sentinel-5P data for this site. This usually takes a few minutes; the page updates by itself."
                   : status.state === "failed"
                     ? `The satellite check failed${status.error ? `: ${status.error}` : "."}`
-                    : "The satellite check has not been run for this site yet."}
+                    : loading
+                      ? "Loading satellite data…"
+                      : sat.status === "not_run"
+                        ? "The satellite check has not been run for this site yet."
+                        : `${sat.note} ${sat.overpassesUsed} usable Sentinel-5P pass${sat.overpassesUsed === 1 ? "" : "es"} for ${
+                            sat.windowEnd?.slice(0, 7) ?? "this period"
+                          }; at least ${MIN_PASSES} are needed.`}
               </p>
               {status.state === "failed" && canAdd && (
                 <p>
@@ -136,7 +147,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
             )}
           </article>
         </div>
-        <Verdict site={site} c={c} />
+        <Verdict site={site} c={c} loading={loading} />
       </section>
 
       <div className="split check">
@@ -173,8 +184,13 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
   );
 }
 
-function Verdict({ site, c }: { site: Site; c: ReturnType<typeof compareWithSatellite> }) {
+const MIN_PASSES = 8;
+const hasSignal = (r: { deltaPpb: number | null; ci95Ppb: unknown; status: string; overpassesUsed: number }) =>
+  r.deltaPpb !== null && !!r.ci95Ppb && r.status !== "not_run" && r.overpassesUsed >= MIN_PASSES;
+
+function Verdict({ site, c, loading }: { site: Site; c: ReturnType<typeof compareWithSatellite>; loading: boolean }) {
   if (c.verdict === "no_data") {
+    if (loading) return <article className="verdict neutral"><h2>Loading satellite data…</h2></article>;
     return <article className="verdict neutral"><h2>Not enough data to compare</h2><p>More satellite passes are needed. You can still explore a capture project using the engineering model.</p></article>;
   }
   if (c.verdict === "consistent") {
