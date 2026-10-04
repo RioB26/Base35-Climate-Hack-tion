@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { CurrencyProvider, CurrencySelector } from "./components/currency";
 import { Nav } from "./components/Nav";
+import { SiteFooter } from "./components/SiteFooter";
 import { useData } from "./data";
 import { defaultAssumptions } from "./data/assumptions";
 import { buildPortfolio } from "./model/macc";
@@ -9,6 +10,7 @@ import type { Assumptions } from "./model/types";
 import { CheckPage } from "./pages/CheckPage";
 import { FindPage } from "./pages/FindPage";
 import { FixPage } from "./pages/FixPage";
+import { HomePage } from "./pages/home/HomePage";
 import { FundPage } from "./pages/FundPage";
 import { PlanPage } from "./pages/PlanPage";
 import { useRoute } from "./route";
@@ -28,12 +30,13 @@ export default function App() {
   const budget = budgetShare * maxBudget;
   const portfolio = useMemo(() => buildPortfolio(results, budget), [results, budget]);
 
-  const site = route.page === "find" ? null : sites.find((s) => s.id === route.siteId) ?? null;
+  const site = "siteId" in route ? sites.find((s) => s.id === route.siteId) ?? null : null;
   const result = site ? results.find((r) => r.siteId === site.id)! : null;
 
   return (
     <CurrencyProvider>
       <Nav route={route} site={site} />
+      {route.page === "home" && <HomePage />}
       {route.page === "find" && <FindPage sites={sites} go={go} />}
       {route.page === "check" && site && <CheckPage site={site} assumptions={assumptions} go={go} />}
       {route.page === "fix" && site && result && (
@@ -55,6 +58,7 @@ export default function App() {
         />
       )}
       {route.page === "plan" && site && result && <PlanPage site={site} result={result} assumptions={assumptions} go={go} />}
+      <SiteFooter />
       <CurrencySelector />
     </CurrencyProvider>
   );

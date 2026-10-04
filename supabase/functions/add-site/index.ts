@@ -43,11 +43,15 @@ Deno.serve(async (req) => {
   const { count } = await db.from("sites").select("id", { count: "exact", head: true }).gte("created_at", since);
   if ((count ?? 0) >= MAX_NEW_SITES_PER_HOUR) return reply(429, { error: "Too many sites added recently. Try again later." });
 
-  const { data: existing, error: listError } = await db.from("sites").select("id, name, lat, lon");
+  // A rejected site is on its way out; it must not block the user from trying again.
+  const { data: all, error: listError } = await db.from("sites").select("id, name, lat, lon, satellite_status");
   if (listError) return reply(500, { error: "Could not check existing sites." });
+  const existing = all.filter((e) => e.satellite_status !== "rejected");
   if (existing.some((e) => e.id === s.id)) return reply(409, { error: `A site called "${s.name}" already exists.` });
   const near = existing.find((e) => distanceKm(e.lat, e.lon, s.lat, s.lon) < DUPLICATE_RADIUS_KM);
   if (near) return reply(409, { error: `Within ${DUPLICATE_RADIUS_KM} km of existing site "${near.name}".` });
+
+  if (all.some((e) => e.id === s.id)) await db.from("sites").delete().eq("id", s.id).eq("satellite_status", "rejected");
 
   const { error: insertError } = await db.from("sites").insert({
     last_dispatch_at: new Date().toISOString(),

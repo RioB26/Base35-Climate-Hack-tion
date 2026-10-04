@@ -6,9 +6,15 @@ describe("routes", () => {
   it("parses a site step", () => {
     expect(parseHash("#/site/mugga-lane/fix", ids)).toEqual({ page: "fix", siteId: "mugga-lane" });
   });
-  it("falls back to the globe for unknown sites or paths", () => {
-    expect(parseHash("#/site/nowhere/fix", ids)).toEqual({ page: "find" });
-    expect(parseHash("#see", ids)).toEqual({ page: "find" });
+  it("falls back to the home page for unknown sites or paths", () => {
+    expect(parseHash("#/site/nowhere/fix", ids)).toEqual({ page: "home" });
+    expect(parseHash("#see", ids)).toEqual({ page: "home" });
+  });
+  it("routes the homepage and landfill explorer separately", () => {
+    expect(parseHash("#/", ids)).toEqual({ page: "home" });
+    expect(parseHash("", ids)).toEqual({ page: "home" });
+    expect(parseHash(hrefFor({ page: "find" }), ids)).toEqual({ page: "find" });
+    expect(hrefFor({ page: "home" })).toBe("#/");
   });
   it("parses the plan step", () => {
     expect(parseHash("#/site/mugga-lane/plan", ids)).toEqual({ page: "plan", siteId: "mugga-lane" });

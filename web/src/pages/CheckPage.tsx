@@ -14,7 +14,7 @@ import { Info } from "../components/Info";
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
 export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: Assumptions; go: (r: Route) => void }) {
-  const { satelliteFor, gridFor, statusFor, tanagerFor, canAdd, retrySite } = useData();
+  const { satelliteFor, gridFor, statusFor, tanagerFor, loading, canAdd, retrySite } = useData();
   const [retryMsg, setRetryMsg] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -53,34 +53,41 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
     ...(annualSat.periods ?? []).map((period) => `${period.period}-28`),
   ].sort();
   const latestObservationDate = timeSeriesDates.at(-1) ?? annualSat.windowEnd?.slice(0, 10) ?? "";
-  const [selectedDate, setSelectedDate] = useState(latestObservationDate);
-  useEffect(() => {
-    setSelectedDate(latestObservationDate);
-  }, [site.id, latestObservationDate]);
+  // Keep only the user's pick in state and derive the rest: data arrives after the first render, and a
+  // stored date lagging behind it would be empty or out of range for a render.
+  const [picked, setPicked] = useState<{ siteId: string; date: string } | null>(null);
+  const pickedDate = picked?.siteId === site.id ? picked.date : null;
+  const selectedDate = pickedDate && pickedDate <= latestObservationDate ? pickedDate : latestObservationDate;
+  const setSelectedDate = (date: string) => setPicked({ siteId: site.id, date });
   const visibleTanager = useMemo(
     () => ({ ...tanager, observations: tanager.observations.filter((observation) => observation.observedAt.slice(0, 10) <= selectedDate) }),
     [tanager, selectedDate],
   );
-  const sat = annualSat.periods?.filter((period) => period.period <= selectedDate.slice(0, 7)).at(-1) ?? annualSat;
+  const periodAt = annualSat.periods?.filter((period) => period.period <= selectedDate.slice(0, 7)).at(-1);
+  // Until the user moves the slider, open on the latest month only if it has enough passes to say anything;
+  // otherwise the annual screening result is the better first view.
+  const sat = pickedDate ? periodAt ?? annualSat : periodAt && hasSignal(periodAt) ? periodAt : annualSat;
   const c = useMemo(() => compareWithSatellite(site, sat, assumptions), [site, sat, assumptions]);
   const cap = Math.round(site.existingCapture * 100);
   const toFix = () => go({ page: "fix", siteId: site.id });
 
   return (
-    <main className="page">
-      <PageHead step="Step 2 · Check" title={site.name} sub={`${regionOf(site)}. Does the satellite agree with what the site reports?`} />
-      <div className="split">
-        <div className="col">
+    <main className="page workspace">
+      <PageHead step="Step 2 · Check" title={site.name} sub={`${regionOf(site)}. Compare the emissions baseline with the regional satellite signal.`} />
+      <section className="check-overview" aria-label="Compare the baseline with the satellite signal">
+        <div className="check-readings">
           <article className="card">
-            <h2 className="card-title">
-              What the site reports
-              <Info label="Where this figure comes from">
-                {c.reportedBasis === "reported"
-                  ? `Published figure for ${site.reportedEmissions!.year}: ${site.reportedEmissions!.source}`
-                  : `No published emissions figure for this site, so this is our model's ${c.year} methane (${fmtInt(c.generationT)} t) minus the ${cap}% the site is reported to capture.`}
-              </Info>
-              {c.reportedBasis !== "reported" && <span className="tag">{site.illustrative ? "proxy inputs" : "sourced"}</span>}
-            </h2>
+            <div className="card-heading">
+              <h2 className="card-title">
+                {c.reportedBasis === "reported" ? "What the site reports" : "Estimated site emissions"}
+                <Info label="Where this figure comes from">
+                  {c.reportedBasis === "reported"
+                    ? `Published figure for ${site.reportedEmissions!.year}: ${site.reportedEmissions!.source}`
+                    : `Modelled for ${c.year}: ${fmtInt(c.generationT)} t of methane generated, with ${cap}% captured. No published emissions figure is available. ${site.illustrative ? "Check the proxy inputs against operator records." : "The baseline uses sourced site inputs."}`}
+                </Info>
+              </h2>
+              <span className="tag">{c.reportedBasis === "reported" ? "Published figure" : site.illustrative ? "Proxy inputs" : "Model estimate"}</span>
+            </div>
             <p className="big-num">
               {fmtInt(c.reportedEmissionT)} <span className="unit">t CH₄ a year escaping</span>
             </p>
@@ -109,7 +116,13 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
                     : "Fetching Sentinel-5P data for this site. This usually takes a few minutes; the page updates by itself."
                   : status.state === "failed"
                     ? `The satellite check failed${status.error ? `: ${status.error}` : "."}`
-                    : "The satellite check has not been run for this site yet."}
+                    : loading
+                      ? "Loading satellite data…"
+                      : sat.status === "not_run"
+                        ? "The satellite check has not been run for this site yet."
+                        : `${sat.note} ${sat.overpassesUsed} usable Sentinel-5P pass${sat.overpassesUsed === 1 ? "" : "es"} for ${
+                            sat.windowEnd?.slice(0, 7) ?? "this period"
+                          }; at least ${MIN_PASSES} are needed.`}
               </p>
               {status.state === "failed" && canAdd && (
                 <p>
@@ -124,28 +137,35 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
               <>
                 <p className="big-num">
                   {c.observedPpb > 0 ? "+" : ""}
-                  {c.observedPpb.toFixed(1)} <span className="unit">ppb downwind vs upwind</span>
-                  <Info label="Range and data used">
+                  {c.observedPpb.toFixed(1)}{" "}
+                  <span className="unit">
+                    ppb downwind vs upwind
+                    <Info label="Range and data used">
                     95% range {c.observedCi![0].toFixed(1)} to {c.observedCi![1].toFixed(1)} ppb, from {sat.overpassesUsed} Sentinel-5P
                     passes, {sat.windowStart?.slice(0, 7)} to {sat.windowEnd?.slice(0, 7)}.{" "}
                     {annualSat.periods?.length
                       ? "This period uses the generated Sentinel-5P time series and timestamp-matched ERA5 wind."
                       : "Monthly Sentinel-5P periods are not in this snapshot yet, so the slider uses the annual screening result until the pipeline is refreshed."}
-                  </Info>
+                    </Info>
+                  </span>
                 </p>
                 <SignalChart c={c} />
               </>
             )}
           </article>
+        </div>
+        <Verdict site={site} c={c} loading={loading} />
+      </section>
 
-          <Verdict site={site} c={c} />
+      <div className="split check">
+        <div className="col workflow-stack">
           <TanagerEvidence site={site} tanager={tanager} comparison={c} selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
           <div className="actions">
             <button type="button" className="cta" onClick={toFix}>
               {c.verdict === "higher" ? "See what capture could fix →" : "Plan a capture project →"}
             </button>
-            <a className="ghost" href="#/">
+            <a className="ghost" href="#/landfills">
               ← Back to the globe
             </a>
           </div>
@@ -161,24 +181,30 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
   );
 }
 
-function Verdict({ site, c }: { site: Site; c: ReturnType<typeof compareWithSatellite> }) {
+const MIN_PASSES = 8;
+const hasSignal = (r: { deltaPpb: number | null; ci95Ppb: unknown; status: string; overpassesUsed: number }) =>
+  r.deltaPpb !== null && !!r.ci95Ppb && r.status !== "not_run" && r.overpassesUsed >= MIN_PASSES;
+
+function Verdict({ site, c, loading }: { site: Site; c: ReturnType<typeof compareWithSatellite>; loading: boolean }) {
   if (c.verdict === "no_data") {
-    return <p className="verdict neutral">Not enough satellite passes to compare yet. The capture plan still works without it.</p>;
+    if (loading) return <article className="verdict neutral"><h2>Loading satellite data…</h2></article>;
+    return <article className="verdict neutral"><h2>Not enough data to compare</h2><p>More satellite passes are needed. You can still explore a capture project using the engineering model.</p></article>;
   }
   if (c.verdict === "consistent") {
     return (
-      <div className="verdict ok">
-        <strong>Consistent.</strong> The satellite signal fits what {site.name.split(",")[0]} reports, within the satellite's
-        range.
-      </div>
+      <article className="verdict ok">
+        <h2>Consistent with the baseline</h2>
+        <p>The satellite signal fits {site.name.split(",")[0]}&apos;s {c.reportedBasis === "reported" ? "reported emissions" : "estimated emissions"}, within the satellite&apos;s range.</p>
+        <p className="small">This is a regional screening signal, not proof of the landfill&apos;s emissions.</p>
+      </article>
     );
   }
   if (c.verdict === "lower") {
     return (
-      <div className="verdict neutral">
-        <strong>The satellite sees less than expected.</strong> Capture may be better than reported, or our model overestimates
-        how much methane the site makes.
-      </div>
+      <article className="verdict neutral">
+        <h2>The satellite sees less than expected</h2>
+        <p>Capture may be better than the baseline assumes, or our model may overestimate how much methane the site makes.</p>
+      </article>
     );
   }
   const ratio = c.impliedT! / Math.max(1, c.reportedEmissionT);
@@ -189,9 +215,10 @@ function Verdict({ site, c }: { site: Site; c: ReturnType<typeof compareWithSate
     </>
   );
   return (
-    <div className="verdict warn">
+    <article className="verdict warn">
+      <h2>The signal exceeds the baseline</h2>
       <p className="gap-num">
-        +{fmtPpb(c.gapPpb!)} ppb <span>more than the reported figures explain</span>
+        +{fmtPpb(c.gapPpb!)} ppb <span>more than the baseline explains</span>
       </p>
       {c.exceedsGeneration ? (
         <>
@@ -207,14 +234,14 @@ function Verdict({ site, c }: { site: Site; c: ReturnType<typeof compareWithSate
         <>
           <p>
             {implied}, {ratio >= 10 ? `${Math.round(ratio)}×` : `${ratio.toFixed(1)}×`} the {fmtInt(c.reportedEmissionT)} t the
-            reported capture implies.
+            baseline capture implies.
           </p>
           <p className="small">
-            That would fit capture nearer {Math.round(Math.max(0, 1 - c.impliedT! / c.generationT) * 100)}% than the reported{" "}
+            That would fit capture nearer {Math.round(Math.max(0, 1 - c.impliedT! / c.generationT) * 100)}% than the baseline{" "}
             {Math.round(site.existingCapture * 100)}%. A screening signal worth a closer look, not proof of a leak.
           </p>
         </>
       )}
-    </div>
+    </article>
   );
 }

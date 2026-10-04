@@ -56,6 +56,15 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
     );
   }
 
+  if (!tanager.observations.length || !selectedDate) {
+    return (
+      <article className="card high-res-status">
+        <div className="status-kicker"><span className="status-dot" /> High-resolution layer</div>
+        <h2 className="card-title">Loading Tanager observations</h2>
+      </article>
+    );
+  }
+
   const visibleObservations = tanager.observations.filter((observation) => observation.observedAt.slice(0, 10) <= selectedDate);
   const distances = visibleObservations.map((observation) => ({
     ...observation,
@@ -122,36 +131,39 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
         />
         <span className="year-scrubber-range"><small>{formatDate(yearStart(tanager.observations))}</small><small>{formatDate(yearEnd(tanager.observations))}</small></span>
       </label>
-      <div className="evidence-stack">
-        <div className="evidence-stack-head">
-          <span className="status-kicker">Evidence stack</span>
-          <span className="muted small">screen → confirm → attribute</span>
+      <details className="analysis-details evidence-details">
+        <summary>Evidence layers and source requirements</summary>
+        <div className="evidence-stack">
+          <div className="evidence-stack-head">
+            <span className="status-kicker">Evidence stack</span>
+            <span className="muted small">screen → confirm → attribute</span>
+          </div>
+          <EvidenceLayer
+            label="Regional screening"
+            source="Sentinel-5P / TROPOMI"
+            status="available"
+            detail="Multi-pass downwind-versus-upwind methane anomaly."
+          />
+          <EvidenceLayer
+            label="Facility-scale confirmation"
+            source="Carbon Mapper / Tanager"
+            status="available"
+            detail="High-resolution catalogue source point and reported rate."
+          />
+          <EvidenceLayer
+            label="Site context"
+            source="Sentinel-2"
+            status="required"
+            detail="Landfill boundary, gas infrastructure and nearby land-use context."
+          />
+          <EvidenceLayer
+            label="Plume attribution"
+            source="GHGSat or Tanager geometry"
+            status="required"
+            detail="Plume footprint, origin, timestamp wind and repeat observations."
+          />
         </div>
-        <EvidenceLayer
-          label="Regional screening"
-          source="Sentinel-5P / TROPOMI"
-          status="available"
-          detail="Multi-pass downwind-versus-upwind methane anomaly."
-        />
-        <EvidenceLayer
-          label="Facility-scale confirmation"
-          source="Carbon Mapper / Tanager"
-          status="available"
-          detail="High-resolution catalogue source point and reported rate."
-        />
-        <EvidenceLayer
-          label="Site context"
-          source="Sentinel-2"
-          status="required"
-          detail="Landfill boundary, gas infrastructure and nearby land-use context."
-        />
-        <EvidenceLayer
-          label="Plume attribution"
-          source="GHGSat or Tanager geometry"
-          status="required"
-          detail="Plume footprint, origin, timestamp wind and repeat observations."
-        />
-      </div>
+      </details>
       <div className="attribution-panel">
         <div className="attribution-head">
           <span className="status-kicker">Attribution assessment</span>
@@ -163,40 +175,43 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
         <p className="muted small">
           The evidence is close enough to investigate, but proximity alone cannot identify the landfill as the source.
         </p>
-        <ul className="evidence-checks">
-          <li className="evidence-check pass">
-            <span aria-hidden="true">{nearest === null ? "·" : "+"}</span>
-            <span><strong>Nearby source point</strong><small>{nearest === null ? "No dated Tanager record is visible at this point in the year." : `Nearest catalogue point is ${nearest.toFixed(1)} km from the registered landfill coordinate.`}</small></span>
-          </li>
-          <li className={`evidence-check ${regionalCorroboration ? "pass" : "pending"}`}>
-            <span aria-hidden="true">{regionalCorroboration ? "+" : "?"}</span>
-            <span><strong>Regional downwind corroboration</strong><small>
-              {regionalCorroboration
-                ? `Sentinel-5P shows a consistent +${comparison.observedPpb!.toFixed(1)} ppb downwind anomaly.`
-                : "No statistically consistent downwind anomaly is available for this comparison."}
-            </small></span>
-          </li>
-          <li className={`evidence-check ${repeatObservations ? "pass" : "pending"}`}>
-            <span aria-hidden="true">{repeatObservations ? "+" : "?"}</span>
-            <span><strong>Repeat observations</strong><small>
-              {repeatObservations
-                ? `${new Set(visibleObservations.map((observation) => observation.observedAt.slice(0, 10))).size} observation dates are represented in the catalogue.`
-                : "Only one observation date is currently represented in the public catalogue."}
-            </small></span>
-          </li>
-          <li className="evidence-check pending">
-            <span aria-hidden="true">?</span>
-            <span><strong>Plume geometry and boundary overlap</strong><small>Required to test whether the plume origin overlaps the landfill boundary.</small></span>
-          </li>
-          <li className="evidence-check pending">
-            <span aria-hidden="true">?</span>
-            <span><strong>Timestamp-matched wind and repeat detections</strong><small>Required to confirm a persistent source across changing wind conditions.</small></span>
-          </li>
-          <li className="evidence-check pending">
-            <span aria-hidden="true">?</span>
-            <span><strong>Competing-source check</strong><small>Nearby gas, wastewater, agricultural and wetland source layers are not loaded yet.</small></span>
-          </li>
-        </ul>
+        <details className="attribution-details">
+          <summary>View the attribution checks</summary>
+          <ul className="evidence-checks">
+            <li className="evidence-check pass">
+              <span aria-hidden="true">{nearest === null ? "·" : "+"}</span>
+              <span><strong>Nearby source point</strong><small>{nearest === null ? "No dated Tanager record is visible at this point in the year." : `Nearest catalogue point is ${nearest.toFixed(1)} km from the registered landfill coordinate.`}</small></span>
+            </li>
+            <li className={`evidence-check ${regionalCorroboration ? "pass" : "pending"}`}>
+              <span aria-hidden="true">{regionalCorroboration ? "+" : "?"}</span>
+              <span><strong>Regional downwind corroboration</strong><small>
+                {regionalCorroboration
+                  ? `Sentinel-5P shows a consistent +${comparison.observedPpb!.toFixed(1)} ppb downwind anomaly.`
+                  : "No statistically consistent downwind anomaly is available for this comparison."}
+              </small></span>
+            </li>
+            <li className={`evidence-check ${repeatObservations ? "pass" : "pending"}`}>
+              <span aria-hidden="true">{repeatObservations ? "+" : "?"}</span>
+              <span><strong>Repeat observations</strong><small>
+                {repeatObservations
+                  ? `${new Set(visibleObservations.map((observation) => observation.observedAt.slice(0, 10))).size} observation dates are represented in the catalogue.`
+                  : "Only one observation date is currently represented in the public catalogue."}
+              </small></span>
+            </li>
+            <li className="evidence-check pending">
+              <span aria-hidden="true">?</span>
+              <span><strong>Plume geometry and boundary overlap</strong><small>Required to test whether the plume origin overlaps the landfill boundary.</small></span>
+            </li>
+            <li className="evidence-check pending">
+              <span aria-hidden="true">?</span>
+              <span><strong>Timestamp-matched wind and repeat detections</strong><small>Required to confirm a persistent source across changing wind conditions.</small></span>
+            </li>
+            <li className="evidence-check pending">
+              <span aria-hidden="true">?</span>
+              <span><strong>Competing-source check</strong><small>Nearby gas, wastewater, agricultural and wetland source layers are not loaded yet.</small></span>
+            </li>
+          </ul>
+        </details>
       </div>
       <div className="tanager-summary">
         <span><strong>{nearest === null ? "—" : `${nearest.toFixed(1)} km`}</strong><small>nearest source point</small></span>
@@ -213,22 +228,24 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
           </div>
         ))}
       </div>
-      <div className="tanager-list">
-        <strong className="timeline-label">Observation timeline</strong>
-        {visibleObservations.map((observation) => (
-          <div className="tanager-row" key={observation.plumeId}>
-            <span>
-              <strong>{formatDate(observation.observedAt)}</strong>
-              <span className="muted"> · {observation.plumeId}</span>
-            </span>
-            <span className="tanager-rate">
-              {observation.emissionKgPerHour === null
-                ? "Rate unavailable"
-                : `${Math.round(observation.emissionKgPerHour)} kg CH₄/h ± ${Math.round(observation.emissionUncertaintyKgPerHour ?? 0)}`}
-            </span>
-          </div>
-        ))}
-      </div>
+      <details className="analysis-details evidence-details">
+        <summary>Observation timeline · {visibleObservations.length} records</summary>
+        <div className="tanager-list">
+          {visibleObservations.map((observation) => (
+            <div className="tanager-row" key={observation.plumeId}>
+              <span>
+                <strong>{formatDate(observation.observedAt)}</strong>
+                <span className="muted"> · {observation.plumeId}</span>
+              </span>
+              <span className="tanager-rate">
+                {observation.emissionKgPerHour === null
+                  ? "Rate unavailable"
+                  : `${Math.round(observation.emissionKgPerHour)} kg CH₄/h ± ${Math.round(observation.emissionUncertaintyKgPerHour ?? 0)}`}
+              </span>
+            </div>
+          ))}
+        </div>
+      </details>
     </article>
   );
 }
@@ -264,9 +281,10 @@ function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-AU", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(
-    new Date(value),
-  );
+  const date = new Date(value);
+  // Intl throws a RangeError on an invalid date, which would blank the whole page.
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-AU", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(date);
 }
 
 function yearStart(observations: TanagerSite["observations"]) {

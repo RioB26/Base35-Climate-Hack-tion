@@ -8,15 +8,21 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 |---|---|
 | Claude (Anthropic), via Claude Code | Project research and planning; scaffolding the web app, model, tests, satellite pipeline and these docs. All output reviewed by the team. |
 | Claude (Anthropic), design tool | Sentinel Sniff brand kit from the team's brief: logo mark, wordmark, lockups, favicon, app icon and share card layout (`web/public/`). |
-| Codex (OpenAI) | Currency selector implementation and verification; reviewed against the app styling and existing model. |
+| Codex (OpenAI) | Currency selector, homepage and shared workflow styling; responsive layout, rendering fallbacks and verification; reviewed against the app styling and existing model. |
+| OpenAI image generation, built-in imagegen tool | Detailed homepage landfill scene, conceptual wind comparison, landscape background and decorative foliage. Optimized as WebP; illustrations are not site photographs or measured data. Prompts recorded in [HOMEPAGE_ASSETS.md](HOMEPAGE_ASSETS.md). |
+| User-supplied Sentinel Sniff brand kit | Plume-to-leaf SVG marks and favicon, live wordmark styling and homepage brand refinements. Supplied SVG provenance metadata retained. Integration recorded in [BRAND.md](BRAND.md). |
 
 ## Datasets and APIs
 
 | Dataset | Used for | Source | Status |
 |---|---|---|---|
+| US EPA, Basic Information about Landfill Gas and Frequent Questions | Homepage explanation of methane formation, capture-to-electricity, combustion and waste diversion | https://www.epa.gov/lmop/basic-information-about-landfill-gas ; https://www.epa.gov/lmop/frequent-questions-about-landfill-gas | Background verified 4 Oct 2026 |
+| Sustainable Business Network, Climate Hack-tion: Build for 2035 | Event and COP31 context | https://sustainable.org.nz/learn/events/climate-hack-tion-challenge-build-for-2035/ | Event brief checked 4 Oct 2026 |
+| UNFCCC, official COP31 conference page | Homepage footer link to the UN climate summit; this project is not an official COP31 tool | https://unfccc.int/cop31 | Link checked 4 Oct 2026 |
+| Google Earth Engine Data Catalog, Sentinel-5P methane and ERA5-Land hourly | Footer links to documentation for the satellite and wind datasets already used in the pipeline | https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S5P_OFFL_L3_CH4 ; https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_LAND_HOURLY | Documentation links checked 4 Oct 2026 |
 | Sentinel-5P TROPOMI L3 CH₄ (Copernicus, via Google Earth Engine `COPERNICUS/S5P/OFFL/L3_CH4`) | Satellite screening signal | ESA / Copernicus | Run for all five sites, 2024-10-01 to 2025-10-01 |
-| Frankfurter daily reference exchange rates | Display conversion from AUD to NZD, USD, EUR, GBP, CAD, CHF and JPY; rate dates shown in the selector | https://frankfurter.dev/ | Fetched at runtime; AUD remains available if rates fail |
-| ISO 4217 currency codes (SIX maintenance agency) | Currency identifiers and names | https://www.six-group.com/en/products-services/financial-information/market-reference-data/data-standards.html | Eight current currency codes used |
+| Frankfurter daily reference exchange rates | Display conversion from AUD to NZD, FJD, PGK, SBD, VUV, WST, TOP, XPF, USD, EUR, GBP, CAD, CHF and JPY; rate dates shown in the selector | https://frankfurter.dev/ | Fetched at runtime; all 14 quotes verified on 4 Oct 2026; AUD remains available if rates fail |
+| ISO 4217 currency codes (SIX maintenance agency) | Currency identifiers and names; standard minor units used by Intl.NumberFormat | https://www.six-group.com/en/products-services/financial-information/market-reference-data/data-standards.html | Fifteen current currency codes used; the Australia/New Zealand/Pacific expansion includes FJD, PGK, SBD, VUV, WST, TOP and XPF |
 | ERA5-Land hourly wind (`ECMWF/ERA5_LAND/HOURLY`) | Wind direction per overpass | ECMWF / Copernicus Climate Change Service | Run for all five sites, 2024-10-01 to 2025-10-01 |
 | Carbon Mapper public catalog / Tanager | High-resolution CH₄ plume corroboration in the Check step | https://data.carbonmapper.org/ and https://api.carbonmapper.org | Snapshot checked 2026-10-04; records near Lucas Heights and Ravenhall; no public coverage found within 15 km for Mugga Lane, Redvale or Kate Valley. Sites added in the app are searched by the satellite job and stored in the `tanager_results` table; verify Carbon Mapper's Terms of Use before redistributing |
 | Mugga Lane factsheet, ACT City Services (Aug 2025) | Mugga Lane tonnage, existing 4.24 MW / 37,000 MWh plant | https://www.cityservices.act.gov.au/__data/assets/pdf_file/0003/1653393/Mugga-Lane-Gas-to-Energy-factsheet-August2025-acc.pdf | Used; history and closure are proxies |

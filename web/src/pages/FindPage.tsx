@@ -4,6 +4,7 @@ import { country, regionOf, useData } from "../data";
 import type { Route } from "../route";
 import type { Site } from "../model/types";
 import { Loading } from "../components/Mark";
+import { JOURNEY } from "../data/journey";
 
 const GlobeView = lazy(() => import("../components/GlobeView"));
 
@@ -15,41 +16,40 @@ function satelliteLabel(state: string, status: string): string {
   return STATUS[status];
 }
 
-const HOW = [
-  ["Find", "Pick a landfill on the globe or search for it."],
-  ["Check", "Compare what the site reports with what the Sentinel-5P satellite sees downwind."],
-  ["Fix", "Set up a capture project: target capture, start year, power price, costs."],
-  ["Fund", "See the budget, the electricity and money it makes, and a COP31 alignment check."],
-];
-
 export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void }) {
   const [query, setQuery] = useState("");
   const [target, setTarget] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const { satelliteFor, statusFor, canAdd } = useData();
+  const { satelliteFor, statusFor, canAdd, notice, dismissNotice } = useData();
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return sites;
     return sites.filter((s) => `${s.name} ${regionOf(s)} ${s.state}`.toLowerCase().includes(q));
   }, [query, sites]);
   const byCountry = ["Australia", "New Zealand", "Fiji"]
-    .map((c) => ({ c, n: sites.filter((s) => country(s) === c).length }))
-    .filter((x) => x.n > 0)
-    .map((x) => `${x.n} in ${x.c}`);
+    .map((name) => ({ name, count: sites.filter((site) => country(site) === name).length }))
+    .filter(({ count }) => count > 0)
+    .map(({ name, count }) => `${count} in ${name}`);
 
   return (
-    <>
-      <section className="find">
+    <main className="find-page">
+      {notice && (
+        <div className="notice" role="alert">
+          <div><strong>{notice.title}</strong><p>{notice.message}</p></div>
+          <button type="button" className="notice-close" onClick={dismissNotice} aria-label="Dismiss">×</button>
+        </div>
+      )}
+      <section className="find" aria-labelledby="find-title">
         <Suspense fallback={<Loading className="globe-wrap globe-loading" label="Loading globe…" />}>
           <GlobeView sites={sites} target={target} onPick={setTarget} onArrive={(id) => go({ page: "check", siteId: id })} />
         </Suspense>
         <div className="find-card">
-          <p className="eyebrow">Climate Hack-tion 2026 · Zero waste and methane · Build for 2035</p>
-          <h1>
+          <p className="eyebrow">Step 1 · Find</p>
+          <h1 id="find-title">
             Which landfills should we <em>fix first</em>?
           </h1>
           <p className="lede">
-            Pick a landfill to check its methane, plan a capture project and see what it would cost and earn.
+            Choose a site to screen its methane signal, explore additional gas capture and compare project costs and returns.
           </p>
           <form
             className="search"
@@ -70,17 +70,12 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
           <ul className="results" aria-live="polite">
             {matches.map((s) => (
               <li key={s.id}>
-                <button type="button" className={target === s.id ? "on" : ""} onClick={() => setTarget(s.id)}>
-                  <span className="r-name">{s.name}</span>
-                  <span className="r-meta">
-                    {regionOf(s)} · {satelliteLabel(statusFor(s.id).state, satelliteFor(s.id).status)}
-                    {s.illustrative && (
-                      <>
-                        {" "}
-                        <span className="tag">proxy inputs</span>
-                      </>
-                    )}
+                <button type="button" className={target === s.id ? "on" : ""} aria-pressed={target === s.id} onClick={() => setTarget(s.id)}>
+                  <span className="r-heading">
+                    <span className="r-name">{s.name}</span>
+                    {s.illustrative && <span className="tag">Proxy inputs</span>}
                   </span>
+                  <span className="r-meta"><span>{regionOf(s)}</span><span className="site-status">{satelliteLabel(statusFor(s.id).state, satelliteFor(s.id).status)}</span></span>
                 </button>
               </li>
             ))}
@@ -89,6 +84,7 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
           <p className="fine">
             {sites.length} landfills so far ({listJoin(byCountry)}).
           </p>
+          <p className="input-note">Proxy inputs are estimates used where site-specific model data is unavailable. Review them before planning a project.</p>
           {canAdd && (
             <button type="button" className="ghost" onClick={() => setAdding(true)}>
               Add a landfill
@@ -100,14 +96,21 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
       {adding && (
         <AddSiteForm
           onClose={() => setAdding(false)}
-          // Stay on Find: the site joins the list and globe as its data arrives, instead of opening an empty Check page.
-          onAdded={() => setAdding(false)}
+          onLeave={() => setAdding(false)}
+          onAdded={() => {
+            setAdding(false);
+          }}
         />
       )}
 
-      <section className="page how">
+      <section className="page how" aria-labelledby="find-how-title">
+        <div className="page-head">
+          <p className="eyebrow">Find · Check · Fix · Fund</p>
+          <h2 id="find-how-title" className="section-title">From a site to a funding decision</h2>
+          <p className="page-sub">Satellite screening helps decide where to look closer. A separate model estimates what a capture project could achieve by 2035.</p>
+        </div>
         <ol className="steps">
-          {HOW.map(([title, text], i) => (
+          {JOURNEY.map(([title, text], i) => (
             <li key={title}>
               <span className="step-num">{i + 1}</span>
               <span className="step-title">{title}</span>
@@ -129,8 +132,8 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }
 
-const listJoin = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+const listJoin = (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`);

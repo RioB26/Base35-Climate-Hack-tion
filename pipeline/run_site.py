@@ -20,10 +20,12 @@ from datetime import date, timedelta
 
 from carbon_mapper import SOURCES_URL, get_json, plumes_for_site
 from satellite import run_site as screen_site
+from sector_analysis import Settings
 from supabase_io import Supabase
 
 ERA5_LAG_DAYS = 90
 TANAGER_RADIUS_KM = 15
+EXPORT_PATH = "satellite-export.json"
 
 
 def collect_plumes(db, site: dict) -> None:
@@ -35,6 +37,34 @@ def collect_plumes(db, site: dict) -> None:
         db.upsert("tanager_results", "site_id", {"site_id": site["id"], "data": data})
     except Exception as e:  # noqa: BLE001
         print(f"plume search failed for {site['id']}: {type(e).__name__}: {e}")
+
+
+def rejection_for(result: dict) -> str | None:
+    """Why a screened site has too little usable satellite data to keep, or None if it is good enough.
+
+    A noisy signal with enough overpasses is a valid "inconclusive" result and is kept.
+    """
+    used = result.get("overpassesUsed", 0)
+    minimum = Settings().min_overpasses
+    if used == 0:
+        return (
+            "We found no usable Sentinel-5P methane readings around these coordinates "
+            "(for example cloud cover, or the pin is not on or near land). Check the latitude and longitude."
+        )
+    if used < minimum:
+        return (
+            f"We only found {used} usable satellite overpass{'es' if used != 1 else ''} in the last year "
+            f"and need at least {minimum} to check this site reliably."
+        )
+    return None
+
+
+def export_result(site_id: str, result: dict, grid: dict) -> None:
+    """Write a CI artifact without changing the bundled demo data automatically."""
+    path = os.environ.get("SATELLITE_EXPORT_PATH", EXPORT_PATH)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump({"siteId": site_id, "satellite": result, "grid": grid}, handle, indent=2)
+        handle.write("\n")
 
 
 def init_earth_engine():
@@ -51,7 +81,7 @@ def init_earth_engine():
 
 
 def process(db, init_ee, site_id: str, start: str, end: str) -> bool:
-    """Screen one site and record the outcome. Returns True on success; failures are recorded, not raised.
+    """Screen one site and record the outcome. Returns True when the outcome was recorded (done or rejected); failures are recorded, not raised.
 
     init_ee is called inside the guard so an Earth Engine auth failure is reported to the UI too.
     """
@@ -62,8 +92,14 @@ def process(db, init_ee, site_id: str, start: str, end: str) -> bool:
     collect_plumes(db, site)  # first: it needs no Earth Engine auth, the most fragile part
     try:
         result, grid = screen_site(init_ee(), site, start, end)
+        reason = rejection_for(result)
+        if reason:
+            # Not enough data to keep: nothing is stored, the app shows the reason and the site is removed.
+            db.set_status(site_id, "rejected", reason)
+            return True  # a handled outcome: exiting non-zero would make the workflow overwrite it with "failed"
         db.upsert("satellite_results", "site_id", {"site_id": site_id, "data": result})
         db.upsert("methane_grid", "site_id", {"site_id": site_id, "data": grid})
+        export_result(site_id, result, grid)
     except Exception as e:  # noqa: BLE001 - any failure must reach the UI instead of leaving "running"
         db.set_status(site_id, "failed", f"{type(e).__name__}: {e}"[:500])
         return False
