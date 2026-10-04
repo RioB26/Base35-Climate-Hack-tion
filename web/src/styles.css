@@ -124,6 +124,12 @@ button.ghost:hover { border-color: var(--iron); }
 .tanager-pin { display: flex; align-items: center; gap: 6px; transform: translateX(-4px); pointer-events: none; font-size: 11px; color: var(--ink); white-space: nowrap; }
 .tanager-pin-dot { width: 10px; height: 10px; display: block; border-radius: 50%; background: var(--tangerine); border: 2px solid #fffaf3; box-shadow: 0 0 0 2px var(--tangerine); }
 .tanager-pin-label { padding: 3px 6px; border-radius: 999px; background: rgba(255, 254, 251, 0.94); font-weight: 700; }
+.wind-direction { display: flex; align-items: center; gap: 4px; padding: 4px 6px; border-radius: 7px; background: rgba(255, 254, 251, .92); color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .06em; white-space: nowrap; box-shadow: 0 1px 5px rgba(48, 55, 50, .16); pointer-events: none; }
+.wind-direction-arrow { display: inline-block; font-size: 18px; line-height: 1; transform-origin: center; }
+.wind-direction.downwind { border: 1px solid rgba(196, 82, 53, .4); }
+.wind-direction.downwind .wind-direction-arrow { color: var(--tangerine); }
+.wind-direction.upwind { border: 1px solid rgba(88, 153, 226, .4); }
+.wind-direction.upwind .wind-direction-arrow { color: var(--sky); }
 .pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); background: var(--tangerine); transition: transform 0.15s ease; }
 .pin[data-status="funded"] .pin-dot { background: var(--evergreen); }
 .pin[data-status="unfunded"] .pin-dot { background: #8a9592; }
