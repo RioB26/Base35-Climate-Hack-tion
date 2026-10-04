@@ -52,13 +52,20 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           data: {
             type: "FeatureCollection",
             features: cells.map(([lat, lon, ppb]) => {
-              const h = CELL_DEG / 2;
+              const latHalf = CELL_DEG / 2;
+              const lonHalf = latHalf / Math.max(0.65, Math.cos((lat * Math.PI) / 180));
               return {
                 type: "Feature",
                 properties: { ppb, norm: hi > lo ? (ppb - lo) / (hi - lo) : 0.5 },
                 geometry: {
                   type: "Polygon",
-                  coordinates: [[[lon - h, lat - h], [lon + h, lat - h], [lon + h, lat + h], [lon - h, lat + h], [lon - h, lat - h]]],
+                  coordinates: [[
+                    [lon - lonHalf, lat - latHalf],
+                    [lon + lonHalf, lat - latHalf],
+                    [lon + lonHalf, lat + latHalf],
+                    [lon - lonHalf, lat + latHalf],
+                    [lon - lonHalf, lat - latHalf],
+                  ]],
                 },
               };
             }),
@@ -70,8 +77,8 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           source: "cells",
           paint: {
             "fill-color": ["interpolate", ["linear"], ["get", "norm"], 0, LOW, 1, HIGH],
-            "fill-opacity": 0.12,
-            "fill-outline-color": "rgba(255,255,255,0.16)",
+            "fill-opacity": 0.2,
+            "fill-outline-color": "rgba(116,72,47,0.28)",
           },
         });
       }
@@ -217,11 +224,9 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
       <div className="map-legend">
         {cells.length > 0 ? (
           <>
-            {tanager.status !== "no_public_coverage" && tanager.observations.length === 0 && (
+            {(mapLayer === "low" || !hasHighResolution) && (
               <>
-                <span>
-                  Regional context · Sentinel-5P cells (~5 km)
-                </span>
+                <span>Regional context · Sentinel-5P cells (~5 km)</span>
                 <span className="ramp" style={{ background: `linear-gradient(90deg, ${LOW}, ${HIGH})` }} />
                 <span className="scale">
                   <span>{lo.toFixed(0)} ppb</span>
@@ -238,7 +243,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         )}
         {tanager.observations.length === 0 && (
           <span className="coverage-gap">
-            <span className="coverage-gap-dot" /> High-resolution observation required · Sentinel-5P only
+            <span className="coverage-gap-dot" /> Coarse regional screening only
           </span>
         )}
         <span className="legend-row">
