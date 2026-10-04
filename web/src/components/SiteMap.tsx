@@ -31,6 +31,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const { cells, lo, hi } = cellRange(grid);
   const wind = sat.wind;
   const towards = wind ? (wind.fromDeg + 180) % 360 : null;
+  const windAvailable = towards !== null;
   showWindRef.current = showWind;
 
   useEffect(() => {
@@ -265,15 +266,22 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         <div ref={container} className="map" />
         <CurrencyAnchor />
         <div className="map-overlay-head">
-          <button
-            type="button"
-            className={`wind-toggle ${showWind ? "active" : ""}`}
-            aria-pressed={showWind}
-            onClick={() => setShowWind((visible) => !visible)}
-          >
-            <span className="wind-toggle-mark" aria-hidden="true">↝</span>
-            Wind overlay {showWind ? "on" : "off"}
-          </button>
+          {windAvailable ? (
+            <button
+              type="button"
+              className={`wind-toggle ${showWind ? "active" : ""}`}
+              aria-pressed={showWind}
+              onClick={() => setShowWind((visible) => !visible)}
+            >
+              <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+              Wind overlay {showWind ? "on" : "off"}
+            </button>
+          ) : (
+            <div className="wind-toggle unavailable" role="status">
+              <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+              Wind overlay unavailable
+            </div>
+          )}
           <div className="wind-card">
             {wind && towards !== null ? (
               <>
