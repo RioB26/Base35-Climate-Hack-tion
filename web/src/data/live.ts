@@ -1,5 +1,6 @@
 // Pure helpers that turn Supabase rows into the app's types and merge them over the bundled seed data.
 import type { SatelliteResult, Site } from "../model/types";
+import type { TanagerSite } from "./seed";
 
 export type SatelliteState = "pending" | "running" | "done" | "failed";
 
@@ -83,6 +84,13 @@ export function statusMap(seed: Site[], rows: SiteRow[]): Record<string, StatusI
 
 export function mergeById<T>(seed: Record<string, T>, rows: { site_id: string; data: T }[]): Record<string, T> {
   return { ...seed, ...Object.fromEntries(rows.map((r) => [r.site_id, r.data])) };
+}
+
+/** A stored plume record wins; otherwise a site still being processed shows "pending", else the bundled snapshot. */
+export function resolveTanager(stored: TanagerSite | undefined, status: StatusInfo, bundled: TanagerSite): TanagerSite {
+  if (stored) return stored;
+  const inProgress = status.state === "pending" || status.state === "running";
+  return inProgress && bundled.status === "not_checked" ? { ...bundled, status: "pending" } : bundled;
 }
 
 export const NOT_RUN: SatelliteResult = {
