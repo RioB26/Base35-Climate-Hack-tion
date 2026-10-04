@@ -5,7 +5,7 @@ import type { MethaneGrid, TanagerSite } from "../data";
 import { shortName } from "../format";
 import type { SatelliteResult, Site } from "../model/types";
 import { CurrencyAnchor } from "./currency";
-import { bundledStyle, compass, offset, ring, sector } from "./basemap";
+import { bundledStyle, ring, sector } from "./basemap";
 import { VisualFallback } from "./Mark";
 
 type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined; tanager: TanagerSite };
@@ -19,6 +19,10 @@ const HIGH = "#a4512a";
 /** Site close-up: mean methane per grid cell, the 10 to 30 km analysis area and the prevailing wind. */
 export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const container = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const analysisBaseRef = useRef<GeoJSON.Feature[]>([]);
+  const windMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const showWindRef = useRef(true);
   const [fallback, setFallback] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [mapLayer, setMapLayer] = useState<"low" | "high">("low");
@@ -27,6 +31,8 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const { cells, lo, hi } = cellRange(grid);
   const wind = sat.wind;
   const towards = wind ? (wind.fromDeg + 180) % 360 : null;
+  const windAvailable = towards !== null;
+  showWindRef.current = showWind;
 
   useEffect(() => {
     if (!container.current) return;
@@ -125,6 +131,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         properties: { kind: "ring" },
         geometry: { type: "LineString", coordinates: ring(site.lat, site.lon, km) },
       }));
+      analysisBaseRef.current = features.slice();
       if (hasHighResolution && mapLayer === "high") {
         for (const observation of tanager.observations) {
           features.push({
@@ -140,7 +147,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           });
         }
       }
-      if (showWind && towards !== null) {
+      if (showWindRef.current && towards !== null) {
         features.push(
           { type: "Feature", properties: { kind: "down" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards, 30, 10, 30)] } },
           { type: "Feature", properties: { kind: "up" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards + 180, 30, 10, 30)] } },
@@ -172,24 +179,33 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
       }
     };
     m.on("style.load", addOverlays);
+    mapRef.current = m;
 
     const el = document.createElement("div");
     el.className = "pin selected";
     el.innerHTML = '<span class="pin-dot"></span><span class="pin-label"></span>';
     el.querySelector<HTMLSpanElement>(".pin-label")!.textContent = shortName(site.name);
     new maplibregl.Marker({ element: el, anchor: "left" }).setLngLat([site.lon, site.lat]).addTo(m);
-    if (showWind && towards !== null) {
+    if (showWindRef.current && towards !== null) {
       [
-        { label: "DOWNWIND", bearing: towards, className: "downwind" },
-        { label: "UPWIND", bearing: (towards + 180) % 360, className: "upwind" },
+        { label: "Downwind", bearing: towards, className: "downwind" },
+        { label: "Upwind", bearing: (towards + 180) % 360, className: "upwind" },
       ].forEach(({ label, bearing, className }) => {
         const direction = document.createElement("div");
         direction.className = `wind-direction ${className}`;
-        direction.innerHTML = `<span class="wind-direction-arrow" style="transform: rotate(${bearing}deg)">➤</span><span>${label}</span>`;
+        direction.style.setProperty("--wind-bearing", `${bearing}deg`);
+        const arrow = document.createElement("span");
+        arrow.className = "wind-direction-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        const text = document.createElement("span");
+        text.className = "wind-direction-label";
+        text.textContent = label;
+        direction.append(arrow, text);
         direction.setAttribute("aria-label", `${label.toLowerCase()} wind direction`);
-        new maplibregl.Marker({ element: direction, anchor: "center" })
-          .setLngLat(offset(site.lat, site.lon, 23, bearing))
+        const marker = new maplibregl.Marker({ element: direction, anchor: "center", offset: windMarkerOffset(bearing) })
+          .setLngLat([site.lon, site.lat])
           .addTo(m);
+        windMarkersRef.current.push(marker);
       });
     }
     if (hasHighResolution && mapLayer === "high") tanager.observations.forEach((observation, index) => {
@@ -202,9 +218,33 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         .addTo(m);
     });
 
-    return () => m.remove();
+    return () => {
+      windMarkersRef.current = [];
+      analysisBaseRef.current = [];
+      mapRef.current = null;
+      m.remove();
+    };
     // One map per site; the page remounts this component when the site changes.
-  }, [site, grid, towards, tanager, mapLayer, hasHighResolution, showWind]);
+  }, [site, grid, towards, tanager, mapLayer, hasHighResolution]);
+
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    const source = m.getSource("analysis");
+    if (source?.type === "geojson" && "setData" in source && typeof source.setData === "function") {
+      const features = analysisBaseRef.current.slice();
+      if (showWind && towards !== null) {
+        features.push(
+          { type: "Feature", properties: { kind: "down" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards, 30, 10, 30)] } },
+          { type: "Feature", properties: { kind: "up" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards + 180, 30, 10, 30)] } },
+        );
+      }
+      source.setData({ type: "FeatureCollection", features });
+    }
+    windMarkersRef.current.forEach((marker) => {
+      marker.getElement().style.display = showWind ? "" : "none";
+    });
+  }, [showWind, site.lat, site.lon, towards]);
 
   if (unavailable) {
     return (
@@ -233,32 +273,22 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         <div ref={container} className="map" />
         <CurrencyAnchor />
         <div className="map-overlay-head">
-          <button
-            type="button"
-            className={`wind-toggle ${showWind ? "active" : ""}`}
-            aria-pressed={showWind}
-            onClick={() => setShowWind((visible) => !visible)}
-          >
-            <span className="wind-toggle-mark" aria-hidden="true">↝</span>
-            Wind overlay {showWind ? "on" : "off"}
-          </button>
-          <div className="wind-card">
-            {wind && towards !== null ? (
-              <>
-                <svg viewBox="0 0 40 40" className="wind-arrow" style={{ transform: `rotate(${towards}deg)` }} aria-hidden="true">
-                  <path d="M20 4 L28 20 L22 18 L22 36 L18 36 L18 18 L12 20 Z" />
-                </svg>
-                <span>
-                  Wind mostly from the <strong>{compass(wind.fromDeg)}</strong>, {wind.meanSpeedMs.toFixed(1)} m/s on average
-                  <span className="muted"> · ERA5, {sat.overpassesUsed} passes</span>
-                </span>
-              </>
-            ) : (
-              <span className="muted">
-                Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
-              </span>
-            )}
-          </div>
+          {windAvailable ? (
+            <button
+              type="button"
+              className={`wind-toggle ${showWind ? "active" : ""}`}
+              aria-pressed={showWind}
+              onClick={() => setShowWind((visible) => !visible)}
+            >
+              <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+              Wind overlay {showWind ? "on" : "off"}
+            </button>
+          ) : (
+            <div className="wind-toggle unavailable" role="status">
+              <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+              Wind overlay unavailable
+            </div>
+          )}
         </div>
         <div className="map-legend">
           {cells.length > 0 ? (
@@ -309,4 +339,10 @@ function cellRange(grid: MethaneGrid[string] | undefined) {
   const cells = grid?.cells ?? [];
   const vals = cells.map((c) => c[2]);
   return { cells, lo: vals.length ? Math.min(...vals) : 0, hi: vals.length ? Math.max(...vals) : 0 };
+}
+
+function windMarkerOffset(bearingDeg: number): [number, number] {
+  const radians = (bearingDeg * Math.PI) / 180;
+  const distancePx = 46;
+  return [Math.round(Math.sin(radians) * distancePx), Math.round(-Math.cos(radians) * distancePx)];
 }

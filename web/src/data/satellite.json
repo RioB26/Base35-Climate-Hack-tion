@@ -1,4 +1,4 @@
-{
+﻿{
   "mugga-lane": {
     "overpassesUsed": 26,
     "windowStart": "2024-10-01T04:11",
@@ -26,17 +26,31 @@
     "note": "Downwind methane is consistently above upwind."
   },
   "ravenhall": {
-    "overpassesUsed": 40,
-    "windowStart": "2024-10-02T03:52",
-    "windowEnd": "2025-09-29T04:08",
-    "deltaPpb": 5.73,
+    "overpassesUsed": 33,
+    "windowStart": "2025-07-07T03:49",
+    "windowEnd": "2026-06-28T04:23",
+    "deltaPpb": 2.5,
     "ci95Ppb": [
-      1.1,
-      11.12
+      -3.83,
+      9.16
     ],
     "confidence": "high",
-    "status": "elevated",
-    "note": "Downwind methane is consistently above upwind."
+    "wind": {
+      "meanSpeedMs": 3.27,
+      "fromDeg": 167.9,
+      "rose": [
+        5,
+        1,
+        0,
+        2,
+        23,
+        1,
+        0,
+        1
+      ]
+    },
+    "status": "neutral",
+    "note": "No consistent downwind enhancement."
   },
   "redvale": {
     "overpassesUsed": 11,
