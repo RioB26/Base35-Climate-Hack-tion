@@ -6,6 +6,7 @@ import { shortName } from "../format";
 import type { SatelliteResult, Site } from "../model/types";
 import { CurrencyAnchor } from "./currency";
 import { bundledStyle, ring, sector } from "./basemap";
+import { Info } from "./Info";
 import { VisualFallback } from "./Mark";
 
 type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined; tanager: TanagerSite };
@@ -51,6 +52,12 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
       return;
     }
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    // MapLibre opens the compact attribution by default; collapse it once after the first render.
+    m.once("idle", () => {
+      const attrib = m.getContainer().querySelector(".maplibregl-ctrl-attrib");
+      attrib?.classList.remove("maplibregl-compact-show");
+      attrib?.removeAttribute("open");
+    });
     let failed = false;
     m.on("error", () => {
       if (failed || m.isStyleLoaded()) return;
@@ -257,7 +264,30 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
   return (
     <section className="map-panel" aria-label="Satellite evidence map">
       <div className="map-toolbar">
-        <h2>Explore the satellite evidence</h2>
+        <div className="map-toolbar-head">
+          <h2>Explore the satellite evidence</h2>
+          <div className="map-toolbar-row">
+            {windAvailable ? (
+              <button
+                type="button"
+                className={`wind-toggle ${showWind ? "active" : ""}`}
+                aria-pressed={showWind}
+                onClick={() => setShowWind((visible) => !visible)}
+              >
+                <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+                Wind overlay {showWind ? "on" : "off"}
+              </button>
+            ) : (
+              <div className="wind-toggle unavailable" role="status">
+                <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+                Wind overlay unavailable
+              </div>
+            )}
+            <Info label="About the wind overlay">
+              Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
+            </Info>
+          </div>
+        </div>
         {hasHighResolution ? (
           <div className="map-layer-toggle" role="group" aria-label="Map evidence layer">
             <button type="button" aria-pressed={mapLayer === "low"} onClick={() => setMapLayer("low")}>
@@ -272,25 +302,13 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
       <div className="map-wrap">
         <div ref={container} className="map" />
         <CurrencyAnchor />
-        <div className="map-overlay-head">
-          {windAvailable ? (
-            <button
-              type="button"
-              className={`wind-toggle ${showWind ? "active" : ""}`}
-              aria-pressed={showWind}
-              onClick={() => setShowWind((visible) => !visible)}
-            >
-              <span className="wind-toggle-mark" aria-hidden="true">↝</span>
-              Wind overlay {showWind ? "on" : "off"}
-            </button>
-          ) : (
-            <div className="wind-toggle unavailable" role="status">
-              <span className="wind-toggle-mark" aria-hidden="true">↝</span>
-              Wind overlay unavailable
-            </div>
-          )}
-        </div>
-        <div className="map-legend">
+        <div className="map-legend" tabIndex={0} aria-label="Map legend">
+          <span className="map-legend-head">
+            <span className="swatch ring" />
+            {tanager.observations.length > 0 && <span className="swatch tanager" />}
+            Legend
+          </span>
+          <div className="map-legend-body">
           {cells.length > 0 ? (
             <>
               {(mapLayer === "low" || !hasHighResolution) && (
@@ -328,6 +346,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
               <span className="swatch down" /> downwind <span className="swatch up" /> upwind
             </span>
           )}
+          </div>
         </div>
         {fallback && <div className="map-error">Street tiles could not load, so a simple coastline map is shown.</div>}
       </div>
