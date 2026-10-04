@@ -9,6 +9,18 @@ An open pre-feasibility screen for landfill methane capture in Australia and New
 
 > Existing systems tell you where methane is. Sentinel Sniff helps decide what to fund first, and what it could achieve by 2035.
 
+## The problem and our solution
+
+Organic waste buried in landfills decomposes without oxygen and produces landfill gas, including methane and carbon dioxide. Escaping methane contributes to climate change and loses a potential fuel. Wells and pipes can collect that gas; after treatment, it can fuel electricity generation. Some landfills in our dataset already do this, so we screen opportunities for **additional capture**, rather than treating every site as a new power plant.
+
+Sentinel Sniff is the decision tool: satellite and wind data flag regional signals for investigation, while a separate landfill model estimates additional capture, electricity, costs, potential revenue and payback. It helps compare what to investigate and fund towards 2035. Gas combustion still emits CO₂; the methane reduction estimate is not a complete lifecycle footprint or an estimate of avoided grid emissions. Gas recovery complements keeping organic waste out of landfill.
+
+Background: [US EPA landfill gas overview](https://www.epa.gov/lmop/basic-information-about-landfill-gas) and [landfill gas questions, including waste diversion](https://www.epa.gov/lmop/frequent-questions-about-landfill-gas). The project addresses the waste and methane theme of [Climate Hack-tion's Build for 2035 challenge](https://sustainable.org.nz/learn/events/climate-hack-tion-challenge-build-for-2035/), run ahead of COP31; it is not an official COP31 tool.
+
+The homepage introduces the project, satellite screening and estimated project benefits. **Explore landfills** opens the globe at `#/landfills`; the brand link returns home at `#/`. Homepage components and styles live in `web/src/pages/home/`. Detailed illustrations and decorative foliage live in `web/src/assets/home/`; their generation prompts and intended use are recorded in [docs/HOMEPAGE_ASSETS.md](docs/HOMEPAGE_ASSETS.md). The wind comparison is illustrative, with responsive HTML labels rather than measured data. The shared footer (`web/src/components/SiteFooter.tsx`) appears on every page with project navigation, research and dataset references from the source register, Climate Hack-tion context and the [official COP31 website](https://unfccc.int/cop31). Its How it works link returns to the homepage section from any step.
+
+The homepage separates the methane problem, the investment question and the capture-to-energy solution, with large section headings and the Find → Check → Fix → Fund workflow. Typography, colour roles and card shapes follow the [EU Climate Hacktion Design Brief](<docs/EU Climate Hacktion Design Brief.md>): Fraunces headings, Inter body/UI text, evergreen panels, tangerine emphasis and 18px corners. Find, Check, Fix and Fund share the same typography, content width, warm cards and navigation styling. Home and Find share their workflow copy, and interactive views show a branded fallback if rendering is unavailable. The supplied Sentinel Sniff kit adds its plume-to-leaf mark, roman/italic wordmark, browser favicon and reverse lockup; see [docs/BRAND.md](docs/BRAND.md) for asset provenance. Small tangerine text and the hero emphasis use the darker methane-ramp shade for readability. Sections reveal once as they enter view; reduced-motion preferences, keyboard focus and browsers without intersection observation keep the content immediately visible.
+
 The app is four steps, one landfill at a time:
 
 1. **Find:** a globe with every landfill pinned and a search box. Picking one flies in to it.

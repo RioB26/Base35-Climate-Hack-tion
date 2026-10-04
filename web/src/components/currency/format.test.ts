@@ -19,4 +19,14 @@ describe("display currency conversion", () => {
     expect(createMoneyFormatter("AUD", 1).fmtAudM(2_100_000)).toBe("AUD 2.1M");
     expect(createMoneyFormatter("USD", 0.5).fmtAudM(2_240_000_000)).toBe("USD 1,120M");
   });
+  it.each(["VUV", "XPF"] as const)("uses the ISO zero-decimal minor units for %s", (currency) => {
+    const money = createMoneyFormatter(currency, 1.25);
+    expect(money.fmtMoney(2)).toMatch(new RegExp(`${currency}\\s3$`));
+    expect(money.fmtCostPerT(2)).toBe(`${currency} 3`);
+  });
+  it("converts a Pacific currency with decimal minor units", () => {
+    const money = createMoneyFormatter("PGK", 3.1);
+    expect(money.fmtMoney(10)).toMatch(/PGK\s31\.00/);
+    expect(money.fmtCostPerT(1)).toBe("PGK 3.1");
+  });
 });

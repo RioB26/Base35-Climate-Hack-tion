@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { PageHead } from "../components/Nav";
 import { SliderGroup } from "../components/Sliders";
 import { defaultAssumptions } from "../data/assumptions";
@@ -19,6 +19,13 @@ const NOW = 2025;
 
 export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Props) {
   const { fmtAudM, fmtCostPerT } = useMoney();
+  const [previewOpen, setPreviewOpen] = useState(() => window.matchMedia("(min-width: 901px)").matches);
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 901px)");
+    const syncPreview = () => setPreviewOpen(desktop.matches);
+    desktop.addEventListener("change", syncPreview);
+    return () => desktop.removeEventListener("change", syncPreview);
+  }, []);
   const size = sizeClass(site, NOW);
   const operating = stillOperating(site, NOW);
   const cap = Math.round(site.existingCapture * 100);
@@ -26,15 +33,15 @@ export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Pr
   const nz = !inAustralia(site);
 
   return (
-    <main className="page">
-      <PageHead step="Step 3 · Fix" title={`Plan a capture project at ${site.name.split(",")[0]}`} sub="Answer a few questions about the site. Every answer updates the numbers and the model on the right." />
+    <main className="page workspace">
+      <PageHead step="Step 3 · Fix" title="Plan a capture project" sub={`${site.name}. Adjust the settings to explore additional gas capture, project costs and potential returns.`} />
       <div className="split fix">
-        <div className="col">
-          <Question n={1} title="How much of the gas should the project capture?">
+        <div className="col workflow-stack">
+          <Question n={1} title="How much methane will you capture?">
             <p className="q-note">
-              The site already captures about {cap}% <span className="tag">{site.illustrative ? "proxy or operator-reported" : "sourced"}</span>.
-              Only capture above that counts.
+              Baseline capture is about {cap}%. This project only counts additional capture above it.
             </p>
+            <div className="input-basis"><span className="tag">{site.illustrative ? "Proxy or operator-reported" : "Sourced inputs"}</span><span>Verify with the operator.</span></div>
             <SliderGroup keys={["captureEfficiency"]} value={a} onChange={setAssumptions} />
             {noHeadroom && (
               <p className="notice">
@@ -49,7 +56,7 @@ export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Pr
           <Question n={3} title="What will the electricity earn?">
             <SliderGroup keys={["powerPriceAudPerMWh", "engineEfficiency"]} value={a} onChange={setAssumptions} />
           </Question>
-          <Question n={4} title="What will it cost to build and finance?">
+          <Question n={4} title="What are the build and finance costs?">
             <SliderGroup keys={["capexMultiplier", "discountRate", "projectLifeYears"]} value={a} onChange={setAssumptions} />
           </Question>
           <Question n={5} title="Should carbon credits count?">
@@ -73,26 +80,32 @@ export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Pr
         </div>
 
         <div className="col sticky">
-          <div className="scene-card">
-            <Suspense fallback={<Loading className="landfill-3d fallback" label="Loading 3D model…" />}>
-              <Landfill3D size={size} operating={operating} existingCapture={site.existingCapture} targetCapture={a.captureEfficiency} />
-            </Suspense>
-            <div className="scene-legend">
-              <span>
-                <span className="swatch old" /> existing wells
-              </span>
-              <span>
-                <span className="swatch new" /> new project wells
-              </span>
-              <span>
-                <span className="swatch haze" /> methane still escaping
-              </span>
-            </div>
-            <p className="scene-caption">
-              {size[0].toUpperCase() + size.slice(1)} landfill: about {Math.round(wasteInPlace(site, NOW) / 1e6)} Mt of waste in
-              place (modelled), {operating ? "still taking waste" : "closed"}. {regionOf(site)}. Illustrative, not to scale.
-            </p>
-          </div>
+          <details className="scene-card" open={previewOpen} onToggle={(event) => setPreviewOpen(event.currentTarget.open)}>
+            <summary className="scene-heading"><h2>Preview your capture plan</h2></summary>
+            {previewOpen && (
+              <>
+                <p className="scene-intro">The 3D model updates as you change the settings.</p>
+                <Suspense fallback={<Loading className="landfill-3d fallback" label="Loading 3D model…" />}>
+                  <Landfill3D size={size} operating={operating} existingCapture={site.existingCapture} targetCapture={a.captureEfficiency} />
+                </Suspense>
+                <div className="scene-legend">
+                  <span>
+                    <span className="swatch old" /> existing wells
+                  </span>
+                  <span>
+                    <span className="swatch new" /> new project wells
+                  </span>
+                  <span>
+                    <span className="swatch haze" /> methane still escaping
+                  </span>
+                </div>
+                <p className="scene-caption">
+                  {size[0].toUpperCase() + size.slice(1)} landfill: about {Math.round(wasteInPlace(site, NOW) / 1e6)} Mt of waste in
+                  place (modelled), {operating ? "still taking waste" : "closed"}. {regionOf(site)}. Illustrative, not to scale.
+                </p>
+              </>
+            )}
+          </details>
           <div className="live">
             <div>
               <span className="live-label">Extra methane captured</span>
