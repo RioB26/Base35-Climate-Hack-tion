@@ -176,7 +176,9 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
           <Suspense fallback={<Loading className="map map-loading" label="Loading map…" />}>
             <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} tanager={visibleTanager} />
           </Suspense>
-          <ObservationScrubber observations={tanager.observations} selectedDate={selectedDate} onDateChange={setSelectedDate} />
+          {tanager.observations.length > 0 && (
+            <ObservationScrubber observations={tanager.observations} selectedDate={selectedDate} onDateChange={setSelectedDate} />
+          )}
         </div>
       </div>
     </main>
