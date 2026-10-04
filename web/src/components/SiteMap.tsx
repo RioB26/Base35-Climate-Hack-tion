@@ -259,7 +259,6 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
     <section className="map-panel" aria-label="Satellite evidence map">
       <div className="map-toolbar">
         <h2>Explore the satellite evidence</h2>
-        <div className="map-controls">
         {hasHighResolution ? (
           <div className="map-layer-toggle" role="group" aria-label="Map evidence layer">
             <button type="button" aria-pressed={mapLayer === "low"} onClick={() => setMapLayer("low")}>
@@ -290,7 +289,6 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           <Info label="About the wind overlay">
             Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
           </Info>
-        </div>
         </div>
       </div>
       <div className="map-wrap">
