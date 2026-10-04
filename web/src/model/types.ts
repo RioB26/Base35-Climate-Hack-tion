@@ -8,7 +8,7 @@ export type AcceptancePeriod = { fromYear: number; toYear: number; tonnesPerYear
 export type Site = {
   id: string;
   name: string;
-  state: "NSW" | "VIC" | "QLD" | "WA" | "SA" | "TAS" | "ACT" | "NT" | "NZ";
+  state: "NSW" | "VIC" | "QLD" | "WA" | "SA" | "TAS" | "ACT" | "NT" | "NZ" | "FJ";
   lat: number;
   lon: number;
   /** Waste accepted per year. Future years count as accepted if within a period. */

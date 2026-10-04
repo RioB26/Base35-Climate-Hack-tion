@@ -1,13 +1,15 @@
 import { Cop31Card } from "../components/Cop31Card";
 import { GenerationChart } from "../components/GenerationChart";
 import { Headline } from "../components/Headline";
+import { HomesPowered } from "../components/HomesPowered";
 import { Macc } from "../components/Macc";
 import { PageHead } from "../components/Nav";
-import { SiteTable } from "../components/SiteTable";
+import { SiteCompare } from "../components/SiteCompare";
 import { Stat } from "../components/Stat";
 import { fmtInt, fmtT, shortName } from "../format";
 import { useMoney } from "../components/currency";
 import { cop31Score } from "../model/cop31";
+import { creditScheme, inAustralia } from "../model/country";
 import type { Portfolio } from "../model/macc";
 import { potentialAccuAud } from "../model/project";
 import type { Assumptions, Site, SiteResult } from "../model/types";
@@ -40,7 +42,7 @@ export function FundPage(p: Props) {
       value: `${fmtMoney(r.netCostAudPerTCO2e)} vs ACCU ${fmtMoney(a.accuPriceAud)}`,
     } : part),
   } : null;
-  const nz = site.state === "NZ";
+  const nz = !inAustralia(site);
   const toFix = () => p.go({ page: "fix", siteId: site.id });
 
   return (
@@ -76,8 +78,8 @@ export function FundPage(p: Props) {
             <Stat label="Power sales" value={`${fmtAudM(r.annualRevenueAud)}/yr`} sub={`at ${fmtMoney(a.powerPriceAudPerMWh)}/MWh; running costs ${fmtAudM(r.annualOpexAud)}/yr`} />
             <Stat
               label="Carbon credits"
-              value={nz ? "NZ ETS" : `${fmtAudM(potentialAccuAud(site, r.generationTCH4PerYear, a))}/yr`}
-              sub={nz ? "not modelled for NZ sites" : `potential ACCUs* at ${fmtMoney(a.accuPriceAud)}`}
+              value={nz ? creditScheme(site) : `${fmtAudM(potentialAccuAud(site, r.generationTCH4PerYear, a))}/yr`}
+              sub={nz ? "not modelled outside Australia" : `potential ACCUs* at ${fmtMoney(a.accuPriceAud)}`}
             />
             <Stat label="Net cost per tonne" value={fmtCostPerT(r.netCostAudPerTCO2e)} sub={`${fmtCostPerT(r.netCostAudPerTCO2eRange[0])} to ${fmtCostPerT(r.netCostAudPerTCO2eRange[1])}, excluding credits`} tone="accent" />
             <Stat
@@ -86,6 +88,7 @@ export function FundPage(p: Props) {
               sub={a.includeAccu && !nz ? "including potential ACCUs*" : "on electricity alone"}
             />
           </div>
+          <HomesPowered site={site} electricityMWhPerYear={r.electricityMWhPerYear} />
           {!nz && (
             <p className="insight">
               {r.netCostAudPerTCO2e < a.accuPriceAud
@@ -113,8 +116,7 @@ export function FundPage(p: Props) {
       <section className="compare">
         <h2 className="section-title">How {name} compares</h2>
         <p className="page-sub">
-          Every landfill with room for more capture, cheapest tonne first. Bar width is tonnes avoided a year. Move the budget to see
-          what gets funded.
+          Every landfill, cheapest tonne first, with what each one does best. Move the budget to see what gets funded.
         </p>
         <Headline
           portfolio={p.portfolio}
@@ -125,9 +127,20 @@ export function FundPage(p: Props) {
           budgetShare={p.budgetShare}
           onBudgetShare={p.setBudgetShare}
         />
+        <SiteCompare
+          sites={p.sites}
+          results={p.results}
+          portfolio={p.portfolio}
+          assumptions={a}
+          selectedId={site.id}
+          onSelect={(id) => p.go({ page: "fund", siteId: id })}
+        />
         <div className="card">
           <Macc portfolio={p.portfolio} results={p.results} sites={p.sites} selectedId={site.id} onSelect={(id) => p.go({ page: "fund", siteId: id })} accuPrice={a.accuPriceAud} />
-          <SiteTable sites={p.sites} results={p.results} portfolio={p.portfolio} selectedId={site.id} onSelect={(id) => p.go({ page: "fund", siteId: id })} />
+          <p className="small muted">
+            Each bar is a site. Height is the net cost per tonne (the line shows its range); width is tonnes avoided a year. Dark green bars
+            fit the budget; grey ones do not.
+          </p>
         </div>
       </section>
 
@@ -149,7 +162,7 @@ export function FundPage(p: Props) {
         )}
         <p>
           <strong>Pre-feasibility screening, not a business case.</strong> Emissions avoided use GWP100 = 28. Capex is a range
-          benchmarked against US EPA landfill gas project costs converted to AUD. NZ sites use the same AUD cost and power
+          benchmarked against US EPA landfill gas project costs converted to AUD. NZ and Fiji sites use the same AUD cost and power
           assumptions. Methods, sources and disclosures are in docs/ in the project repository.
         </p>
       </footer>
