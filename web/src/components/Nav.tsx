@@ -15,7 +15,6 @@ export function Nav({ route, site }: { route: Route; site: Site | null }) {
       {route.page === "home" ? (
         <div className="home-nav-links">
           <a className="home-nav-link" href={hrefFor({ page: "home" })} aria-current="page">Home</a>
-          <a className="home-nav-link home-nav-secondary" href={hrefFor({ page: "find" })}>Explore landfills</a>
           <button className="home-nav-link home-nav-secondary" type="button" onClick={showHowItWorks}>How it works</button>
           <a className="cta" href={hrefFor({ page: "find" })}>Explore landfills ↗</a>
         </div>

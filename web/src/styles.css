@@ -270,7 +270,7 @@ a.ghost:hover { border-color: var(--iron); }
 @media (max-width: 600px) { .nav:not(.nav-home) .brand-wordmark { display: none; } }
 
 /* Find */
-.find { position: relative; height: calc(100svh - 73px); min-height: 640px; background: radial-gradient(circle at 65% 50%, #eef1ea 0%, var(--bg) 60%); overflow: hidden; }
+.find { position: relative; height: calc(100svh - 73px); min-height: 640px; background: radial-gradient(ellipse at 68% 48%, #d1ddd5 0%, #e3e9df 48%, var(--bg) 85%); overflow: hidden; }
 .globe-wrap { position: absolute; inset: 0; }
 .globe { width: 100%; height: 100%; }
 .globe-loading { display: grid; place-items: center; color: var(--muted); }

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useData } from "../../data";
+import { country, useData } from "../../data";
 import { defaultAssumptions } from "../../data/assumptions";
 import { JOURNEY } from "../../data/journey";
 import { hrefFor } from "../../route";
@@ -22,7 +22,11 @@ const BENEFITS = [
 
 export function HomePage() {
   const { sites } = useData();
-  const australia = sites.filter((site) => site.state !== "NZ").length;
+  const coverage = new Map<string, number>();
+  for (const site of sites) {
+    const name = country(site);
+    coverage.set(name, (coverage.get(name) ?? 0) + 1);
+  }
   const revealRoot = useHomeReveal();
 
   useEffect(() => {
@@ -53,13 +57,13 @@ export function HomePage() {
             <p className="fine">Explore new capture projects and improvements to existing systems.</p>
           </div>
           <figure className="home-visual home-hero-visual" data-reveal="right" data-reveal-delay="1">
-            <img src={landfillLandscape} width={1448} height={1086} fetchPriority="high" alt="Detailed countryside illustration of a terraced landfill, orange gas collection pipes, a generator building and an observation satellite" />
+            <img src={landfillLandscape} width={1448} height={1086} fetchPriority="high" alt="Pastel illustration of a sage-green terraced landfill with orange gas collection pipes, a cream generator building and an observation satellite" />
             <figcaption><span className="home-live-dot" aria-hidden="true" /> Collect landfill gas · Generate electricity <span>Illustration</span></figcaption>
           </figure>
         </section>
 
         <dl className="home-facts" aria-label="Project coverage">
-          <div data-reveal="up"><dt><HomeIcon name="landfill" />{sites.length} real landfills</dt><dd>{australia} in Australia · {sites.length - australia} in New Zealand</dd></div>
+          <div data-reveal="up"><dt><HomeIcon name="landfill" />{sites.length} landfills to explore</dt><dd>{[...coverage].map(([name, count]) => `${count} in ${name}`).join(" · ")}</dd></div>
           <div data-reveal="up" data-reveal-delay="1"><dt><HomeIcon name="satellite" />Satellite + wind data</dt><dd>Sentinel-5P methane · ERA5-Land winds</dd></div>
           <div data-reveal="up" data-reveal-delay="2"><dt><HomeIcon name="leaf" />One {defaultAssumptions.horizonYear} horizon</dt><dd>Compare the impact of acting sooner</dd></div>
         </dl>
@@ -69,7 +73,6 @@ export function HomePage() {
         <section id="home-how" className="home-section" aria-labelledby="home-how-title">
           <div className="home-section-head" data-reveal="up">
             <div><h2 id="home-how-title">How it works</h2><p className="home-section-subtitle">Four steps from a landfill to a funding decision.</p></div>
-            <p>Start with a site, check the methane signal, then explore a capture project. A separate model estimates what it could cost, earn and achieve by 2035.</p>
           </div>
           <ol className="steps home-steps">
             {JOURNEY.map(([step, text], index) => (
@@ -89,7 +92,12 @@ export function HomePage() {
           <WindComparison />
           <div className="home-evidence-note" data-reveal="up">
             <strong>A signal, with context.</strong>
-            <p>The satellite gives a screening signal, not proof. Farms, wetlands and other facilities may contribute, so a higher downwind reading does not establish the landfill’s emissions.</p>
+            <div>
+              <p><strong>We compare methane on either side of the landfill.</strong> The upwind side is where the wind comes from; the downwind side is where it travels towards. For each satellite pass, we use wind data to identify these sides and compare average methane readings in areas 10–30 km from the site.</p>
+              <p><strong>A higher downwind reading can point to a methane source nearby.</strong> We look for a repeated increase above the upwind background across multiple usable passes, allowing for uncertainty. A clear increase flags the area for closer investigation. Without one, emissions may still be present but too diluted or poorly covered for the satellite to detect.</p>
+              <p><strong>The next step is to identify the source.</strong> Sentinel-5P observes a broad area, which may include farms, wetlands and other facilities as well as the landfill. The comparison helps decide where to investigate; it cannot confirm the landfill’s contribution or quantify its emissions. Our separate project model estimates potential costs, returns and emissions savings.</p>
+              <a className="home-source" href="https://www.esa.int/Applications/Observing_the_Earth/Methane_and_ozone_data_products_from_Copernicus_Sentinel-5P" target="_blank" rel="noreferrer">How wind affects methane observations · ESA ↗</a>
+            </div>
           </div>
         </section>
 
