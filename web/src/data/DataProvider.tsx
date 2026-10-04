@@ -47,11 +47,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
       methane_grid: () => load<ResultRow<MethaneGrid[string]>>("methane_grid", setGridRows),
       tanager_results: () => load<ResultRow<StoredTanager>>("tanager_results", setTanagerRows),
     };
-    Object.values(loaders).forEach((f) => f());
+    const reloadAll = () => Object.values(loaders).forEach((f) => f());
+    reloadAll();
 
+    // The job writes results, then flips the site to done. Any change reloads every table, so a done
+    // status never sits beside results the browser missed or received out of order.
     let channel = db.channel("live-data");
-    for (const [table, reload] of Object.entries(loaders)) {
-      channel = channel.on("postgres_changes", { event: "*", schema: "public", table }, reload);
+    for (const table of Object.keys(loaders)) {
+      channel = channel.on("postgres_changes", { event: "*", schema: "public", table }, reloadAll);
     }
     channel.subscribe();
     return () => {
