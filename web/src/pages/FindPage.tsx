@@ -26,7 +26,7 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
   const [query, setQuery] = useState("");
   const [target, setTarget] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const { satelliteFor, statusFor, canAdd } = useData();
+  const { satelliteFor, statusFor, canAdd, notice, dismissNotice } = useData();
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return sites;
@@ -39,6 +39,17 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
 
   return (
     <>
+      {notice && (
+        <div className="notice" role="alert">
+          <div>
+            <strong>{notice.title}</strong>
+            <p>{notice.message}</p>
+          </div>
+          <button type="button" className="notice-close" onClick={dismissNotice} aria-label="Dismiss">
+            ×
+          </button>
+        </div>
+      )}
       <section className="find">
         <Suspense fallback={<Loading className="globe-wrap globe-loading" label="Loading globe…" />}>
           <GlobeView sites={sites} target={target} onPick={setTarget} onArrive={(id) => go({ page: "check", siteId: id })} />
@@ -100,6 +111,8 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
       {adding && (
         <AddSiteForm
           onClose={() => setAdding(false)}
+          // Server-side rejections (duplicate, nearby site, rate limit) land on the home page banner.
+          onLeave={() => setAdding(false)}
           // Stay on Find: the site joins the list and globe as its data arrives, instead of opening an empty Check page.
           onAdded={() => setAdding(false)}
         />

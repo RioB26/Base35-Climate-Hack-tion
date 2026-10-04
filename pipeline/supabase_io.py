@@ -10,6 +10,7 @@ import json
 import os
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 
 
 class Supabase:
@@ -52,6 +53,10 @@ class Supabase:
         self._request(
             "PATCH",
             f"sites?id=eq.{urllib.parse.quote(site_id)}",
-            {"satellite_status": status, "error": error},
+            {
+                "satellite_status": status,
+                "error": error,
+                "rejected_at": datetime.now(timezone.utc).isoformat() if status == "rejected" else None,
+            },
             {"Prefer": "return=minimal"},
         )
