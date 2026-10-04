@@ -267,6 +267,10 @@ a.ghost:hover { border-color: var(--iron); }
 .map-layer-toggle button { border: 0; border-radius: 7px; padding: 6px 8px; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 11px; transition: background .2s ease, color .2s ease, transform .2s ease; }
 .map-layer-toggle button:hover { color: var(--ink); transform: translateY(-1px); }
 .map-layer-toggle button.active { background: var(--evergreen); color: #fffaf3; }
+.wind-toggle { position: absolute; z-index: 3; top: 68px; right: 12px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid rgba(48, 55, 50, .14); border-radius: 9px; padding: 7px 9px; background: rgba(255, 254, 251, .95); color: var(--muted); cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; box-shadow: 0 2px 10px rgba(0, 0, 0, .08); transition: background .2s ease, color .2s ease, transform .2s ease; }
+.wind-toggle:hover { color: var(--ink); transform: translateY(-1px); }
+.wind-toggle.active { background: var(--sky); border-color: var(--sky); color: #fff; }
+.wind-toggle-mark { font-size: 16px; line-height: 10px; }
 .wind-arrow { width: 30px; height: 30px; flex: none; fill: var(--ink); }
 .map-legend .ramp { display: block; height: 8px; border-radius: 4px; margin: 4px 0 2px; }
 .map-legend .scale { display: flex; justify-content: space-between; color: var(--muted); }
