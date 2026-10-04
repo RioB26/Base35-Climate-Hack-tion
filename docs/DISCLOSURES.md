@@ -16,6 +16,7 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 
 | Dataset | Used for | Source | Status |
 |---|---|---|---|
+| ESA, Methane and ozone data products from Copernicus Sentinel-5P; INFLUX background methane research | Homepage explanation of upwind background, downwind enhancement and limits on attributing a signal to a landfill | https://www.esa.int/Applications/Observing_the_Earth/Methane_and_ozone_data_products_from_Copernicus_Sentinel-5P ; https://acp.copernicus.org/articles/20/4545/2020/acp-20-4545-2020.html | Checked 4 Oct 2026; app screening rules are documented separately in METHODOLOGY.md |
 | US EPA, Basic Information about Landfill Gas and Frequent Questions | Homepage explanation of methane formation, capture-to-electricity, combustion and waste diversion | https://www.epa.gov/lmop/basic-information-about-landfill-gas ; https://www.epa.gov/lmop/frequent-questions-about-landfill-gas | Background verified 4 Oct 2026 |
 | Sustainable Business Network, Climate Hack-tion: Build for 2035 | Event and COP31 context | https://sustainable.org.nz/learn/events/climate-hack-tion-challenge-build-for-2035/ | Event brief checked 4 Oct 2026 |
 | UNFCCC, official COP31 conference page | Homepage footer link to the UN climate summit; this project is not an official COP31 tool | https://unfccc.int/cop31 | Link checked 4 Oct 2026 |

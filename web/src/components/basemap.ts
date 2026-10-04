@@ -13,16 +13,19 @@ export const COLORS = {
   land: "#eeebe1",
 };
 
+const GLOBE_COLORS = { ocean: "#7da5b8", land: "#eeebe1" };
+
 /** Self-contained style: ocean and land, with no network requests. No coastline layer:
  * polygons cut at the antimeridian would draw a stray line across the globe. */
 export function bundledStyle(globe: boolean): StyleSpecification {
+  const colors = globe ? GLOBE_COLORS : COLORS;
   return {
     version: 8,
     ...(globe ? { projection: { type: "globe" } } : {}),
     sources: { land: { type: "geojson", data: land } },
     layers: [
-      { id: "ocean", type: "background", paint: { "background-color": COLORS.ocean } },
-      { id: "land", type: "fill", source: "land", paint: { "fill-color": COLORS.land } },
+      { id: "ocean", type: "background", paint: { "background-color": colors.ocean } },
+      { id: "land", type: "fill", source: "land", paint: { "fill-color": colors.land } },
     ],
   };
 }

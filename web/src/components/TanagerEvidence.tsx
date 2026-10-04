@@ -3,9 +3,9 @@ import type { TanagerSite } from "../data";
 import type { Comparison } from "../model/discrepancy";
 import { Info } from "./Info";
 
-type Props = { site: Site; tanager: TanagerSite; comparison: Comparison; selectedDate: string; onDateChange: (date: string) => void };
+type Props = { site: Site; tanager: TanagerSite; comparison: Comparison; selectedDate: string };
 
-export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDateChange }: Props) {
+export function TanagerEvidence({ site, tanager, comparison, selectedDate }: Props) {
   if (tanager.status === "pending") {
     return (
       <article className="card high-res-status">
@@ -112,25 +112,6 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
         Carbon Mapper public catalog · {visibleObservations.length} of {tanager.observations.length} verified plume records shown · through{" "}
         {formatDate(selectedDate)}.
       </p>
-      <label className="year-scrubber">
-        <span>
-          <strong>
-            Observation year
-            <Info label="What the slider changes">The slider changes dated Tanager records and map points. Sentinel-5P remains a multi-pass annual screening result.</Info>
-          </strong>
-          <b>{formatDate(selectedDate)}</b>
-        </span>
-        <input
-          type="range"
-          min={Date.parse(yearStart(tanager.observations))}
-          max={Date.parse(yearEnd(tanager.observations))}
-          value={Date.parse(selectedDate)}
-          step={86400000}
-          onChange={(event) => onDateChange(new Date(Number(event.target.value)).toISOString().slice(0, 10))}
-          aria-label="Show observations through date"
-        />
-        <span className="year-scrubber-range"><small>{formatDate(yearStart(tanager.observations))}</small><small>{formatDate(yearEnd(tanager.observations))}</small></span>
-      </label>
       <details className="analysis-details evidence-details">
         <summary>Evidence layers and source requirements</summary>
         <div className="evidence-stack">
@@ -280,17 +261,17 @@ function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return Math.sqrt(x * x + y * y) * 6371;
 }
 
-function formatDate(value: string) {
+export function formatDate(value: string) {
   const date = new Date(value);
   // Intl throws a RangeError on an invalid date, which would blank the whole page.
   if (Number.isNaN(date.getTime())) return "—";
   return new Intl.DateTimeFormat("en-AU", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(date);
 }
 
-function yearStart(observations: TanagerSite["observations"]) {
+export function yearStart(observations: TanagerSite["observations"]) {
   return observations.reduce((earliest, observation) => observation.observedAt < earliest ? observation.observedAt : earliest, observations[0].observedAt).slice(0, 10);
 }
 
-function yearEnd(observations: TanagerSite["observations"]) {
+export function yearEnd(observations: TanagerSite["observations"]) {
   return observations.reduce((latest, observation) => observation.observedAt > latest ? observation.observedAt : latest, observations[0].observedAt).slice(0, 10);
 }
