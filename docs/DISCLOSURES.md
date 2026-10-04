@@ -7,6 +7,7 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Tool | Used for |
 |---|---|
 | Claude (Anthropic), via Claude Code | Project research and planning; scaffolding the web app, model, tests, satellite pipeline and these docs. All output reviewed by the team. |
+| Claude (Anthropic), design tool | Sentinel Sniff brand kit from the team's brief: logo mark, wordmark, lockups, favicon, app icon and share card layout (`web/public/`). |
 | Codex (OpenAI) | Currency selector implementation and verification; reviewed against the app styling and existing model. |
 
 ## Datasets and APIs

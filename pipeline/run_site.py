@@ -27,8 +27,8 @@ ERA5_LAG_DAYS = 90
 def init_earth_engine():
     import ee
 
-    project = os.environ["EE_PROJECT"]
-    key = os.environ.get("EE_SERVICE_ACCOUNT_KEY")
+    project = os.environ["EE_PROJECT"].strip()
+    key = (os.environ.get("EE_SERVICE_ACCOUNT_KEY") or "").strip()
     if key:
         info = json.loads(key)
         ee.Initialize(ee.ServiceAccountCredentials(info["client_email"], key_data=key), project=project)
