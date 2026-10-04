@@ -41,12 +41,16 @@ def main() -> None:
     sites = json.loads((DATA / "sites.json").read_text())
     satellite = json.loads((DATA / "satellite.json").read_text())
     grids = json.loads((DATA / "methaneGrid.json").read_text())
+    tanager = json.loads((DATA / "tanager.json").read_text())
     for s in sites:
         db.upsert("sites", "id", site_row(s))
         if s["id"] in satellite:
             db.upsert("satellite_results", "site_id", {"site_id": s["id"], "data": satellite[s["id"]]})
         if s["id"] in grids:
             db.upsert("methane_grid", "site_id", {"site_id": s["id"], "data": grids[s["id"]]})
+        if s["id"] in tanager["sites"]:
+            data = {**tanager["sites"][s["id"]], "catalogCheckedAt": tanager["catalogCheckedAt"], "coverageRadiusKm": tanager["coverageRadiusKm"]}
+            db.upsert("tanager_results", "site_id", {"site_id": s["id"], "data": data})
         print(f"seeded {s['id']}")
 
 
