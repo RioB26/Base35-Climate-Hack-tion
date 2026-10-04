@@ -1,6 +1,6 @@
 import { Suspense, lazy, useMemo, useState } from "react";
 import { AddSiteForm } from "../components/AddSiteForm";
-import { regionOf, useData } from "../data";
+import { country, regionOf, useData } from "../data";
 import type { Route } from "../route";
 import type { Site } from "../model/types";
 import { Loading } from "../components/Mark";
@@ -32,7 +32,10 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
     if (!q) return sites;
     return sites.filter((s) => `${s.name} ${regionOf(s)} ${s.state}`.toLowerCase().includes(q));
   }, [query, sites]);
-  const au = sites.filter((s) => s.state !== "NZ").length;
+  const byCountry = ["Australia", "New Zealand", "Fiji"]
+    .map((c) => ({ c, n: sites.filter((s) => country(s) === c).length }))
+    .filter((x) => x.n > 0)
+    .map((x) => `${x.n} in ${x.c}`);
 
   return (
     <>
@@ -84,7 +87,7 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
             {matches.length === 0 && <li className="muted small">No landfill matches "{query}" yet.</li>}
           </ul>
           <p className="fine">
-            {sites.length} landfills so far ({au} in Australia, {sites.length - au} in New Zealand).
+            {sites.length} landfills so far ({listJoin(byCountry)}).
           </p>
           {canAdd && (
             <button type="button" className="ghost" onClick={() => setAdding(true)}>
@@ -97,10 +100,8 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
       {adding && (
         <AddSiteForm
           onClose={() => setAdding(false)}
-          onAdded={(id) => {
-            setAdding(false);
-            go({ page: "check", siteId: id });
-          }}
+          // Stay on Find: the site joins the list and globe as its data arrives, instead of opening an empty Check page.
+          onAdded={() => setAdding(false)}
         />
       )}
 
@@ -131,3 +132,5 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
     </>
   );
 }
+
+const listJoin = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);

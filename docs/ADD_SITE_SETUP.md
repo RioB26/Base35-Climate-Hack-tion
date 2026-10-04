@@ -51,6 +51,7 @@ should read `done`.
 | Part of a site | Source | Automatic? |
 |---|---|---|
 | Satellite signal (downwind minus upwind, 95% range, passes used) | Sentinel-5P via Earth Engine | Yes, from coordinates alone |
+| Tanager plumes within 15 km (stored in `tanager_results`) | Carbon Mapper public catalog, no key needed | Yes, from coordinates alone; no records means no public coverage, not no methane |
 | Wind at overpass | ERA5-Land via Earth Engine | Yes |
 | Methane map grid | Sentinel-5P | Yes |
 | Waste history (tonnes per year, by period) | Landfill operator / regulator reports | **No.** Entered in the form. There is no public API. |

@@ -18,10 +18,23 @@ import json
 import os
 from datetime import date, timedelta
 
+from carbon_mapper import SOURCES_URL, get_json, plumes_for_site
 from satellite import run_site as screen_site
 from supabase_io import Supabase
 
 ERA5_LAG_DAYS = 90
+TANAGER_RADIUS_KM = 15
+
+
+def collect_plumes(db, site: dict) -> None:
+    """Search the Carbon Mapper catalog for plumes near the site. Best effort: a failure writes nothing,
+    so the UI shows "not checked" rather than a false "no coverage", and never fails the site."""
+    try:
+        data = plumes_for_site(get_json(SOURCES_URL), site, TANAGER_RADIUS_KM)
+        data.update(catalogCheckedAt=date.today().isoformat(), coverageRadiusKm=TANAGER_RADIUS_KM)
+        db.upsert("tanager_results", "site_id", {"site_id": site["id"], "data": data})
+    except Exception as e:  # noqa: BLE001
+        print(f"plume search failed for {site['id']}: {type(e).__name__}: {e}")
 
 
 def init_earth_engine():
@@ -46,6 +59,7 @@ def process(db, init_ee, site_id: str, start: str, end: str) -> bool:
     if site is None:
         raise SystemExit(f"site {site_id!r} not found")
     db.set_status(site_id, "running")
+    collect_plumes(db, site)  # first: it needs no Earth Engine auth, the most fragile part
     try:
         result, grid = screen_site(init_ee(), site, start, end)
         db.upsert("satellite_results", "site_id", {"site_id": site_id, "data": result})

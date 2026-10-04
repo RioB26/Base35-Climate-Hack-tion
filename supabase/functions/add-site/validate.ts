@@ -1,7 +1,7 @@
 // Validation for the add-site request. Pure TypeScript with no imports so the Edge Function (Deno),
 // the web form and the vitest suite can all share it.
 
-export const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT", "NZ"] as const;
+export const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT", "NZ", "FJ"] as const;
 export type State = (typeof STATES)[number];
 
 export type NewSite = {
@@ -24,6 +24,8 @@ export const DEFAULTS = { k: 0.05, L0: 100, existingCapture: 0 };
 // Rough bounding boxes (lat/lon). They reject obviously wrong pins, not borders.
 const AU = { minLat: -44, maxLat: -10, minLon: 112, maxLon: 154 };
 const NZ = { minLat: -48, maxLat: -34, minLon: 166, maxLon: 179 };
+// Viti Levu and Vanua Levu; the Lau group east of 180° is outside the table's longitude range.
+const FJ = { minLat: -21, maxLat: -15.5, minLon: 176.5, maxLon: 179 };
 const inBox = (b: typeof AU, lat: number, lon: number) =>
   lat >= b.minLat && lat <= b.maxLat && lon >= b.minLon && lon <= b.maxLon;
 
@@ -62,8 +64,9 @@ export function validateNewSite(input: unknown): Validated {
   if (!isNum(lat) || !isNum(lon)) {
     errors.push("Latitude and longitude must be numbers.");
   } else if (STATES.includes(state)) {
-    const inRegion = state === "NZ" ? inBox(NZ, lat, lon) : inBox(AU, lat, lon);
-    if (!inRegion) errors.push(`Coordinates are not inside ${state === "NZ" ? "New Zealand" : "Australia"}.`);
+    const box = state === "NZ" ? NZ : state === "FJ" ? FJ : AU;
+    const place = state === "NZ" ? "New Zealand" : state === "FJ" ? "Fiji" : "Australia";
+    if (!inBox(box, lat, lon)) errors.push(`Coordinates are not inside ${place}.`);
   }
 
   const acc = o.acceptance;

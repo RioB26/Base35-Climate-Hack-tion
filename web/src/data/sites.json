@@ -122,5 +122,30 @@
       "Wikipedia, Kate Valley Landfill (coordinates 43°05'59\"S 172°50'11\"E, expected closure circa 2040, 4.3 MW commissioned 2014): https://en.wikipedia.org/wiki/Kate_Valley_Landfill",
       "k and L0: waste-weighted from NZ ETS Schedule 3 default composition, as reproduced in MfE Landfill Gas Capture Management final report: https://environment.govt.nz/assets/publications/Waste/landfill-gas-management-final-report-.pdf"
     ]
+  },
+  {
+    "id": "naboro",
+    "name": "Naboro landfill, Suva",
+    "state": "FJ",
+    "lat": -18.1,
+    "lon": 178.3,
+    "acceptance": [
+      {
+        "fromYear": 2005,
+        "toYear": 2075,
+        "tonnesPerYear": 70000
+      }
+    ],
+    "k": 0.17,
+    "L0": 100,
+    "existingCapture": 0,
+    "illustrative": true,
+    "notes": "Fiji's main landfill, on the Queens Road about 24 km from central Suva, opened 2005 and serving the Suva area. A 2016 USP study found an average of 70,000 t/yr received and no methane recovery, biogas use or flaring, and estimated about 800 m3/h of methane generated in 2016; no later capture project has been found. k = 0.17 is the IPCC 2019 default for bulk waste in tropical wet climates; with it the model gives about 690 m3/h in 2016, close to the study. PROXY: constant 70 kt/yr (a 2020 report gives 184 t/day to 100 kt/yr) and the 70-year design life to 2075 are assumptions. Coordinates approximate. No Australian credit scheme applies.",
+    "sources": [
+      "Mani, Maata, Gronert, Harvey and Chand (2016), Landfill gas generation and methane recovery at Naboro landfill, Fiji Islands: https://repository.usp.ac.fj/id/eprint/9188/",
+      "Fiji Sun, 28 Jul 2020, The Naboro landfill story (opened Oct 2005, 70-year design life, 184 t/day): https://fijisun.com.fj/news/investigations/the-naboro-landfill-story-every-14-months-a-new-pit",
+      "HG Leach (Fiji), Naboro Landfill (location on Queens Road ~24 km from central Suva, operating since July 2005): https://www.leachltd.co.nz/hg-leach-fiji-ltd-naboro-landfill/",
+      "IPCC 2019 Refinement, Vol. 5 Ch. 3, Table 3.3 (k = 0.17 for bulk waste, tropical moist and wet): https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/5_Volume5/19R_V5_3_Ch03_SWDS.pdf"
+    ]
   }
 ]

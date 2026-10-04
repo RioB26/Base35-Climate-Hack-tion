@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { SatelliteResult, Site } from "../model/types";
-import { seedGrid, seedSatellite, seedSites, type MethaneGrid } from "./seed";
-import { mapAddSiteResponse, mergeById, mergeSites, NOT_RUN, statusMap, type SiteRow, type StatusInfo } from "./live";
+import { seedGrid, seedSatellite, seedSites, tanagerFor as bundledTanager, type MethaneGrid, type TanagerSite } from "./seed";
+import { mapAddSiteResponse, mergeById, mergeSites, NOT_RUN, resolveTanager, statusMap, type SiteRow, type StatusInfo } from "./live";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "./supabase";
 
 export type AddSiteInput = Record<string, unknown>;
@@ -12,6 +12,7 @@ type DataState = {
   satelliteFor: (id: string) => SatelliteResult;
   gridFor: (id: string) => MethaneGrid[string] | undefined;
   statusFor: (id: string) => StatusInfo;
+  tanagerFor: (id: string) => TanagerSite;
   /** False when the build has no Supabase settings, so sites cannot be added. */
   canAdd: boolean;
   addSite: (input: AddSiteInput, passcode: string) => Promise<AddSiteResult>;
@@ -20,12 +21,16 @@ type DataState = {
 
 const DataContext = createContext<DataState | null>(null);
 
+/** A tanager_results row's data: a TanagerSite without the fields the bundled helper adds. */
+type StoredTanager = Omit<TanagerSite, "coverageRadiusKm" | "catalogCheckedAt"> & Partial<Pick<TanagerSite, "coverageRadiusKm" | "catalogCheckedAt">>;
+
 type ResultRow<T> = { site_id: string; data: T };
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const [rows, setRows] = useState<SiteRow[]>([]);
   const [satRows, setSatRows] = useState<ResultRow<SatelliteResult>[]>([]);
   const [gridRows, setGridRows] = useState<ResultRow<MethaneGrid[string]>[]>([]);
+  const [tanagerRows, setTanagerRows] = useState<ResultRow<StoredTanager>[]>([]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -40,12 +45,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
       sites: () => load<SiteRow>("sites", setRows),
       satellite_results: () => load<ResultRow<SatelliteResult>>("satellite_results", setSatRows),
       methane_grid: () => load<ResultRow<MethaneGrid[string]>>("methane_grid", setGridRows),
+      tanager_results: () => load<ResultRow<StoredTanager>>("tanager_results", setTanagerRows),
     };
-    Object.values(loaders).forEach((f) => f());
+    const reloadAll = () => Object.values(loaders).forEach((f) => f());
+    reloadAll();
 
+    // The job writes results, then flips the site to done. Any change reloads every table, so a done
+    // status never sits beside results the browser missed or received out of order.
     let channel = db.channel("live-data");
-    for (const [table, reload] of Object.entries(loaders)) {
-      channel = channel.on("postgres_changes", { event: "*", schema: "public", table }, reload);
+    for (const table of Object.keys(loaders)) {
+      channel = channel.on("postgres_changes", { event: "*", schema: "public", table }, reloadAll);
     }
     channel.subscribe();
     return () => {
@@ -113,16 +122,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const satellite = mergeById(seedSatellite, satRows);
     const grids = mergeById(seedGrid, gridRows);
     const status = statusMap(seedSites, rows);
+    const tanager = mergeById<StoredTanager>({}, tanagerRows);
     return {
       sites,
       satelliteFor: (id) => satellite[id] ?? NOT_RUN,
       gridFor: (id) => grids[id],
       statusFor: (id) => status[id] ?? { state: "done", error: null, createdAt: null },
+      tanagerFor: (id) => {
+        const bundled = bundledTanager(id);
+        const stored = tanager[id];
+        const full = stored && { ...bundled, ...stored, coverageRadiusKm: stored.coverageRadiusKm ?? bundled.coverageRadiusKm, catalogCheckedAt: stored.catalogCheckedAt ?? bundled.catalogCheckedAt };
+        return resolveTanager(full, status[id] ?? { state: "done", error: null, createdAt: null }, bundled);
+      },
       canAdd: supabase !== null,
       addSite,
       retrySite,
     };
-  }, [rows, satRows, gridRows, addSite, retrySite]);
+  }, [rows, satRows, gridRows, tanagerRows, addSite, retrySite]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

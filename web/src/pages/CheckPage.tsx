@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { PageHead } from "../components/Nav";
 import { SignalChart } from "../components/SignalChart";
-import { regionOf, tanagerFor, useData } from "../data";
+import { regionOf, useData } from "../data";
 import { isSlow } from "../data/live";
 import { fmtInt, fmtPpb, fmtT } from "../format";
 import { compareWithSatellite, SECTOR_EFFECTIVE_WIDTH_M } from "../model/discrepancy";
@@ -13,7 +13,7 @@ import { Loading } from "../components/Mark";
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
 export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: Assumptions; go: (r: Route) => void }) {
-  const { satelliteFor, gridFor, statusFor, canAdd, retrySite } = useData();
+  const { satelliteFor, gridFor, statusFor, tanagerFor, canAdd, retrySite } = useData();
   const [retryMsg, setRetryMsg] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [now, setNow] = useState(() => Date.now());

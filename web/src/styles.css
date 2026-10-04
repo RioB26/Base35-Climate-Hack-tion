@@ -158,19 +158,33 @@ button.ghost:hover { border-color: var(--iron); }
 .macc .bar:focus rect { stroke: var(--sky); stroke-width: 3; }
 .macc .whisker { stroke: var(--iron); stroke-width: 1.5; opacity: 0.7; }
 
-/* The table scrolls inside its card on narrow screens. */
-.table-wrap { overflow-x: auto; margin-top: 20px; }
-table.sites { width: 100%; border-collapse: collapse; font-size: 14px; }
-.sites th { white-space: nowrap; font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-.sites th, .sites td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; }
-.sites .r { text-align: right; font-variant-numeric: tabular-nums; }
-.sites tbody tr { cursor: pointer; transition: background 0.15s ease; }
-.sites tbody tr:hover { background: var(--bg); }
-.sites tr.selected { background: var(--tangerine-soft); }
-.tag { margin-left: 6px; font-size: 11px; padding: 1px 7px; border-radius: 99px; background: var(--warn-bg); color: var(--warn-text); white-space: nowrap; }
-@media (max-width: 600px) { /* The table scrolls inside its card on narrow screens. */
-.table-wrap { overflow-x: auto; margin-top: 20px; }
-table.sites { font-size: 13px; } .sites th:nth-child(4), .sites td:nth-child(4) { display: none; } }
+/* Fund: one card per site saying what it does best and why it ranks where it does. */
+.site-compare { margin: 20px 0; }
+.compare-summary { margin: 0 0 16px; padding: 14px 16px; border-left: 3px solid var(--tangerine); background: var(--tangerine-soft); border-radius: 0 12px 12px 0; }
+.compare-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+.compare-card { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 18px 16px; cursor: pointer; transition: border-color 0.15s ease, box-shadow 0.15s ease; box-shadow: 0 1px 2px rgba(39, 60, 44, 0.04); }
+.compare-card:hover { border-color: #d9d2c3; box-shadow: 0 1px 2px rgba(39, 60, 44, 0.04), 0 10px 30px rgba(39, 60, 44, 0.06); }
+.compare-card:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+.compare-card.selected { border-color: var(--tangerine); box-shadow: 0 0 0 2px var(--tangerine-soft); }
+.compare-card.none { background: var(--bg); }
+.compare-card header { display: flex; align-items: center; gap: 10px; }
+.compare-card h3 { font-size: 19px; line-height: 1.2; }
+.compare-card h3 .tag { font: 500 11px var(--sans); vertical-align: 2px; }
+.compare-card .rank { flex-shrink: 0; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--evergreen); color: #fff; font: 600 14px var(--sans); }
+.compare-card.none .rank { background: var(--none); color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; min-height: 24px; }
+.chips li { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: var(--tangerine-soft); color: #a4512a; }
+.chips li.good { background: var(--evergreen-soft); color: var(--evergreen); }
+.metrics { display: grid; gap: 8px; margin: 0; }
+.metric dt { font-size: 12px; color: var(--text); white-space: nowrap; }
+.metric dt .muted { font-size: 11px; }
+.metric dd { display: flex; align-items: center; gap: 10px; margin: 2px 0 0; }
+.metric-bar { flex: 1; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.metric-bar span { display: block; height: 100%; border-radius: inherit; background: var(--iron); }
+.metric-value { min-width: 84px; text-align: right; font: 600 14px var(--sans); font-variant-numeric: tabular-nums; color: var(--ink); }
+.compare-card .why { margin: 0; font-size: 14px; line-height: 1.5; flex: 1; }
+.compare-card .status { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.compare-card .status.funded { color: var(--evergreen); }
 
 .limits { color: var(--muted); font-size: 13px; padding: 40px 0 0; margin-top: 48px; border-top: 1px solid var(--line); }
 
@@ -357,6 +371,18 @@ a.ghost:hover { border-color: var(--iron); }
 /* Fund */
 .headline .eyebrow { color: var(--tangerine); }
 .fund-stats { margin-top: 16px; }
+
+/* Fund: homes the captured gas could power. Sky is the electricity colour. */
+.card.homes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 24px; align-items: center; margin-top: 16px; background: var(--sky-soft); border-color: transparent; }
+.homes-big { font-family: var(--serif); font-size: clamp(24px, 3vw, 32px); line-height: 1.15; color: var(--ink); margin: 4px 0 10px; }
+.homes-big .num { color: #2f6db5; }
+.homes-grid { margin: 0; }
+.houses { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; max-width: 360px; }
+.house { width: 100%; height: auto; display: block; }
+.house-empty { fill: #c9dbf2; }
+.house-full { fill: var(--sky); }
+.homes-grid figcaption { margin-top: 8px; }
+@media (max-width: 760px) { .card.homes { grid-template-columns: 1fr; } }
 .cop-head { display: flex; gap: 18px; align-items: center; margin-bottom: 8px; }
 .cop-ring { width: 110px; flex: none; }
 .cop-ring .track { fill: none; stroke: var(--surface-2); stroke-width: 10; }

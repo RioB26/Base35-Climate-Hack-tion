@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Site } from "../model/types";
-import { isSlow, mapAddSiteResponse, mergeById, mergeSites, rowToSite, statusMap, type SiteRow } from "./live";
+import type { TanagerSite } from "./seed";
+import { isSlow, mapAddSiteResponse, mergeById, mergeSites, resolveTanager, rowToSite, statusMap, type SiteRow } from "./live";
 
 const seed: Site[] = [
   { id: "b", name: "B", state: "NSW", lat: -34, lon: 151, acceptance: [], k: 0.05, L0: 100, existingCapture: 0.4, illustrative: false, notes: "", sources: [] },
@@ -81,5 +82,27 @@ describe("isSlow", () => {
     expect(isSlow({ state: "running", error: null, createdAt: "2026-10-04T00:50:00Z" }, now)).toBe(false);
     expect(isSlow({ state: "done", error: null, createdAt: "2026-10-04T00:00:00Z" }, now)).toBe(false);
     expect(isSlow({ state: "running", error: null, createdAt: null }, now)).toBe(false);
+  });
+});
+
+describe("resolveTanager", () => {
+  const bundled: TanagerSite = { status: "not_checked", sourceCount: 0, plumeCount: 0, observations: [], coverageRadiusKm: 15, catalogCheckedAt: "2026-10-04" };
+  const stored: TanagerSite = { ...bundled, status: "observed", plumeCount: 1 };
+  const state = (s: "pending" | "running" | "done" | "failed") => ({ state: s, error: null, createdAt: null });
+
+  it("prefers the stored record", () => {
+    expect(resolveTanager(stored, state("running"), bundled)).toBe(stored);
+  });
+  it("shows pending while the job runs and nothing is stored", () => {
+    expect(resolveTanager(undefined, state("running"), bundled).status).toBe("pending");
+    expect(resolveTanager(undefined, state("pending"), bundled).status).toBe("pending");
+  });
+  it("falls back to the bundled snapshot once finished or failed", () => {
+    expect(resolveTanager(undefined, state("done"), bundled)).toBe(bundled);
+    expect(resolveTanager(undefined, state("failed"), bundled)).toBe(bundled);
+  });
+  it("keeps a bundled result even while running", () => {
+    const seeded: TanagerSite = { ...bundled, status: "no_public_coverage" };
+    expect(resolveTanager(undefined, state("running"), seeded)).toBe(seeded);
   });
 });
