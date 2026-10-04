@@ -235,6 +235,11 @@ a.ghost:hover { border-color: var(--iron); }
 @media (max-width: 600px) { .high-res-options { grid-template-columns: 1fr; } }
 
 .wind-card { position: absolute; top: 12px; left: 12px; right: 56px; display: flex; align-items: center; gap: 10px; background: rgba(255, 254, 251, 0.94); border-radius: 12px; padding: 8px 12px; font-size: 13px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+.map-layer-toggle { position: absolute; z-index: 3; top: 68px; left: 12px; display: flex; align-items: center; gap: 3px; padding: 4px; border: 1px solid rgba(48, 55, 50, .12); border-radius: 10px; background: rgba(255, 254, 251, .95); box-shadow: 0 2px 10px rgba(0, 0, 0, .08); }
+.map-layer-label { padding: 4px 6px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.map-layer-toggle button { border: 0; border-radius: 7px; padding: 6px 8px; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 11px; transition: background .2s ease, color .2s ease, transform .2s ease; }
+.map-layer-toggle button:hover { color: var(--ink); transform: translateY(-1px); }
+.map-layer-toggle button.active { background: var(--evergreen); color: #fffaf3; }
 .wind-arrow { width: 30px; height: 30px; flex: none; fill: var(--ink); }
 .map-legend .ramp { display: block; height: 8px; border-radius: 4px; margin: 4px 0 2px; }
 .map-legend .scale { display: flex; justify-content: space-between; color: var(--muted); }

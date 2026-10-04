@@ -19,6 +19,8 @@ const HIGH = "#a4512a";
 export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const [fallback, setFallback] = useState(false);
+  const [mapLayer, setMapLayer] = useState<"low" | "high">("low");
+  const hasHighResolution = tanager.observations.length > 0;
   const { cells, lo, hi } = cellRange(grid);
   const wind = sat.wind;
   const towards = wind ? (wind.fromDeg + 180) % 360 : null;
@@ -44,7 +46,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
     const { cells, lo, hi } = cellRange(grid);
     const addOverlays = () => {
       if (m.getSource("cells")) return;
-      if (tanager.observations.length === 0 && tanager.status !== "no_public_coverage") {
+      if (mapLayer === "low") {
         m.addSource("cells", {
           type: "geojson",
           data: {
@@ -73,7 +75,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           },
         });
       }
-      if (tanager.observations.length > 0) {
+      if (hasHighResolution && mapLayer === "high") {
         m.addSource("tanager", {
           type: "geojson",
           data: {
@@ -107,7 +109,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         properties: { kind: "ring" },
         geometry: { type: "LineString", coordinates: ring(site.lat, site.lon, km) },
       }));
-      if (tanager.observations.length > 0) {
+      if (hasHighResolution && mapLayer === "high") {
         for (const observation of tanager.observations) {
           features.push({
             type: "Feature",
@@ -143,7 +145,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         filter: ["==", ["get", "kind"], "ring"],
         paint: { "line-color": "#404f4c", "line-width": 1.2, "line-dasharray": [2, 2] },
       });
-      if (tanager.observations.length > 0) {
+      if (hasHighResolution && mapLayer === "high") {
         m.addLayer({
           id: "tanager-links",
           type: "line",
@@ -159,7 +161,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
     el.className = "pin selected";
     el.innerHTML = `<span class="pin-dot"></span><span class="pin-label">${shortName(site.name)}</span>`;
     new maplibregl.Marker({ element: el, anchor: "left" }).setLngLat([site.lon, site.lat]).addTo(m);
-    tanager.observations.forEach((observation, index) => {
+    if (hasHighResolution && mapLayer === "high") tanager.observations.forEach((observation, index) => {
       const plume = document.createElement("div");
       plume.className = "tanager-pin";
       plume.innerHTML = `<span class="tanager-pin-dot"></span><span class="tanager-pin-label">Tanager plume ${index + 1}</span>`;
@@ -171,12 +173,23 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
 
     return () => m.remove();
     // One map per site; the page remounts this component when the site changes.
-  }, [site, grid, towards, tanager]);
+  }, [site, grid, towards, tanager, mapLayer, hasHighResolution]);
 
   return (
     <div className="map-wrap">
       <div ref={container} className="map" />
       <CurrencyAnchor />
+      {hasHighResolution && (
+        <div className="map-layer-toggle" role="group" aria-label="Map evidence layer">
+          <span className="map-layer-label">Evidence layer</span>
+          <button type="button" className={mapLayer === "low" ? "active" : ""} onClick={() => setMapLayer("low")}>
+            Sentinel-5P · coarse
+          </button>
+          <button type="button" className={mapLayer === "high" ? "active" : ""} onClick={() => setMapLayer("high")}>
+            Tanager · high res
+          </button>
+        </div>
+      )}
       <div className="wind-card">
         {wind && towards !== null ? (
           <>
@@ -198,7 +211,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         <div className="map-coverage-empty">
           <span className="status-dot" />
           <strong>No high-resolution methane scene loaded</strong>
-          <small>{shortName(site.name)} is shown as a site target only. The regional Sentinel-5P layer is hidden here so it cannot be mistaken for a facility-scale plume.</small>
+          <small>{shortName(site.name)} is shown with Sentinel-5P&apos;s coarse regional squares only. Those cells are screening context, not a facility-scale plume.</small>
         </div>
       )}
       <div className="map-legend">
