@@ -87,6 +87,70 @@ describe("validateNewSite", () => {
   });
 });
 
+describe("validateNewSite boundaries", () => {
+  const periods = (...p: [number, number][]) => p.map(([fromYear, toYear]) => ({ fromYear, toYear, tonnesPerYear: 1000 }));
+
+  it("applies the tonnage floor exactly at 100 t/yr", () => {
+    expect(validateNewSite({ ...good, acceptance: [{ fromYear: 2000, toYear: 2010, tonnesPerYear: 100 }] }).ok).toBe(true);
+    expect(validateNewSite({ ...good, acceptance: [{ fromYear: 2000, toYear: 2010, tonnesPerYear: 99 }] }).ok).toBe(false);
+    expect(validateNewSite({ ...good, acceptance: [{ fromYear: 2000, toYear: 2010, tonnesPerYear: 1e8 + 1 }] }).ok).toBe(false);
+  });
+
+  it("allows a gap of 20 years but not 21, whatever order the periods are given in", () => {
+    expect(validateNewSite({ ...good, acceptance: periods([2021, 2030], [1980, 2000]) }).ok).toBe(true);
+    expect(validateNewSite({ ...good, acceptance: periods([2022, 2030], [1980, 2000]) }).ok).toBe(false);
+  });
+
+  it("detects an overlap between non-adjacent entries once sorted", () => {
+    const r = validateNewSite({ ...good, acceptance: periods([2010, 2020], [1990, 2000], [1995, 2012]) });
+    expect(!r.ok && r.errors.join(" ")).toContain("overlap");
+  });
+
+  it("does not report overlaps when a period is itself invalid", () => {
+    const r = validateNewSite({ ...good, acceptance: [...periods([1990, 2005]), { fromYear: 2000, toYear: 1999, tonnesPerYear: 1000 }] });
+    expect(r.ok).toBe(false);
+    expect(!r.ok && r.errors.join(" ")).not.toContain("overlap");
+  });
+
+  it("allows single-year periods and a period that touches the next", () => {
+    expect(validateNewSite({ ...good, acceptance: periods([2000, 2000], [2001, 2001]) }).ok).toBe(true);
+  });
+
+  it("rejects more than 6 periods and non-integer years", () => {
+    expect(validateNewSite({ ...good, acceptance: periods([1990, 1991], [1992, 1993], [1994, 1995], [1996, 1997], [1998, 1999], [2000, 2001], [2002, 2003]) }).ok).toBe(false);
+    expect(validateNewSite({ ...good, acceptance: [{ fromYear: 2000.5, toYear: 2010, tonnesPerYear: 1000 }] }).ok).toBe(false);
+  });
+
+  it("checks coordinates against each country's box, including Fiji", () => {
+    expect(validateNewSite({ ...good, state: "FJ", lat: -18.1, lon: 178.4 }).ok).toBe(true);
+    expect(validateNewSite({ ...good, state: "FJ", lat: -33.8, lon: 150.9 }).ok).toBe(false);
+    expect(validateNewSite({ ...good, lat: "-34", lon: 150 }).ok).toBe(false);
+    expect(validateNewSite({ ...good, lat: NaN }).ok).toBe(false);
+  });
+
+  it("reports every problem at once", () => {
+    const r = validateNewSite({ name: "", state: "XX", lat: 0, lon: 0, acceptance: [] });
+    expect(!r.ok && r.errors.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("enforces parameter ranges and trims long free text", () => {
+    expect(validateNewSite({ ...good, k: 0 }).ok).toBe(false);
+    expect(validateNewSite({ ...good, k: 1 }).ok).toBe(false);
+    expect(validateNewSite({ ...good, L0: 301 }).ok).toBe(false);
+    expect(validateNewSite({ ...good, existingCapture: 0 }).ok).toBe(true);
+    expect(validateNewSite({ ...good, existingCapture: 1 }).ok).toBe(true);
+    const r = validateNewSite({ ...good, notes: "n".repeat(900), source: "s".repeat(900) });
+    expect(r.ok && r.site.sources[0].length).toBe(300);
+    expect(r.ok && r.site.notes.length).toBeLessThan(700);
+  });
+
+  it("trims the name before slugging it", () => {
+    const r = validateNewSite({ ...good, name: "  Mugga Lane (ACT)  " });
+    expect(r.ok && r.site.id).toBe("mugga-lane-act");
+    expect(r.ok && r.site.name).toBe("Mugga Lane (ACT)");
+  });
+});
+
 describe("helpers", () => {
   it("slugifies", () => expect(slugify("  Mugga Lane (ACT)! ")).toBe("mugga-lane-act"));
   it("measures distance", () => {

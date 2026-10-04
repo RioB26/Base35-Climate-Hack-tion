@@ -25,6 +25,28 @@ RESULT = {"status": "neutral", "overpassesUsed": 12}
 GRID = {"windowStart": "a", "windowEnd": "b", "cells": []}
 
 
+class RejectionRuleTests(unittest.TestCase):
+    def test_boundary_at_the_minimum_overpasses(self):
+        minimum = run_site.Settings().min_overpasses
+        self.assertIsNotNone(run_site.rejection_for({"overpassesUsed": minimum - 1}))
+        self.assertIsNone(run_site.rejection_for({"overpassesUsed": minimum}))
+
+    def test_singular_and_plural_wording(self):
+        self.assertIn("1 usable satellite overpass ", run_site.rejection_for({"overpassesUsed": 1}))
+        self.assertIn("2 usable satellite overpasses ", run_site.rejection_for({"overpassesUsed": 2}))
+
+    def test_missing_count_is_treated_as_no_data(self):
+        self.assertIn("no usable", run_site.rejection_for({}))
+
+    def test_rejection_exits_zero_path_returns_true_and_keeps_grid_out(self):
+        db = FakeDb(SITE)
+        with mock.patch.object(run_site, "get_json", return_value={"features": []}), \
+             mock.patch.object(run_site, "screen_site", return_value=({"overpassesUsed": 1}, GRID)):
+            self.assertTrue(run_site.process(db, lambda: object(), "new-landfill", "a", "b"))
+        self.assertEqual([s for s, _ in db.statuses], ["running", "rejected"])
+        self.assertNotIn("methane_grid", db.rows)
+
+
 class ProcessTests(unittest.TestCase):
     def setUp(self):
         # Keep the tests offline: an empty catalog means no plumes near the site.
