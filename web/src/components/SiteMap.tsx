@@ -6,6 +6,7 @@ import { shortName } from "../format";
 import type { SatelliteResult, Site } from "../model/types";
 import { CurrencyAnchor } from "./currency";
 import { bundledStyle, compass, offset, ring, sector } from "./basemap";
+import { VisualFallback } from "./Mark";
 
 type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined; tanager: TanagerSite };
 
@@ -19,6 +20,7 @@ const HIGH = "#a4512a";
 export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const [fallback, setFallback] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
   const [mapLayer, setMapLayer] = useState<"low" | "high">("low");
   const [showWind, setShowWind] = useState(true);
   const hasHighResolution = tanager.observations.length > 0;
@@ -27,14 +29,21 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const towards = wind ? (wind.fromDeg + 180) % 360 : null;
 
   useEffect(() => {
-    const m = new maplibregl.Map({
-      container: container.current!,
-      style: STREETS,
-      center: [site.lon, site.lat],
-      zoom: tanager.observations.length > 0 || tanager.status === "no_public_coverage" ? 11.5 : 8.6,
-      attributionControl: { compact: true },
-      cooperativeGestures: true,
-    });
+    if (!container.current) return;
+    let m: maplibregl.Map;
+    try {
+      m = new maplibregl.Map({
+        container: container.current,
+        style: STREETS,
+        center: [site.lon, site.lat],
+        zoom: tanager.observations.length > 0 || tanager.status === "no_public_coverage" ? 11.5 : 8.6,
+        attributionControl: { compact: true },
+        cooperativeGestures: true,
+      });
+    } catch {
+      setUnavailable(true);
+      return;
+    }
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     let failed = false;
     m.on("error", () => {
@@ -166,14 +175,14 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
 
     const el = document.createElement("div");
     el.className = "pin selected";
-    el.innerHTML = `<span class="pin-dot"></span><span class="pin-label">${shortName(site.name)}</span>`;
+    el.innerHTML = '<span class="pin-dot"></span><span class="pin-label"></span>';
+    el.querySelector<HTMLSpanElement>(".pin-label")!.textContent = shortName(site.name);
     new maplibregl.Marker({ element: el, anchor: "left" }).setLngLat([site.lon, site.lat]).addTo(m);
     if (showWind && towards !== null) {
-      const directionMarkers = [
+      [
         { label: "DOWNWIND", bearing: towards, className: "downwind" },
         { label: "UPWIND", bearing: (towards + 180) % 360, className: "upwind" },
-      ];
-      directionMarkers.forEach(({ label, bearing, className }) => {
+      ].forEach(({ label, bearing, className }) => {
         const direction = document.createElement("div");
         direction.className = `wind-direction ${className}`;
         direction.innerHTML = `<span class="wind-direction-arrow" style="transform: rotate(${bearing}deg)">➤</span><span>${label}</span>`;
@@ -197,88 +206,102 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
     // One map per site; the page remounts this component when the site changes.
   }, [site, grid, towards, tanager, mapLayer, hasHighResolution, showWind]);
 
-  return (
-    <div className="map-wrap">
-      <div ref={container} className="map" />
-      <CurrencyAnchor />
-      {hasHighResolution && (
-        <div className="map-layer-toggle" role="group" aria-label="Map evidence layer">
-          <span className="map-layer-label">Evidence layer</span>
-          <button type="button" className={mapLayer === "low" ? "active" : ""} onClick={() => setMapLayer("low")}>
-            Sentinel-5P · coarse
-          </button>
-          <button type="button" className={mapLayer === "high" ? "active" : ""} onClick={() => setMapLayer("high")}>
-            Tanager · high res
-          </button>
-        </div>
-      )}
-      <button
-        type="button"
-        className={`wind-toggle ${showWind ? "active" : ""}`}
-        aria-pressed={showWind}
-        onClick={() => setShowWind((visible) => !visible)}
-      >
-        <span className="wind-toggle-mark" aria-hidden="true">↝</span>
-        Wind overlay {showWind ? "on" : "off"}
-      </button>
-      <div className="wind-card">
-        {wind && towards !== null ? (
-          <>
-            <svg viewBox="0 0 40 40" className="wind-arrow" style={{ transform: `rotate(${towards}deg)` }} aria-hidden="true">
-              <path d="M20 4 L28 20 L22 18 L22 36 L18 36 L18 18 L12 20 Z" />
-            </svg>
-            <span>
-              Wind mostly from the <strong>{compass(wind.fromDeg)}</strong>, {wind.meanSpeedMs.toFixed(1)} m/s on average
-              <span className="muted"> · ERA5, {sat.overpassesUsed} passes</span>
-            </span>
-          </>
-        ) : (
-          <span className="muted">
-            Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
-          </span>
-        )}
+  if (unavailable) {
+    return (
+      <div className="map-wrap">
+        <VisualFallback className="map" title="Interactive map unavailable" detail="The satellite comparison and site evidence are still available. Continue below to explore a capture project." />
       </div>
-      <div className="map-legend">
-        {cells.length > 0 ? (
-          <>
-            {(mapLayer === "low" || !hasHighResolution) && (
+    );
+  }
+
+  return (
+    <section className="map-panel" aria-label="Satellite evidence map">
+      <div className="map-toolbar">
+        <h2>Explore the satellite evidence</h2>
+        {hasHighResolution ? (
+          <div className="map-layer-toggle" role="group" aria-label="Map evidence layer">
+            <button type="button" aria-pressed={mapLayer === "low"} onClick={() => setMapLayer("low")}>
+              <strong>Regional screening</strong><span>Sentinel-5P · coarse cells</span>
+            </button>
+            <button type="button" aria-pressed={mapLayer === "high"} onClick={() => setMapLayer("high")}>
+              <strong>Source observations</strong><span>Tanager · high resolution</span>
+            </button>
+          </div>
+        ) : <p>Sentinel-5P regional context. Facility-scale observations are unavailable.</p>}
+      </div>
+      <div className="map-wrap">
+        <div ref={container} className="map" />
+        <CurrencyAnchor />
+        <div className="map-overlay-head">
+          <button
+            type="button"
+            className={`wind-toggle ${showWind ? "active" : ""}`}
+            aria-pressed={showWind}
+            onClick={() => setShowWind((visible) => !visible)}
+          >
+            <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+            Wind overlay {showWind ? "on" : "off"}
+          </button>
+          <div className="wind-card">
+            {wind && towards !== null ? (
               <>
-                <span>Regional context · Sentinel-5P cells (~5 km)</span>
-                <span className="ramp" style={{ background: `linear-gradient(90deg, ${LOW}, ${HIGH})` }} />
-                <span className="scale">
-                  <span>{lo.toFixed(0)} ppb</span>
-                  <span>{hi.toFixed(0)} ppb</span>
+                <svg viewBox="0 0 40 40" className="wind-arrow" style={{ transform: `rotate(${towards}deg)` }} aria-hidden="true">
+                  <path d="M20 4 L28 20 L22 18 L22 36 L18 36 L18 18 L12 20 Z" />
+                </svg>
+                <span>
+                  Wind mostly from the <strong>{compass(wind.fromDeg)}</strong>, {wind.meanSpeedMs.toFixed(1)} m/s on average
+                  <span className="muted"> · ERA5, {sat.overpassesUsed} passes</span>
                 </span>
               </>
+            ) : (
+              <span className="muted">
+                Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
+              </span>
             )}
-          </>
-        ) : (
-          <span className="muted">No methane grid for this site yet.</span>
-        )}
-        {tanager.observations.length > 0 && (
-          <span>Facility-scale source points · Tanager observations</span>
-        )}
-        {tanager.observations.length === 0 && (
-          <span className="coverage-gap">
-            <span className="coverage-gap-dot" /> Coarse regional screening only
-          </span>
-        )}
-        <span className="legend-row">
-          <span className="swatch ring" /> 10 and 30 km analysis area
-        </span>
-        {tanager.observations.length > 0 && (
+          </div>
+        </div>
+        <div className="map-legend">
+          {cells.length > 0 ? (
+            <>
+              {(mapLayer === "low" || !hasHighResolution) && (
+                <>
+                  <span>Regional context · Sentinel-5P cells (~5 km)</span>
+                  <span className="ramp" style={{ background: `linear-gradient(90deg, ${LOW}, ${HIGH})` }} />
+                  <span className="scale">
+                    <span>{lo.toFixed(0)} ppb</span>
+                    <span>{hi.toFixed(0)} ppb</span>
+                  </span>
+                </>
+              )}
+            </>
+          ) : (
+            <span className="muted">No methane grid for this site yet.</span>
+          )}
+          {tanager.observations.length > 0 && (
+            <span>Facility-scale source points · Tanager observations</span>
+          )}
+          {tanager.observations.length === 0 && (
+            <span className="coverage-gap">
+              <span className="coverage-gap-dot" /> Coarse regional screening only
+            </span>
+          )}
           <span className="legend-row">
-            <span className="swatch tanager" /> Tanager plume record
+            <span className="swatch ring" /> 10 and 30 km analysis area
           </span>
-        )}
-        {showWind && towards !== null && (
-          <span className="legend-row">
-            <span className="swatch down" /> downwind <span className="swatch up" /> upwind
-          </span>
-        )}
+          {tanager.observations.length > 0 && (
+            <span className="legend-row">
+              <span className="swatch tanager" /> Tanager plume record
+            </span>
+          )}
+          {showWind && towards !== null && (
+            <span className="legend-row">
+              <span className="swatch down" /> downwind <span className="swatch up" /> upwind
+            </span>
+          )}
+        </div>
+        {fallback && <div className="map-error">Street tiles could not load, so a simple coastline map is shown.</div>}
       </div>
-      {fallback && <div className="map-error">Street tiles could not load, so a simple coastline map is shown.</div>}
-    </div>
+    </section>
   );
 }
 

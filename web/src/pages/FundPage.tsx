@@ -46,7 +46,7 @@ export function FundPage(p: Props) {
   const toFix = () => p.go({ page: "fix", siteId: site.id });
 
   return (
-    <main className="page">
+    <main className="page workspace fund-page">
       <PageHead step="Step 4 · Fund" title={`What it takes to fix ${name}`} sub="Pre-feasibility screening: a guide to what to study first, not a business case." />
 
       {noProject ? (
@@ -64,7 +64,7 @@ export function FundPage(p: Props) {
           <div className="headline">
             <p className="eyebrow light">Budget needed</p>
             <p className="big">
-              Budget about <span className="num">{fmtAudM(r.capexMidAud)}</span> to make {name} a methane capture site.
+              Budget about <span className="num">{fmtAudM(r.capexMidAud)}</span> for additional methane capture at {name}.
             </p>
             <p className="muted">
               Range {fmtAudM(r.capexAud[0])} to {fmtAudM(r.capexAud[1])} for gas collection, a flare and{" "}
@@ -148,7 +148,7 @@ export function FundPage(p: Props) {
         <button type="button" className="ghost" onClick={toFix}>
           ← Change the answers
         </button>
-        <a className="cta" href="#/">
+        <a className="cta" href="#/landfills">
           Check another landfill
         </a>
       </div>

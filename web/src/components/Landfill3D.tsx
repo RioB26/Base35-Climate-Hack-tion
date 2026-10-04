@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { SizeClass } from "../model/size";
+import { VisualFallback } from "./Mark";
 
 type Props = {
   size: SizeClass;
@@ -402,6 +403,6 @@ export default function Landfill3D({ size, operating, existingCapture, targetCap
     haze.current?.geometry.setDrawRange(0, Math.round(HAZE_MAX * (1 - target)));
   }, [existingCapture, target, size, operating]);
 
-  if (failed) return <div className="landfill-3d fallback">3D view needs WebGL, which this browser has turned off.</div>;
+  if (failed) return <VisualFallback className="landfill-3d fallback" title="Interactive 3D view unavailable" detail="Adjust the project settings to compare capture, costs and returns. The estimates still update." />;
   return <div ref={host} className="landfill-3d" role="img" aria-label={`3D model of a ${size} landfill with gas wells`} />;
 }
