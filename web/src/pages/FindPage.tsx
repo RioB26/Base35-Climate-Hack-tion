@@ -4,6 +4,7 @@ import { regionOf, useData } from "../data";
 import type { Route } from "../route";
 import type { Site } from "../model/types";
 import { Loading } from "../components/Mark";
+import { JOURNEY } from "../data/journey";
 
 const GlobeView = lazy(() => import("../components/GlobeView"));
 
@@ -14,13 +15,6 @@ function satelliteLabel(state: string, status: string): string {
   if (state === "failed") return "Satellite: failed";
   return STATUS[status];
 }
-
-const HOW = [
-  ["Find", "Pick a landfill on the globe or search for it."],
-  ["Check", "Compare what the site reports with what the Sentinel-5P satellite sees downwind."],
-  ["Fix", "Set up a capture project: target capture, start year, power price, costs."],
-  ["Fund", "See the budget, the electricity and money it makes, and a COP31 alignment check."],
-];
 
 export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void }) {
   const [query, setQuery] = useState("");
@@ -35,18 +29,18 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
   const au = sites.filter((s) => s.state !== "NZ").length;
 
   return (
-    <>
-      <section className="find">
+    <main className="find-page">
+      <section className="find" aria-labelledby="find-title">
         <Suspense fallback={<Loading className="globe-wrap globe-loading" label="Loading globe…" />}>
           <GlobeView sites={sites} target={target} onPick={setTarget} onArrive={(id) => go({ page: "check", siteId: id })} />
         </Suspense>
         <div className="find-card">
-          <p className="eyebrow">Climate Hack-tion 2026 · Zero waste and methane · Build for 2035</p>
-          <h1>
+          <p className="eyebrow">Step 1 · Find</p>
+          <h1 id="find-title">
             Which landfills should we <em>fix first</em>?
           </h1>
           <p className="lede">
-            Pick a landfill to check its methane, plan a capture project and see what it would cost and earn.
+            Choose a site to screen its methane signal, explore additional gas capture and compare project costs and returns.
           </p>
           <form
             className="search"
@@ -104,9 +98,14 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
         />
       )}
 
-      <section className="page how">
+      <section className="page how" aria-labelledby="find-how-title">
+        <div className="page-head">
+          <p className="eyebrow">Find · Check · Fix · Fund</p>
+          <h2 id="find-how-title" className="section-title">From a site to a funding decision</h2>
+          <p className="page-sub">Satellite screening helps decide where to look closer. A separate model estimates what a capture project could achieve by 2035.</p>
+        </div>
         <ol className="steps">
-          {HOW.map(([title, text], i) => (
+          {JOURNEY.map(([title, text], i) => (
             <li key={title}>
               <span className="step-num">{i + 1}</span>
               <span className="step-title">{title}</span>
@@ -128,6 +127,6 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }

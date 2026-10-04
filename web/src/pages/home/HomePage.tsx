@@ -1,10 +1,11 @@
+import { useEffect } from "react";
 import { useData } from "../../data";
 import { defaultAssumptions } from "../../data/assumptions";
+import { JOURNEY } from "../../data/journey";
 import { hrefFor } from "../../route";
 import landfillLandscape from "../../assets/home/landfill-energy.webp";
 import { HomeIcon } from "./HomeIcon";
 import { HomeFoliage } from "./HomeFoliage";
-import { HomeFooter } from "./HomeFooter";
 import { HomeStory } from "./HomeStory";
 import { WindComparison } from "./WindComparison";
 import { useHomeReveal } from "./useHomeReveal";
@@ -13,12 +14,6 @@ import { Brand } from "../../components/Brand";
 import "./home.css";
 
 const landfillHref = hrefFor({ page: "find" });
-const JOURNEY = [
-  ["Find", "Search the globe for a landfill in Australia or New Zealand and explore its site data."],
-  ["Check", "Compare site-reported figures with a satellite methane signal, using wind to guide the analysis."],
-  ["Fix", "Explore a 3D landfill and set your capture target, start year, electricity price and project costs."],
-  ["Fund", "Estimate investment and returns, then rank sites by net cost per tonne of emissions avoided."],
-];
 const BENEFITS = [
   ["01", "Less methane escaping", "See how much additional methane a project could capture by 2035. Compare estimated emissions reductions in tonnes of CO₂ equivalent."],
   ["02", "A clearer investment case", "Weigh construction and running costs against potential revenue. Compare estimated payback and net cost per tonne to choose projects for further study."],
@@ -29,6 +24,10 @@ export function HomePage() {
   const { sites } = useData();
   const australia = sites.filter((site) => site.state !== "NZ").length;
   const revealRoot = useHomeReveal();
+
+  useEffect(() => {
+    if (window.location.hash === "#/how-it-works") showHowItWorks();
+  }, []);
 
   return (
     <>
@@ -121,7 +120,6 @@ export function HomePage() {
         </section>
 
       </main>
-      <HomeFooter />
     </>
   );
 }

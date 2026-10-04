@@ -8,7 +8,7 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 |---|---|
 | Claude (Anthropic), via Claude Code | Project research and planning; scaffolding the web app, model, tests, satellite pipeline and these docs. All output reviewed by the team. |
 | Claude (Anthropic), design tool | Sentinel Sniff brand kit from the team's brief: logo mark, wordmark, lockups, favicon, app icon and share card layout (`web/public/`). |
-| Codex (OpenAI) | Currency selector and homepage implementation, responsive layout and verification; reviewed against the app styling and existing model. |
+| Codex (OpenAI) | Currency selector, homepage and shared workflow styling; responsive layout, rendering fallbacks and verification; reviewed against the app styling and existing model. |
 | OpenAI image generation, built-in imagegen tool | Detailed homepage landfill scene, conceptual wind comparison, landscape background and decorative foliage. Optimized as WebP; illustrations are not site photographs or measured data. Prompts recorded in [HOMEPAGE_ASSETS.md](HOMEPAGE_ASSETS.md). |
 | User-supplied Sentinel Sniff brand kit | Plume-to-leaf SVG marks and favicon, live wordmark styling and homepage brand refinements. Supplied SVG provenance metadata retained. Integration recorded in [BRAND.md](BRAND.md). |
 

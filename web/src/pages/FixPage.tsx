@@ -25,8 +25,8 @@ export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Pr
   const nz = site.state === "NZ";
 
   return (
-    <main className="page">
-      <PageHead step="Step 3 · Fix" title={`Plan a capture project at ${site.name.split(",")[0]}`} sub="Answer a few questions about the site. Every answer updates the numbers and the model on the right." />
+    <main className="page workspace">
+      <PageHead step="Step 3 · Fix" title="Plan a capture project" sub={`${site.name}. Adjust the settings to explore additional gas capture, project costs and potential returns.`} />
       <div className="split fix">
         <div className="col">
           <Question n={1} title="How much of the gas should the project capture?">

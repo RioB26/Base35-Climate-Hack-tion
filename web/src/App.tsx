@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { CurrencyProvider, CurrencySelector } from "./components/currency";
 import { Nav } from "./components/Nav";
+import { SiteFooter } from "./components/SiteFooter";
 import { useData } from "./data";
 import { defaultAssumptions } from "./data/assumptions";
 import { buildPortfolio } from "./model/macc";
@@ -55,6 +56,7 @@ export default function App() {
           go={go}
         />
       )}
+      <SiteFooter />
       <CurrencySelector />
     </CurrencyProvider>
   );

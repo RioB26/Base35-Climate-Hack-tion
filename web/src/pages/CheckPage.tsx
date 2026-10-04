@@ -66,7 +66,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
   const toFix = () => go({ page: "fix", siteId: site.id });
 
   return (
-    <main className="page">
+    <main className="page workspace">
       <PageHead step="Step 2 · Check" title={site.name} sub={`${regionOf(site)}. Does the satellite agree with what the site reports?`} />
       <div className="split">
         <div className="col">
