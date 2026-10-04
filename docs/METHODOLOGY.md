@@ -34,6 +34,8 @@ MWh/yr      = electric kW × 8,760 × availability / 1000
 
 Worked example (tested in `model.test.ts`): 1,000 m³/h landfill gas at 50% CH₄ gives about 3,140 t CH₄/yr. At 75% capture, about 2,355 t is captured, which avoids about 65,950 tCO₂-e/yr. That gas gives about 3.74 MW thermal, 1.42 MW electric and 11.2 GWh/yr.
 
+**Homes powered (Fund step).** `homes = MWh/yr × 1000 / kWh per home per year`, using the first project year's electricity. A typical Australian home is taken as 17 kWh a day (6,205 kWh a year), the midpoint of "11–23 kWh per day" from energy.gov.au ([Size your solar system](https://www.energy.gov.au/solar/solar-system-design/size-your-solar-system)). A New Zealand home is 8,000 kWh a year, the household MBIE models in its Quarterly Survey of Domestic Electricity Prices ([Electricity cost and price monitoring](https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energy-statistics-and-modelling/energy-statistics/energy-prices/electricity-cost-and-price-monitoring)). This is an equivalence for scale, not a claim about where the power is sold.
+
 ## 4. Costs and cost per tonne
 
 - Plant is sized for the peak year over the project life.

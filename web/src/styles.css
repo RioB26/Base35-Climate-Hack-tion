@@ -363,6 +363,18 @@ a.ghost:hover { border-color: var(--iron); }
 /* Fund */
 .headline .eyebrow { color: var(--tangerine); }
 .fund-stats { margin-top: 16px; }
+
+/* Fund: homes the captured gas could power. Sky is the electricity colour. */
+.card.homes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 24px; align-items: center; margin-top: 16px; background: var(--sky-soft); border-color: transparent; }
+.homes-big { font-family: var(--serif); font-size: clamp(24px, 3vw, 32px); line-height: 1.15; color: var(--ink); margin: 4px 0 10px; }
+.homes-big .num { color: #2f6db5; }
+.homes-grid { margin: 0; }
+.houses { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; max-width: 360px; }
+.house { width: 100%; height: auto; display: block; }
+.house-empty { fill: #c9dbf2; }
+.house-full { fill: var(--sky); }
+.homes-grid figcaption { margin-top: 8px; }
+@media (max-width: 760px) { .card.homes { grid-template-columns: 1fr; } }
 .cop-head { display: flex; gap: 18px; align-items: center; margin-bottom: 8px; }
 .cop-ring { width: 110px; flex: none; }
 .cop-ring .track { fill: none; stroke: var(--surface-2); stroke-width: 10; }

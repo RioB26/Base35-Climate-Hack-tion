@@ -28,6 +28,8 @@ Every external tool, library, dataset, API and AI tool used in this project. Kee
 | Natural Earth 1:50m land, via the world-atlas package | Globe on the Find step, and site map fallback | https://www.naturalearthdata.com | Public domain; bundled |
 | Cleanaway Ravenhall site page | >2 Mt/yr processed, >200 ha | https://www.cleanaway.com.au/location/ravenhall | Used; history, closure, existing capture are proxies |
 | US EPA LMOP, LFG Energy Project Development Handbook ch. 4 (2021) | Collection/flare and engine capex and O&M (2020 USD) | https://www.epa.gov/system/files/documents/2021-07/pdh_chapter4.pdf | Used, converted to AUD |
+| energy.gov.au, "Size your solar system" | Typical Australian home uses 11–23 kWh a day; midpoint 17 kWh/day for the homes-powered figure | https://www.energy.gov.au/solar/solar-system-design/size-your-solar-system | Used |
+| MBIE electricity cost and price monitoring (QSDEP) | Modelled NZ household of about 8,000 kWh a year for the homes-powered figure | https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energy-statistics-and-modelling/energy-statistics/energy-prices/electricity-cost-and-price-monitoring | Used |
 | AEMO Quarterly Energy Dynamics Q2 2026 | Default power price (NEM average AUD 74/MWh) | https://www.aemo.com.au/newsroom/media-release/qed-q2-2026 | Used |
 | CER Quarterly Carbon Market Report March quarter 2026 | Generic ACCU spot AUD 36.28 | https://cer.gov.au/markets/reports-and-data/quarterly-carbon-market-reports/quarterly-carbon-market-report-march-quarter-2026/australian-environmental-markets | Used |
 

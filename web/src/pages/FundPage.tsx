@@ -1,6 +1,7 @@
 import { Cop31Card } from "../components/Cop31Card";
 import { GenerationChart } from "../components/GenerationChart";
 import { Headline } from "../components/Headline";
+import { HomesPowered } from "../components/HomesPowered";
 import { Macc } from "../components/Macc";
 import { PageHead } from "../components/Nav";
 import { SiteCompare } from "../components/SiteCompare";
@@ -86,6 +87,7 @@ export function FundPage(p: Props) {
               sub={a.includeAccu && !nz ? "including potential ACCUs*" : "on electricity alone"}
             />
           </div>
+          <HomesPowered site={site} electricityMWhPerYear={r.electricityMWhPerYear} />
           {!nz && (
             <p className="insight">
               {r.netCostAudPerTCO2e < a.accuPriceAud
