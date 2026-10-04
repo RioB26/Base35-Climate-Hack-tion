@@ -43,8 +43,9 @@ export function mapAddSiteResponse<S extends { id: string }>(status: number, bod
   if (status === 201 && body.site) return { ok: true, id: body.id ?? body.site.id, site: body.site };
   if (status === 502 && body.id) return { ok: true, id: body.id };
   const errors = body.errors ?? [body.error ?? `Something went wrong (${status}).`];
-  // 400 (invalid input) and 401 (wrong passcode) are fixed in the form; anything else is not.
-  return status === 400 || status === 401 ? { ok: false, errors } : { ok: false, errors, leave: true };
+  // Invalid input, a wrong passcode and a duplicate name or nearby site are fixed in the form;
+  // a rate limit or server error is not, so the user is sent home with the reason.
+  return [400, 401, 409].includes(status) ? { ok: false, errors } : { ok: false, errors, leave: true };
 }
 
 /** A notice for the home page, shown when a site could not be added or was rejected. */

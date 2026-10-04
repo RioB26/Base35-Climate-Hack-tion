@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // GitHub dispatch so the request handling (passcode, validation, limits, duplicates) runs for real.
 
 const state = vi.hoisted(() => ({
-  existing: [] as { id: string; name: string; lat: number; lon: number }[],
+  existing: [] as { id: string; name: string; lat: number; lon: number; satellite_status?: string }[],
+  deleted: 0,
   recent: 0,
   inserted: [] as Record<string, unknown>[],
   updates: [] as Record<string, unknown>[],
@@ -24,6 +25,14 @@ vi.mock("npm:@supabase/supabase-js@2", () => ({
         if (!state.insertError) state.inserted.push(row);
         return { error: state.insertError };
       },
+      delete: () => ({
+        eq: () => ({
+          eq: async () => {
+            state.deleted++;
+            return {};
+          },
+        }),
+      }),
       update: (patch: Record<string, unknown>) => ({
         eq: async () => {
           state.updates.push(patch);
@@ -41,6 +50,7 @@ let handler: (req: Request) => Promise<Response>;
 beforeEach(async () => {
   state.existing = [];
   state.recent = 0;
+  state.deleted = 0;
   state.inserted = [];
   state.updates = [];
   state.insertError = null;
@@ -128,6 +138,18 @@ describe("add-site function", () => {
     const res = await post(good);
     expect(res.status).toBe(409);
     expect((await res.json()).error).toContain("Other Tip");
+  });
+
+  it("lets a user resubmit a site that was rejected, replacing the old row", async () => {
+    state.existing = [{ id: "spring-farm-landfill", name: "Spring Farm Landfill", lat: -34.05, lon: 150.7, satellite_status: "rejected" }];
+    expect((await post(good)).status).toBe(201);
+    expect(state.deleted).toBe(1);
+    expect(state.inserted).toHaveLength(1);
+  });
+
+  it("does not delete anything when there is no rejected row to replace", async () => {
+    expect((await post(good)).status).toBe(201);
+    expect(state.deleted).toBe(0);
   });
 
   it("accepts a site 5 km from an existing one", async () => {

@@ -106,6 +106,13 @@ describe("validateNewSite boundaries", () => {
     expect(!r.ok && r.errors.join(" ")).toContain("overlap");
   });
 
+  it("catches an overlap or gap hidden behind a long period that contains another", () => {
+    const nested = validateNewSite({ ...good, acceptance: periods([2000, 2050], [2010, 2020], [2030, 2040]) });
+    expect(!nested.ok && nested.errors.join(" ")).toContain("overlap");
+    const gap = validateNewSite({ ...good, acceptance: periods([1900, 1950], [1910, 1920], [1990, 2000]) });
+    expect(!gap.ok && gap.errors.join(" ")).toContain("gap");
+  });
+
   it("does not report overlaps when a period is itself invalid", () => {
     const r = validateNewSite({ ...good, acceptance: [...periods([1990, 2005]), { fromYear: 2000, toYear: 1999, tonnesPerYear: 1000 }] });
     expect(r.ok).toBe(false);

@@ -71,8 +71,8 @@ describe("add-site response mapping", () => {
   it("returns validation errors, or a fallback message", () => {
     expect(mapAddSiteResponse(400, { errors: ["bad"] })).toEqual({ ok: false, errors: ["bad"] });
     expect(mapAddSiteResponse(401, { error: "Wrong passcode." })).toEqual({ ok: false, errors: ["Wrong passcode."] });
+    expect(mapAddSiteResponse(409, { error: "exists" })).toEqual({ ok: false, errors: ["exists"] });
     // Not fixable in the form, so the app sends the user home with an explanation.
-    expect(mapAddSiteResponse(409, { error: "exists" })).toEqual({ ok: false, errors: ["exists"], leave: true });
     expect(mapAddSiteResponse(429, { error: "slow down" })).toMatchObject({ ok: false, leave: true });
     expect(mapAddSiteResponse(500, {})).toEqual({ ok: false, errors: ["Something went wrong (500)."], leave: true });
   });

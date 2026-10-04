@@ -95,14 +95,16 @@ export function validateNewSite(input: unknown): Validated {
     // Overlaps double-count waste and large gaps usually mean a missing period; both skew the model.
     if (acceptance.length === acc.length && acceptance.length > 1) {
       const sorted = [...acceptance].sort((a, b) => a.fromYear - b.fromYear);
+      // Compare with the period that ends latest so far, so a long period hides no later overlap or gap.
+      let prev = sorted[0];
       for (let i = 1; i < sorted.length; i++) {
-        const prev = sorted[i - 1];
         const cur = sorted[i];
         if (cur.fromYear <= prev.toYear) {
           errors.push(`Acceptance periods ${prev.fromYear}-${prev.toYear} and ${cur.fromYear}-${cur.toYear} overlap. Each year should appear in one period only.`);
         } else if (cur.fromYear - prev.toYear - 1 > MAX_GAP_YEARS) {
           errors.push(`There is a gap of more than ${MAX_GAP_YEARS} years between ${prev.toYear} and ${cur.fromYear}. Add the missing period or confirm the site was closed.`);
         }
+        if (cur.toYear > prev.toYear) prev = cur;
       }
     }
   }
