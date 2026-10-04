@@ -1,19 +1,22 @@
 import { hrefFor, STEPS, type Route } from "../route";
 import { shortName } from "../format";
 import type { Site } from "../model/types";
+import { showHowItWorks } from "../pages/home/navigation";
+import { Brand } from "./Brand";
 
 /** Brand plus the Find → Check → Fix → Fund stepper. Later steps unlock once a landfill is picked. */
 export function Nav({ route, site }: { route: Route; site: Site | null }) {
   const current = STEPS.findIndex((s) => s.page === route.page);
   return (
-    <nav className="nav">
-      <a href="#/" className="brand">
-        <span className="brand-mark" aria-hidden="true" />
-        Methane Payback
+    <nav className={`nav${route.page === "home" ? " nav-home" : ""}`} aria-label="Main navigation">
+      <a href="#/" className="brand" aria-label="Sentinel Sniff home">
+        <Brand />
       </a>
       {route.page === "home" ? (
         <div className="home-nav-links">
           <a className="home-nav-link" href={hrefFor({ page: "home" })} aria-current="page">Home</a>
+          <a className="home-nav-link home-nav-secondary" href={hrefFor({ page: "find" })}>Explore landfills</a>
+          <button className="home-nav-link home-nav-secondary" type="button" onClick={showHowItWorks}>How it works</button>
           <a className="cta" href={hrefFor({ page: "find" })}>Explore landfills ↗</a>
         </div>
       ) : (

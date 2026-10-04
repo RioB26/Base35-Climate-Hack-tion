@@ -9,7 +9,7 @@ import type { Assumptions } from "./model/types";
 import { CheckPage } from "./pages/CheckPage";
 import { FindPage } from "./pages/FindPage";
 import { FixPage } from "./pages/FixPage";
-import { HomePage } from "./pages/HomePage";
+import { HomePage } from "./pages/home/HomePage";
 import { FundPage } from "./pages/FundPage";
 import { useRoute } from "./route";
 
