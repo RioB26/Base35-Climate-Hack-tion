@@ -100,10 +100,8 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
       {adding && (
         <AddSiteForm
           onClose={() => setAdding(false)}
-          onAdded={(id) => {
-            setAdding(false);
-            go({ page: "check", siteId: id });
-          }}
+          // Stay on Find: the site joins the list and globe as its data arrives, instead of opening an empty Check page.
+          onAdded={() => setAdding(false)}
         />
       )}
 
