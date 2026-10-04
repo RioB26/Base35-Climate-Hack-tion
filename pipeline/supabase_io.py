@@ -14,6 +14,8 @@ import urllib.request
 
 class Supabase:
     def __init__(self, url: str, service_key: str):
+        # Secrets pasted into GitHub often carry a trailing newline or space, which breaks the URL.
+        url, service_key = url.strip(), service_key.strip()
         self.base = url.rstrip("/") + "/rest/v1"
         self.headers = {
             "apikey": service_key,
