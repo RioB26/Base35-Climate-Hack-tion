@@ -22,6 +22,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
   const [fallback, setFallback] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [mapLayer, setMapLayer] = useState<"low" | "high">("low");
+  const [showWind, setShowWind] = useState(true);
   const hasHighResolution = tanager.observations.length > 0;
   const { cells, lo, hi } = cellRange(grid);
   const wind = sat.wind;
@@ -139,7 +140,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           });
         }
       }
-      if (towards !== null) {
+      if (showWind && towards !== null) {
         features.push(
           { type: "Feature", properties: { kind: "down" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards, 30, 10, 30)] } },
           { type: "Feature", properties: { kind: "up" }, geometry: { type: "Polygon", coordinates: [sector(site.lat, site.lon, towards + 180, 30, 10, 30)] } },
@@ -177,7 +178,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
     el.innerHTML = '<span class="pin-dot"></span><span class="pin-label"></span>';
     el.querySelector<HTMLSpanElement>(".pin-label")!.textContent = shortName(site.name);
     new maplibregl.Marker({ element: el, anchor: "left" }).setLngLat([site.lon, site.lat]).addTo(m);
-    if (towards !== null) {
+    if (showWind && towards !== null) {
       [
         { label: "DOWNWIND", bearing: towards, className: "downwind" },
         { label: "UPWIND", bearing: (towards + 180) % 360, className: "upwind" },
@@ -203,7 +204,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
 
     return () => m.remove();
     // One map per site; the page remounts this component when the site changes.
-  }, [site, grid, towards, tanager, mapLayer, hasHighResolution]);
+  }, [site, grid, towards, tanager, mapLayer, hasHighResolution, showWind]);
 
   if (unavailable) {
     return (
@@ -232,6 +233,15 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
         <div ref={container} className="map" />
         <CurrencyAnchor />
         <div className="map-overlay-head">
+          <button
+            type="button"
+            className={`wind-toggle ${showWind ? "active" : ""}`}
+            aria-pressed={showWind}
+            onClick={() => setShowWind((visible) => !visible)}
+          >
+            <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+            Wind overlay {showWind ? "on" : "off"}
+          </button>
           <div className="wind-card">
             {wind && towards !== null ? (
               <>
@@ -283,7 +293,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
               <span className="swatch tanager" /> Tanager plume record
             </span>
           )}
-          {towards !== null && (
+          {showWind && towards !== null && (
             <span className="legend-row">
               <span className="swatch down" /> downwind <span className="swatch up" /> upwind
             </span>
