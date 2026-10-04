@@ -258,7 +258,30 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
   return (
     <section className="map-panel" aria-label="Satellite evidence map">
       <div className="map-toolbar">
-        <h2>Explore the satellite evidence</h2>
+        <div className="map-toolbar-head">
+          <h2>Explore the satellite evidence</h2>
+          <div className="map-toolbar-row">
+            {windAvailable ? (
+              <button
+                type="button"
+                className={`wind-toggle ${showWind ? "active" : ""}`}
+                aria-pressed={showWind}
+                onClick={() => setShowWind((visible) => !visible)}
+              >
+                <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+                Wind overlay {showWind ? "on" : "off"}
+              </button>
+            ) : (
+              <div className="wind-toggle unavailable" role="status">
+                <span className="wind-toggle-mark" aria-hidden="true">↝</span>
+                Wind overlay unavailable
+              </div>
+            )}
+            <Info label="About the wind overlay">
+              Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
+            </Info>
+          </div>
+        </div>
         {hasHighResolution ? (
           <div className="map-layer-toggle" role="group" aria-label="Map evidence layer">
             <button type="button" aria-pressed={mapLayer === "low"} onClick={() => setMapLayer("low")}>
@@ -269,27 +292,6 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
             </button>
           </div>
         ) : <p>Sentinel-5P regional context. Facility-scale observations are unavailable.</p>}
-        <div className="map-toolbar-row">
-          {windAvailable ? (
-            <button
-              type="button"
-              className={`wind-toggle ${showWind ? "active" : ""}`}
-              aria-pressed={showWind}
-              onClick={() => setShowWind((visible) => !visible)}
-            >
-              <span className="wind-toggle-mark" aria-hidden="true">↝</span>
-              Wind overlay {showWind ? "on" : "off"}
-            </button>
-          ) : (
-            <div className="wind-toggle unavailable" role="status">
-              <span className="wind-toggle-mark" aria-hidden="true">↝</span>
-              Wind overlay unavailable
-            </div>
-          )}
-          <Info label="About the wind overlay">
-            Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
-          </Info>
-        </div>
       </div>
       <div className="map-wrap">
         <div ref={container} className="map" />

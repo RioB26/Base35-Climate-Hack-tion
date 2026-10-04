@@ -341,7 +341,8 @@ a.ghost:hover { border-color: var(--iron); }
 @media (max-width: 900px) { .split, .split.fund { grid-template-columns: 1fr; } .col.sticky { position: static; order: -1; } }
 @media (max-width: 900px) { .map-wrap, .map { min-height: 380px; } }
 
-.map-toolbar-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.map-toolbar-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+.map-toolbar-row { display: flex; align-items: center; gap: 8px; }
 .map-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); }
 .map-panel .map-wrap { border: 0; border-radius: 0; box-shadow: none; }
 .map-toolbar { padding: 18px 20px; border-bottom: 1px solid var(--line); }
