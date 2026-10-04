@@ -1,10 +1,12 @@
+import { HomeIcon } from "./HomeIcon";
+
 /** Separate the emissions problem, the investment question and the proposed response. */
 export function HomeStory() {
   return (
     <section className="home-section" aria-label="The problem, where to invest and the solution">
       <div className="home-problem-solution">
         <article className="card home-story-card home-problem" data-reveal="left">
-          <div className="home-story-heading"><span aria-hidden="true">01</span><h2>The problem</h2></div>
+          <div className="home-story-heading"><HomeIcon name="methane" className="home-story-icon" /><h2>The problem</h2></div>
           <p className="home-story-lede">Landfills leak methane.</p>
           <p>Buried food scraps and other organic waste break down without oxygen, producing landfill gas that contains methane and CO₂.</p>
           <p>Escaping methane contributes to climate change. It also means losing a fuel that could be collected and used to generate electricity.</p>
@@ -12,14 +14,14 @@ export function HomeStory() {
         </article>
 
         <article className="card home-story-card home-statement" data-reveal="left" data-reveal-delay="1">
-          <div className="home-story-heading"><span aria-hidden="true">02</span><h2>Where to invest</h2></div>
+          <div className="home-story-heading"><HomeIcon name="investment" className="home-story-icon" /><h2>Where to invest</h2></div>
           <p className="home-story-lede">Which upgrades are worth funding?</p>
           <p>Some landfills already collect gas and generate electricity. With limited budgets, councils and operators need to know where additional capture could deliver the most value.</p>
           <p>The question is what to fund first: how much methane could be captured, what would the project cost, and could electricity sales help pay for it?</p>
         </article>
 
         <article className="card home-story-card home-solution" data-reveal="left" data-reveal-delay="2">
-          <div className="home-story-heading"><span aria-hidden="true">03</span><h2>The solution</h2></div>
+          <div className="home-story-heading"><HomeIcon name="energy" className="home-story-icon" /><h2>The solution</h2></div>
           <p className="home-story-lede">Capture more gas. Generate power.</p>
           <p>Wells and pipes collect landfill gas. After treatment, it can fuel engines that generate electricity for use on site or sale to the grid.</p>
           <ol className="home-energy-process" aria-label="How gas becomes electricity">
