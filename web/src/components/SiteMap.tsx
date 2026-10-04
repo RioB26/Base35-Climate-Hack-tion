@@ -200,80 +200,84 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
   }
 
   return (
-    <div className="map-wrap">
-      <div ref={container} className="map" />
-      <CurrencyAnchor />
-      <div className="map-overlay-head">
-        <div className="wind-card">
-          {wind && towards !== null ? (
-            <>
-              <svg viewBox="0 0 40 40" className="wind-arrow" style={{ transform: `rotate(${towards}deg)` }} aria-hidden="true">
-                <path d="M20 4 L28 20 L22 18 L22 36 L18 36 L18 18 L12 20 Z" />
-              </svg>
-              <span>
-                Wind mostly from the <strong>{compass(wind.fromDeg)}</strong>, {wind.meanSpeedMs.toFixed(1)} m/s on average
-                <span className="muted"> · ERA5, {sat.overpassesUsed} passes</span>
+    <section className="map-panel" aria-label="Satellite evidence map">
+      <div className="map-toolbar">
+        <h2>Explore the satellite evidence</h2>
+        {hasHighResolution ? (
+          <div className="map-layer-toggle" role="group" aria-label="Map evidence layer">
+            <button type="button" aria-pressed={mapLayer === "low"} onClick={() => setMapLayer("low")}>
+              <strong>Regional screening</strong><span>Sentinel-5P · coarse cells</span>
+            </button>
+            <button type="button" aria-pressed={mapLayer === "high"} onClick={() => setMapLayer("high")}>
+              <strong>Source observations</strong><span>Tanager · high resolution</span>
+            </button>
+          </div>
+        ) : <p>Sentinel-5P regional context. Facility-scale observations are unavailable.</p>}
+      </div>
+      <div className="map-wrap">
+        <div ref={container} className="map" />
+        <CurrencyAnchor />
+        <div className="map-overlay-head">
+          <div className="wind-card">
+            {wind && towards !== null ? (
+              <>
+                <svg viewBox="0 0 40 40" className="wind-arrow" style={{ transform: `rotate(${towards}deg)` }} aria-hidden="true">
+                  <path d="M20 4 L28 20 L22 18 L22 36 L18 36 L18 18 L12 20 Z" />
+                </svg>
+                <span>
+                  Wind mostly from the <strong>{compass(wind.fromDeg)}</strong>, {wind.meanSpeedMs.toFixed(1)} m/s on average
+                  <span className="muted"> · ERA5, {sat.overpassesUsed} passes</span>
+                </span>
+              </>
+            ) : (
+              <span className="muted">
+                Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
               </span>
+            )}
+          </div>
+        </div>
+        <div className="map-legend">
+          {cells.length > 0 ? (
+            <>
+              {(mapLayer === "low" || !hasHighResolution) && (
+                <>
+                  <span>Regional context · Sentinel-5P cells (~5 km)</span>
+                  <span className="ramp" style={{ background: `linear-gradient(90deg, ${LOW}, ${HIGH})` }} />
+                  <span className="scale">
+                    <span>{lo.toFixed(0)} ppb</span>
+                    <span>{hi.toFixed(0)} ppb</span>
+                  </span>
+                </>
+              )}
             </>
           ) : (
-            <span className="muted">
-              Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
+            <span className="muted">No methane grid for this site yet.</span>
+          )}
+          {tanager.observations.length > 0 && (
+            <span>Facility-scale source points · Tanager observations</span>
+          )}
+          {tanager.observations.length === 0 && (
+            <span className="coverage-gap">
+              <span className="coverage-gap-dot" /> Coarse regional screening only
+            </span>
+          )}
+          <span className="legend-row">
+            <span className="swatch ring" /> 10 and 30 km analysis area
+          </span>
+          {tanager.observations.length > 0 && (
+            <span className="legend-row">
+              <span className="swatch tanager" /> Tanager plume record
+            </span>
+          )}
+          {towards !== null && (
+            <span className="legend-row">
+              <span className="swatch down" /> downwind <span className="swatch up" /> upwind
             </span>
           )}
         </div>
-        {hasHighResolution && (
-          <div className="map-layer-toggle" role="group" aria-label="Map evidence layer">
-            <span className="map-layer-label">Evidence layer</span>
-            <button type="button" className={mapLayer === "low" ? "active" : ""} onClick={() => setMapLayer("low")}>
-              Sentinel-5P · coarse
-            </button>
-            <button type="button" className={mapLayer === "high" ? "active" : ""} onClick={() => setMapLayer("high")}>
-              Tanager · high res
-            </button>
-          </div>
-        )}
+        {fallback && <div className="map-error">Street tiles could not load, so a simple coastline map is shown.</div>}
       </div>
-      <div className="map-legend">
-        {cells.length > 0 ? (
-          <>
-            {(mapLayer === "low" || !hasHighResolution) && (
-              <>
-                <span>Regional context · Sentinel-5P cells (~5 km)</span>
-                <span className="ramp" style={{ background: `linear-gradient(90deg, ${LOW}, ${HIGH})` }} />
-                <span className="scale">
-                  <span>{lo.toFixed(0)} ppb</span>
-                  <span>{hi.toFixed(0)} ppb</span>
-                </span>
-              </>
-            )}
-          </>
-        ) : (
-          <span className="muted">No methane grid for this site yet.</span>
-        )}
-        {tanager.observations.length > 0 && (
-          <span>Facility-scale source points · Tanager observations</span>
-        )}
-        {tanager.observations.length === 0 && (
-          <span className="coverage-gap">
-            <span className="coverage-gap-dot" /> Coarse regional screening only
-          </span>
-        )}
-        <span className="legend-row">
-          <span className="swatch ring" /> 10 and 30 km analysis area
-        </span>
-        {tanager.observations.length > 0 && (
-          <span className="legend-row">
-            <span className="swatch tanager" /> Tanager plume record
-          </span>
-        )}
-        {towards !== null && (
-          <span className="legend-row">
-            <span className="swatch down" /> downwind <span className="swatch up" /> upwind
-          </span>
-        )}
-      </div>
-      {fallback && <div className="map-error">Street tiles could not load, so a simple coastline map is shown.</div>}
-    </div>
+    </section>
   );
 }
 

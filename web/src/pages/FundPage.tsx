@@ -44,7 +44,7 @@ export function FundPage(p: Props) {
   const toFix = () => p.go({ page: "fix", siteId: site.id });
 
   return (
-    <main className="page workspace">
+    <main className="page workspace fund-page">
       <PageHead step="Step 4 · Fund" title={`What it takes to fix ${name}`} sub="Pre-feasibility screening: a guide to what to study first, not a business case." />
 
       {noProject ? (

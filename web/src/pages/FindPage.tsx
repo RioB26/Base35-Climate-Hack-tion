@@ -61,17 +61,12 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
           <ul className="results" aria-live="polite">
             {matches.map((s) => (
               <li key={s.id}>
-                <button type="button" className={target === s.id ? "on" : ""} onClick={() => setTarget(s.id)}>
-                  <span className="r-name">{s.name}</span>
-                  <span className="r-meta">
-                    {regionOf(s)} · {satelliteLabel(statusFor(s.id).state, satelliteFor(s.id).status)}
-                    {s.illustrative && (
-                      <>
-                        {" "}
-                        <span className="tag">proxy inputs</span>
-                      </>
-                    )}
+                <button type="button" className={target === s.id ? "on" : ""} aria-pressed={target === s.id} onClick={() => setTarget(s.id)}>
+                  <span className="r-heading">
+                    <span className="r-name">{s.name}</span>
+                    {s.illustrative && <span className="tag">Proxy inputs</span>}
                   </span>
+                  <span className="r-meta"><span>{regionOf(s)}</span><span className="site-status">{satelliteLabel(statusFor(s.id).state, satelliteFor(s.id).status)}</span></span>
                 </button>
               </li>
             ))}
@@ -80,6 +75,7 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
           <p className="fine">
             {sites.length} landfills so far ({au} in Australia, {sites.length - au} in New Zealand).
           </p>
+          <p className="input-note">Proxy inputs are estimates used where site-specific model data is unavailable. Review them before planning a project.</p>
           {canAdd && (
             <button type="button" className="ghost" onClick={() => setAdding(true)}>
               Add a landfill

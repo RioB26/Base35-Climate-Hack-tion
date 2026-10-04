@@ -7,7 +7,7 @@ import "./currency.css";
 export function CurrencySelector() {
   const { currency, select, rates, loading, error, retry, anchor } = useCurrency();
   const currencyName = currencies.find((item) => item.code === currency)!.name
-    .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+    .replace(/(^|\s)([a-z])/g, (_, space: string, letter: string) => space + letter.toUpperCase());
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -58,7 +58,7 @@ export function CurrencySelector() {
       {open && (
         <section id="currency-panel" className="currency-panel" aria-labelledby="currency-title">
           <h2 id="currency-title">Display currency</h2>
-          <p className="currency-intro">Choose how project costs are displayed.</p>
+          <p className="currency-intro">Australian, New Zealand and Pacific currencies, plus international options.</p>
           <div className="currency-options">
             {currencies.map(({ code, name }) => (
               <button
@@ -93,7 +93,7 @@ export function CurrencySelector() {
       >
         <strong>{currency}</strong>
         <span className="currency-divider" aria-hidden="true">|</span>
-        <span>{currencyName}</span>
+        <span className="currency-name">{currencyName}</span>
       </button>
     </div>
   );

@@ -5,7 +5,7 @@ const W = 600;
 const H = 120;
 const M = { left: 16, right: 16 };
 
-/** One-axis chart: the satellite's downwind-minus-upwind range against the signal the reported figures imply. */
+/** One-axis chart: the satellite's downwind-minus-upwind range against the emissions baseline. */
 export function SignalChart({ c }: { c: Comparison }) {
   if (c.observedPpb === null || !c.observedCi) return null;
   const [lo, hi] = c.observedCi;
@@ -23,7 +23,7 @@ export function SignalChart({ c }: { c: Comparison }) {
   for (let t = Math.ceil((min - pad) / step) * step; t <= max + pad; t += step) ticks.push(Number(t.toFixed(6)));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="signal" role="img" aria-label={`Satellite ${c.observedPpb.toFixed(1)} ppb (range ${lo.toFixed(1)} to ${hi.toFixed(1)}); reported figures imply ${c.expectedPpb.toFixed(1)} ppb`}>
+    <svg viewBox={`0 0 ${W} ${H}`} className="signal" role="img" aria-label={`Satellite ${c.observedPpb.toFixed(1)} ppb (range ${lo.toFixed(1)} to ${hi.toFixed(1)}); emissions baseline implies ${c.expectedPpb.toFixed(1)} ppb`}>
       {ticks.map((t) => (
         <g key={t}>
           <line x1={x(t)} x2={x(t)} y1={axisY - 4} y2={axisY + 4} className={t === 0 ? "zero" : "gridline"} />
@@ -46,10 +46,10 @@ export function SignalChart({ c }: { c: Comparison }) {
         </text>
       </g>
       <g className="exp">
-        <title>{`Expected from reported figures: ${fmtPpb(c.expectedPpb)} ppb`}</title>
+        <title>{`Expected from the emissions baseline: ${fmtPpb(c.expectedPpb)} ppb`}</title>
         <path d={`M ${x(c.expectedPpb)} ${axisY - 8} l 7 8 l -7 8 l -7 -8 z`} className="diamond" />
         <text x={xe} y={axisY - 52} textAnchor={anchor(xe)} className="label">
-          Reported implies {fmtPpb(c.expectedPpb)}
+          Baseline implies {fmtPpb(c.expectedPpb)}
         </text>
         <line x1={x(c.expectedPpb)} x2={x(c.expectedPpb)} y1={axisY - 48} y2={axisY - 9} className="leader" />
       </g>

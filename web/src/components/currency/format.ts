@@ -6,8 +6,8 @@ export function createMoneyFormatter(currency: Currency, rate: number) {
     style: "currency",
     currency,
     currencyDisplay: "code",
-    maximumFractionDigits: currency === "JPY" ? 0 : 2,
   });
+  const minorUnits = numberFormat.resolvedOptions().maximumFractionDigits ?? 2;
   const fmtMoney = (aud: number) => numberFormat.format(convert(aud));
   const fmtAudM = (aud: number) => {
     const n = convert(aud);
@@ -19,7 +19,7 @@ export function createMoneyFormatter(currency: Currency, rate: number) {
   const fmtCostPerT = (aud: number) => {
     const n = convert(aud);
     if (!Number.isFinite(n)) return "n/a";
-    const decimals = currency !== "JPY" && Math.abs(n) < 10 ? 1 : 0;
+    const decimals = minorUnits > 0 && Math.abs(n) < 10 ? 1 : 0;
     return `${n < 0 ? "−" : ""}${currency} ${Math.abs(n).toFixed(decimals)}`;
   };
   return { currency, convert, fmtMoney, fmtAudM, fmtCostPerT };
