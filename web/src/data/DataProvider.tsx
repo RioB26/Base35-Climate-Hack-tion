@@ -34,6 +34,8 @@ type DataState = {
   gridFor: (id: string) => MethaneGrid[string] | undefined;
   statusFor: (id: string) => StatusInfo;
   tanagerFor: (id: string) => TanagerSite;
+  /** True until the first read of every table has finished, so pages can avoid showing "not run" for data still in flight. */
+  loading: boolean;
   /** False when the build has no Supabase settings, so sites cannot be added. */
   canAdd: boolean;
   addSite: (input: AddSiteInput, passcode: string) => Promise<AddSiteResult>;
@@ -55,6 +57,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [satRows, setSatRows] = useState<ResultRow<SatelliteResult>[]>([]);
   const [gridRows, setGridRows] = useState<ResultRow<MethaneGrid[string]>[]>([]);
   const [tanagerRows, setTanagerRows] = useState<ResultRow<StoredTanager>[]>([]);
+  const [loading, setLoading] = useState(supabase !== null);
   const [notice, setNotice] = useState<Notice | null>(() => readStored<Notice | null>(NOTICE_KEY, null));
 
   const showNotice = useCallback((n: Notice | null) => {
@@ -89,8 +92,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       methane_grid: () => load<ResultRow<MethaneGrid[string]>>("methane_grid", setGridRows),
       tanager_results: () => load<ResultRow<StoredTanager>>("tanager_results", setTanagerRows),
     };
-    const reloadAll = () => Object.values(loaders).forEach((f) => f());
-    reloadAll();
+    const reloadAll = () => Promise.all(Object.values(loaders).map((f) => f()));
+    reloadAll().finally(() => {
+      if (!disposed) setLoading(false);
+    });
 
     // The job writes results, then flips the site to done. Any change reloads every table, so a done
     // status never sits beside results the browser missed or received out of order.
@@ -181,13 +186,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const full = stored && { ...bundled, ...stored, coverageRadiusKm: stored.coverageRadiusKm ?? bundled.coverageRadiusKm, catalogCheckedAt: stored.catalogCheckedAt ?? bundled.catalogCheckedAt };
         return resolveTanager(full, status[id] ?? { state: "done", error: null, createdAt: null }, bundled);
       },
+      loading,
       canAdd: supabase !== null,
       addSite,
       retrySite,
       notice,
       dismissNotice: () => showNotice(null),
     };
-  }, [rows, satRows, gridRows, tanagerRows, addSite, retrySite, notice, showNotice]);
+  }, [rows, satRows, gridRows, tanagerRows, loading, addSite, retrySite, notice, showNotice]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
