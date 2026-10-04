@@ -9,6 +9,7 @@ import { sizeClass, stillOperating, wasteInPlace } from "../model/size";
 import type { Assumptions, Site, SiteResult } from "../model/types";
 import type { Route } from "../route";
 import { Loading } from "../components/Mark";
+import { creditScheme, inAustralia } from "../model/country";
 
 const Landfill3D = lazy(() => import("../components/Landfill3D"));
 
@@ -29,7 +30,7 @@ export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Pr
   const operating = stillOperating(site, NOW);
   const cap = Math.round(site.existingCapture * 100);
   const noHeadroom = a.captureEfficiency <= site.existingCapture;
-  const nz = site.state === "NZ";
+  const nz = !inAustralia(site);
 
   return (
     <main className="page workspace">
@@ -64,7 +65,7 @@ export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Pr
               <input type="checkbox" checked={a.includeAccu} onChange={(e) => setAssumptions({ ...a, includeAccu: e.target.checked })} />
               <span>
                 Include potential ACCU revenue in the payback
-                {nz && <span className="muted"> (not for NZ sites, which sit under the NZ ETS)</span>}
+                {nz && <span className="muted"> (Australian sites only; this site is under {creditScheme(site) === "None" ? "no credit scheme" : `the ${creditScheme(site)}`})</span>}
               </span>
             </label>
           </Question>

@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from datetime import date
 from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -78,6 +79,19 @@ def observation(item: dict) -> dict:
     }
 
 
+def plumes_for_site(sources: dict, site: dict, radius_km: float) -> dict:
+    """Tanager plume records near one site. No records means no public coverage, never "no methane"."""
+    plume_ids, source_count = plume_ids_near_site(sources, site, radius_km)
+    records = [observation(item) for item in get_plumes(plume_ids)]
+    records = [r for r in records if r["lat"] is not None and r["lon"] is not None]
+    return {
+        "status": "observed" if records else "no_public_coverage",
+        "sourceCount": source_count,
+        "plumeCount": len(records),
+        "observations": records,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--radius", type=float, default=15)
@@ -86,25 +100,13 @@ def main() -> None:
 
     sites = json.loads(SITES_PATH.read_text(encoding="utf-8"))
     sources = get_json(SOURCES_URL)
-    checked_at = __import__("datetime").date.today().isoformat()
     result = {
-        "catalogCheckedAt": checked_at,
+        "catalogCheckedAt": date.today().isoformat(),
         "coverageRadiusKm": args.radius,
         "source": "Carbon Mapper public catalog",
         "licenseNote": "Verify Carbon Mapper Terms of Use before redistributing catalog imagery or derived records.",
-        "sites": {},
+        "sites": {site["id"]: plumes_for_site(sources, site, args.radius) for site in sites},
     }
-
-    for site in sites:
-        plume_ids, source_count = plume_ids_near_site(sources, site, args.radius)
-        records = [observation(item) for item in get_plumes(plume_ids)]
-        records = [record for record in records if record["lat"] is not None and record["lon"] is not None]
-        result["sites"][site["id"]] = {
-            "status": "observed" if records else "no_public_coverage",
-            "sourceCount": source_count,
-            "plumeCount": len(records),
-            "observations": records,
-        }
 
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {args.output}")

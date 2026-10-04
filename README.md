@@ -30,7 +30,7 @@ The app is four steps, one landfill at a time:
 
 It is a **pre-feasibility screen**, not a business case or feasibility study. It ranks candidates for detailed study.
 
-> **Status:** five real landfills, three in Australia (Mugga Lane, Lucas Heights, Melbourne Regional Landfill) and two in New Zealand (Redvale, Kate Valley), with sourced headline figures, but several inputs per site (waste history, closure year, existing capture) are **proxies**, flagged in the app and in `sites.json`. Costs are benchmarked against US EPA landfill gas project data converted to AUD.
+> **Status:** six real landfills, three in Australia (Mugga Lane, Lucas Heights, Melbourne Regional Landfill), two in New Zealand (Redvale, Kate Valley) and one in Fiji (Naboro, with no methane capture reported), with sourced headline figures, but several inputs per site (waste history, closure year, existing capture) are **proxies**, flagged in the app and in `sites.json`. Costs are benchmarked against US EPA landfill gas project data converted to AUD.
 
 ## Run it
 

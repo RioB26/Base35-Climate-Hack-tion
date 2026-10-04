@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export type Step = "check" | "fix" | "fund";
 export type Route = { page: "home" } | { page: "find" } | { page: Step; siteId: string };
@@ -25,18 +25,18 @@ export function hrefFor(route: Route): string {
 }
 
 export function useRoute(knownIds: string[]): [Route, (r: Route) => void] {
-  const [route, setRoute] = useState(() => parseHash(window.location.hash, knownIds));
-  useEffect(() => {
-    setRoute(parseHash(window.location.hash, knownIds));
-  }, [knownIds]);
+  // Keep the raw hash and resolve it against the current site list on every render, so a site that
+  // arrives after the hash changes (a just-added landfill) is picked up without a stale listener.
+  const [hash, setHash] = useState(() => window.location.hash);
   useEffect(() => {
     const on = () => {
-      setRoute(parseHash(window.location.hash, knownIds));
+      setHash(window.location.hash);
       window.scrollTo({ top: 0 });
     };
     window.addEventListener("hashchange", on);
     return () => window.removeEventListener("hashchange", on);
-  }, [knownIds]);
+  }, []);
+  const route = useMemo(() => parseHash(hash, knownIds), [hash, knownIds]);
   const go = useCallback((r: Route) => {
     window.location.hash = hrefFor(r);
   }, []);

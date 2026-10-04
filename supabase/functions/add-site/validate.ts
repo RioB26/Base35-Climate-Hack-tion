@@ -1,7 +1,7 @@
 // Validation for the add-site request. Pure TypeScript with no imports so the Edge Function (Deno),
 // the web form and the vitest suite can all share it.
 
-export const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT", "NZ"] as const;
+export const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT", "NZ", "FJ"] as const;
 export type State = (typeof STATES)[number];
 
 export type NewSite = {
@@ -21,9 +21,15 @@ export type NewSite = {
 
 export const DEFAULTS = { k: 0.05, L0: 100, existingCapture: 0 };
 
+// Below this a landfill is too small to show up against satellite noise or to be worth modelling.
+export const MIN_TONNES_PER_YEAR = 100;
+const MAX_GAP_YEARS = 20;
+
 // Rough bounding boxes (lat/lon). They reject obviously wrong pins, not borders.
 const AU = { minLat: -44, maxLat: -10, minLon: 112, maxLon: 154 };
 const NZ = { minLat: -48, maxLat: -34, minLon: 166, maxLon: 179 };
+// Viti Levu and Vanua Levu; the Lau group east of 180° is outside the table's longitude range.
+const FJ = { minLat: -21, maxLat: -15.5, minLon: 176.5, maxLon: 179 };
 const inBox = (b: typeof AU, lat: number, lon: number) =>
   lat >= b.minLat && lat <= b.maxLat && lon >= b.minLon && lon <= b.maxLon;
 
@@ -53,7 +59,7 @@ export function validateNewSite(input: unknown): Validated {
   const name = typeof o.name === "string" ? o.name.trim() : "";
   if (name.length < 3 || name.length > 80) errors.push("Name must be 3 to 80 characters.");
   const id = slugify(name);
-  if (name && !id) errors.push("Name must contain letters or numbers.");
+  if (name && id.length < 3) errors.push("Name must contain at least 3 letters or numbers.");
 
   const state = o.state as State;
   if (!STATES.includes(state)) errors.push("Pick a state or territory.");
@@ -61,9 +67,14 @@ export function validateNewSite(input: unknown): Validated {
   const { lat, lon } = o;
   if (!isNum(lat) || !isNum(lon)) {
     errors.push("Latitude and longitude must be numbers.");
+  } else if (lat === 0 && lon === 0) {
+    errors.push("Coordinates are 0, 0. Enter the landfill's real latitude and longitude.");
+  } else if (STATES.includes(state) && lat > 0 && lon < 0) {
+    errors.push("Latitude and longitude look swapped. Latitude is negative in this region (about -10 to -48) and longitude is positive (about 112 to 179).");
   } else if (STATES.includes(state)) {
-    const inRegion = state === "NZ" ? inBox(NZ, lat, lon) : inBox(AU, lat, lon);
-    if (!inRegion) errors.push(`Coordinates are not inside ${state === "NZ" ? "New Zealand" : "Australia"}.`);
+    const box = state === "NZ" ? NZ : state === "FJ" ? FJ : AU;
+    const place = state === "NZ" ? "New Zealand" : state === "FJ" ? "Fiji" : "Australia";
+    if (!inBox(box, lat, lon)) errors.push(`Coordinates are not inside ${place}.`);
   }
 
   const acc = o.acceptance;
@@ -77,10 +88,25 @@ export function validateNewSite(input: unknown): Validated {
         isNum(fromYear) && isNum(toYear) && isNum(tonnesPerYear) &&
         Number.isInteger(fromYear) && Number.isInteger(toYear) &&
         fromYear >= 1900 && toYear <= 2100 && toYear >= fromYear &&
-        tonnesPerYear > 0 && tonnesPerYear <= 1e8;
+        tonnesPerYear >= MIN_TONNES_PER_YEAR && tonnesPerYear <= 1e8;
       if (good) acceptance.push({ fromYear, toYear, tonnesPerYear });
-      else errors.push(`Acceptance period ${i + 1}: years 1900 to 2100 (end not before start) and tonnes per year above 0.`);
+      else errors.push(`Acceptance period ${i + 1}: years 1900 to 2100 (end not before start) and ${MIN_TONNES_PER_YEAR} to 100,000,000 tonnes per year.`);
     });
+    // Overlaps double-count waste and large gaps usually mean a missing period; both skew the model.
+    if (acceptance.length === acc.length && acceptance.length > 1) {
+      const sorted = [...acceptance].sort((a, b) => a.fromYear - b.fromYear);
+      // Compare with the period that ends latest so far, so a long period hides no later overlap or gap.
+      let prev = sorted[0];
+      for (let i = 1; i < sorted.length; i++) {
+        const cur = sorted[i];
+        if (cur.fromYear <= prev.toYear) {
+          errors.push(`Acceptance periods ${prev.fromYear}-${prev.toYear} and ${cur.fromYear}-${cur.toYear} overlap. Each year should appear in one period only.`);
+        } else if (cur.fromYear - prev.toYear - 1 > MAX_GAP_YEARS) {
+          errors.push(`There is a gap of more than ${MAX_GAP_YEARS} years between ${prev.toYear} and ${cur.fromYear}. Add the missing period or confirm the site was closed.`);
+        }
+        if (cur.toYear > prev.toYear) prev = cur;
+      }
+    }
   }
 
   const k = o.k ?? DEFAULTS.k;

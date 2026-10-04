@@ -5,6 +5,19 @@ import type { Comparison } from "../model/discrepancy";
 type Props = { site: Site; tanager: TanagerSite; comparison: Comparison; selectedDate: string; onDateChange: (date: string) => void };
 
 export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDateChange }: Props) {
+  if (tanager.status === "pending") {
+    return (
+      <article className="card high-res-status">
+        <div className="status-kicker"><span className="status-dot" /> High-resolution layer</div>
+        <h2 className="card-title">Searching for Tanager plumes</h2>
+        <p className="muted small">
+          Checking Carbon Mapper&apos;s catalog within {tanager.coverageRadiusKm} km of {site.name.split(",")[0]}. The page
+          updates by itself when the search finishes.
+        </p>
+      </article>
+    );
+  }
+
   if (tanager.status === "not_checked") {
     return (
       <article className="card high-res-status">

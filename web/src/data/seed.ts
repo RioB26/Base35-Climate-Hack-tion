@@ -16,8 +16,8 @@ export type TanagerObservation = {
   emissionUncertaintyKgPerHour: number | null;
 };
 export type TanagerSite = {
-  /** not_checked: the site is not in the bundled catalog check (for example, added through the app). */
-  status: "observed" | "no_public_coverage" | "not_checked";
+  /** not_checked: the catalog was never searched for this site. pending: the search is still running. */
+  status: "observed" | "no_public_coverage" | "not_checked" | "pending";
   sourceCount: number;
   plumeCount: number;
   observations: TanagerObservation[];
@@ -42,5 +42,6 @@ export const tanagerFor = (id: string): TanagerSite => {
   } as TanagerSite;
 };
 
-export const country = (s: Site) => (s.state === "NZ" ? "New Zealand" : "Australia");
-export const regionOf = (s: Site) => (s.state === "NZ" ? "New Zealand" : `${s.state}, Australia`);
+import { country, inAustralia } from "../model/country";
+export { country };
+export const regionOf = (s: Site) => (inAustralia(s) ? `${s.state}, Australia` : country(s));

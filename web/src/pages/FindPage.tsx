@@ -1,6 +1,6 @@
 import { Suspense, lazy, useMemo, useState } from "react";
 import { AddSiteForm } from "../components/AddSiteForm";
-import { regionOf, useData } from "../data";
+import { country, regionOf, useData } from "../data";
 import type { Route } from "../route";
 import type { Site } from "../model/types";
 import { Loading } from "../components/Mark";
@@ -20,16 +20,25 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
   const [query, setQuery] = useState("");
   const [target, setTarget] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const { satelliteFor, statusFor, canAdd } = useData();
+  const { satelliteFor, statusFor, canAdd, notice, dismissNotice } = useData();
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return sites;
     return sites.filter((s) => `${s.name} ${regionOf(s)} ${s.state}`.toLowerCase().includes(q));
   }, [query, sites]);
-  const au = sites.filter((s) => s.state !== "NZ").length;
+  const byCountry = ["Australia", "New Zealand", "Fiji"]
+    .map((name) => ({ name, count: sites.filter((site) => country(site) === name).length }))
+    .filter(({ count }) => count > 0)
+    .map(({ name, count }) => `${count} in ${name}`);
 
   return (
     <main className="find-page">
+      {notice && (
+        <div className="notice" role="alert">
+          <div><strong>{notice.title}</strong><p>{notice.message}</p></div>
+          <button type="button" className="notice-close" onClick={dismissNotice} aria-label="Dismiss">×</button>
+        </div>
+      )}
       <section className="find" aria-labelledby="find-title">
         <Suspense fallback={<Loading className="globe-wrap globe-loading" label="Loading globe…" />}>
           <GlobeView sites={sites} target={target} onPick={setTarget} onArrive={(id) => go({ page: "check", siteId: id })} />
@@ -73,7 +82,7 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
             {matches.length === 0 && <li className="muted small">No landfill matches "{query}" yet.</li>}
           </ul>
           <p className="fine">
-            {sites.length} landfills so far ({au} in Australia, {sites.length - au} in New Zealand).
+            {sites.length} landfills so far ({listJoin(byCountry)}).
           </p>
           <p className="input-note">Proxy inputs are estimates used where site-specific model data is unavailable. Review them before planning a project.</p>
           {canAdd && (
@@ -87,9 +96,9 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
       {adding && (
         <AddSiteForm
           onClose={() => setAdding(false)}
-          onAdded={(id) => {
+          onLeave={() => setAdding(false)}
+          onAdded={() => {
             setAdding(false);
-            go({ page: "check", siteId: id });
           }}
         />
       )}
@@ -126,3 +135,5 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
     </main>
   );
 }
+
+const listJoin = (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`);

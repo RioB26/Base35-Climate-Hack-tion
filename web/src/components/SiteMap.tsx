@@ -5,7 +5,7 @@ import type { MethaneGrid, TanagerSite } from "../data";
 import { shortName } from "../format";
 import type { SatelliteResult, Site } from "../model/types";
 import { CurrencyAnchor } from "./currency";
-import { bundledStyle, compass, ring, sector } from "./basemap";
+import { bundledStyle, compass, offset, ring, sector } from "./basemap";
 import { VisualFallback } from "./Mark";
 
 type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined; tanager: TanagerSite };
@@ -177,6 +177,20 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
     el.innerHTML = '<span class="pin-dot"></span><span class="pin-label"></span>';
     el.querySelector<HTMLSpanElement>(".pin-label")!.textContent = shortName(site.name);
     new maplibregl.Marker({ element: el, anchor: "left" }).setLngLat([site.lon, site.lat]).addTo(m);
+    if (towards !== null) {
+      [
+        { label: "DOWNWIND", bearing: towards, className: "downwind" },
+        { label: "UPWIND", bearing: (towards + 180) % 360, className: "upwind" },
+      ].forEach(({ label, bearing, className }) => {
+        const direction = document.createElement("div");
+        direction.className = `wind-direction ${className}`;
+        direction.innerHTML = `<span class="wind-direction-arrow" style="transform: rotate(${bearing}deg)">➤</span><span>${label}</span>`;
+        direction.setAttribute("aria-label", `${label.toLowerCase()} wind direction`);
+        new maplibregl.Marker({ element: direction, anchor: "center" })
+          .setLngLat(offset(site.lat, site.lon, 23, bearing))
+          .addTo(m);
+      });
+    }
     if (hasHighResolution && mapLayer === "high") tanager.observations.forEach((observation, index) => {
       const plume = document.createElement("div");
       plume.className = "tanager-pin";

@@ -18,6 +18,8 @@ Q(t) = Σ_{i ≤ t}  k · L0 · M_i · exp(−k · (t − i + 0.5))      [m³ CH
 
 with a mid-year convention. `k` (1/yr) and `L0` (m³ CH₄/t) are per-site inputs. Mass uses 0.717 kg/m³.
 
+The temperate sites use k = 0.05. Naboro (Fiji) uses k = 0.17, the IPCC 2019 Refinement default for bulk waste in tropical moist and wet climates (Vol. 5 Ch. 3, Table 3.3). With 70,000 t/yr from 2005 this gives about 690 m³/h of methane in 2016, against about 800 m³/h estimated by Mani et al. (2016). Fiji has no landfill credit scheme, so no credit revenue is modelled there, and no sourced household electricity figure was found, so the homes-powered card is hidden for Fiji.
+
 ## 2. Capture and emissions avoided
 
 ```
@@ -39,6 +41,8 @@ MWh/yr      = electric kW × 8,760 × availability / 1000
 ```
 
 Worked example (tested in `model.test.ts`): 1,000 m³/h landfill gas at 50% CH₄ gives about 3,140 t CH₄/yr. At 75% capture, about 2,355 t is captured, which avoids about 65,950 tCO₂-e/yr. That gas gives about 3.74 MW thermal, 1.42 MW electric and 11.2 GWh/yr.
+
+**Homes powered (Fund step).** `homes = MWh/yr × 1000 / kWh per home per year`, using the first project year's electricity. A typical Australian home is taken as 17 kWh a day (6,205 kWh a year), the midpoint of "11–23 kWh per day" from energy.gov.au ([Size your solar system](https://www.energy.gov.au/solar/solar-system-design/size-your-solar-system)). A New Zealand home is 8,000 kWh a year, the household MBIE models in its Quarterly Survey of Domestic Electricity Prices ([Electricity cost and price monitoring](https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energy-statistics-and-modelling/energy-statistics/energy-prices/electricity-cost-and-price-monitoring)). This is an equivalence for scale, not a claim about where the power is sold.
 
 ## 4. Costs and cost per tonne
 
