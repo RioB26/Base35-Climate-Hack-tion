@@ -16,6 +16,9 @@ describe("routes", () => {
     expect(parseHash(hrefFor({ page: "find" }), ids)).toEqual({ page: "find" });
     expect(hrefFor({ page: "home" })).toBe("#/");
   });
+  it("parses the plan step", () => {
+    expect(parseHash("#/site/mugga-lane/plan", ids)).toEqual({ page: "plan", siteId: "mugga-lane" });
+  });
   it("round-trips", () => {
     expect(parseHash(hrefFor({ page: "fund", siteId: "mugga-lane" }), ids)).toEqual({ page: "fund", siteId: "mugga-lane" });
   });

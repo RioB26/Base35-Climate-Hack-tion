@@ -1,4 +1,5 @@
 import type { Cop31Score } from "../model/cop31";
+import { Info } from "./Info";
 
 /** The rubric, shown in full so anyone can check the score by hand. */
 export function Cop31Card({ score }: { score: Cop31Score | null }) {
@@ -27,18 +28,24 @@ export function Cop31Card({ score }: { score: Cop31Score | null }) {
           </text>
         </svg>
         <div>
-          <h2 className="card-title">COP31 alignment check</h2>
-          <p className="muted small">
-            Our own published rubric, not an official COP31 score. Four parts worth 25 points each, tied to the Global Methane
-            Pledge, the carbon price and the energy the site makes.
-          </p>
+          <h2 className="card-title">
+            COP31 alignment check
+            <Info label="About this score">
+              Our own published rubric, not an official COP31 score. Four parts worth 25 points each, tied to the Global Methane
+              Pledge, the carbon price and the energy the site makes.
+            </Info>
+          </h2>
+          <p className="muted small">Our own rubric, not an official COP31 score.</p>
         </div>
       </div>
       <ul className="cop-parts">
         {score.parts.map((p) => (
           <li key={p.key}>
             <div className="cop-row">
-              <span className="cop-label">{p.label}</span>
+              <span className="cop-label">
+                {p.label}
+                <Info label={`How ${p.label.toLowerCase()} is scored`}>{p.rule}</Info>
+              </span>
               <span className="cop-val">{p.value}</span>
               <span className="cop-pts">
                 {Math.round(p.points)} / {p.max}
@@ -47,7 +54,6 @@ export function Cop31Card({ score }: { score: Cop31Score | null }) {
             <span className="cop-bar">
               <span style={{ width: `${(p.points / p.max) * 100}%` }} />
             </span>
-            <span className="cop-rule">{p.rule}</span>
           </li>
         ))}
       </ul>

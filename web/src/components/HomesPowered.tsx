@@ -1,6 +1,7 @@
 import { fmtInt } from "../format";
 import { homeKWhPerYear, homesPerIcon, homesPowered } from "../model/homes";
 import type { Site } from "../model/types";
+import { Info } from "./Info";
 
 /** How many typical homes the captured gas could power, drawn as a grid of houses. */
 export function HomesPowered({ site, electricityMWhPerYear }: { site: Site; electricityMWhPerYear: number }) {
@@ -17,15 +18,17 @@ export function HomesPowered({ site, electricityMWhPerYear }: { site: Site; elec
   return (
     <article className="card homes">
       <div className="homes-text">
-        <p className="eyebrow">Power for homes</p>
+        <p className="eyebrow">
+          Power for homes
+          <Info label="How homes are counted">
+            {fmtInt(electricityMWhPerYear)} MWh a year from the captured gas, at {fmtInt(kWh)} kWh a year for a typical{" "}
+            {nz ? "New Zealand" : "Australian"} home ({nz ? "MBIE" : "energy.gov.au"}).
+          </Info>
+        </p>
         <p className="homes-big">
           Enough electricity for about <span className="num">{fmtInt(rounded)}</span> homes
         </p>
-        <p className="small muted">
-          {fmtInt(electricityMWhPerYear)} MWh a year from the captured gas, at {fmtInt(kWh)} kWh a year for a typical{" "}
-          {nz ? "New Zealand" : "Australian"} home ({nz ? "MBIE" : "energy.gov.au"}). Flaring the gas instead would cut the same
-          methane but power none.
-        </p>
+        <p className="small muted">Flaring the gas instead would cut the same methane but power none.</p>
       </div>
       <figure className="homes-grid" aria-label={`About ${fmtInt(rounded)} homes; each house stands for ${fmtInt(unit)}`}>
         <div className="houses" aria-hidden="true">

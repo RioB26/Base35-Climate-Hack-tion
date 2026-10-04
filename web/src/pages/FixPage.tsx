@@ -9,6 +9,7 @@ import { sizeClass, stillOperating, wasteInPlace } from "../model/size";
 import type { Assumptions, Site, SiteResult } from "../model/types";
 import type { Route } from "../route";
 import { Loading } from "../components/Mark";
+import { Info } from "../components/Info";
 import { creditScheme, inAustralia } from "../model/country";
 
 const Landfill3D = lazy(() => import("../components/Landfill3D"));
@@ -100,8 +101,12 @@ export function FixPage({ site, result, assumptions: a, setAssumptions, go }: Pr
                   </span>
                 </div>
                 <p className="scene-caption">
-                  {size[0].toUpperCase() + size.slice(1)} landfill: about {Math.round(wasteInPlace(site, NOW) / 1e6)} Mt of waste in
-                  place (modelled), {operating ? "still taking waste" : "closed"}. {regionOf(site)}. Illustrative, not to scale.
+                  {size[0].toUpperCase() + size.slice(1)} landfill · about {Math.round(wasteInPlace(site, NOW) / 1e6)} Mt of waste ·{" "}
+                  {operating ? "still taking waste" : "closed"}
+                  <Info label="About the 3D model">
+                    {regionOf(site)}. Waste in place is modelled from the site's tonnage history. The model picks one of three sizes (under
+                    10 Mt, 10 to 30 Mt, 30 Mt and over) and is illustrative, not to scale.
+                  </Info>
                 </p>
               </>
             )}
