@@ -9,7 +9,6 @@ An open pre-feasibility screen for landfill methane capture in Australia and New
 
 > Existing systems tell you where methane is. Sentinel Sniff helps decide what to fund first, and what it could achieve by 2035.
 
-<<<<<<< HEAD
 The app is five steps, one landfill at a time:
 =======
 ## The problem and our solution
@@ -25,7 +24,6 @@ The homepage introduces the project, satellite screening and estimated project b
 The homepage separates the methane problem, the investment question and the capture-to-energy solution, with large section headings and the Find → Check → Fix → Fund workflow. Typography, colour roles and card shapes follow the [EU Climate Hacktion Design Brief](<docs/EU Climate Hacktion Design Brief.md>): Fraunces headings, Inter body/UI text, evergreen panels, tangerine emphasis and 18px corners. Find, Check, Fix and Fund share the same typography, content width, warm cards and navigation styling. Home and Find share their workflow copy, and interactive views show a branded fallback if rendering is unavailable. The supplied Sentinel Sniff kit adds its plume-to-leaf mark, roman/italic wordmark, browser favicon and reverse lockup; see [docs/BRAND.md](docs/BRAND.md) for asset provenance. Small tangerine text and the hero emphasis use the darker methane-ramp shade for readability. Sections reveal once as they enter view; reduced-motion preferences, keyboard focus and browsers without intersection observation keep the content immediately visible.
 
 The app is four steps, one landfill at a time:
->>>>>>> d67c0d723833a6fd2d61607e6b44d8f834bf992d
 
 1. **Find:** a globe with every landfill pinned and a search box. Picking one flies in to it.
 2. **Check:** the site's reported figures against an independent Sentinel-5P signal (downwind minus upwind methane over many overpasses), with a map of mean methane and the 10 to 30 km analysis area. If the satellite sees more than the reported capture explains, it shows by how much. This is a screening signal, never a measurement of facility emissions.
