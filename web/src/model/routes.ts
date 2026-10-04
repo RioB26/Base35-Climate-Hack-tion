@@ -44,7 +44,8 @@ export function gasRoutes(site: Site, a: Assumptions): RouteResult[] {
   const collectionCapex = mid(a.collectionCapexAudPerM3h) * peakM3h * a.capexMultiplier;
   const collectionOpex = collectionCapex * a.collectionOpexFractionOfCapex;
   const grid = gridFactorTPerMWh(site);
-  const gasGJ = (capturedM3: number) => capturedM3 * a.methaneLhvKWhPerM3 * GJ_PER_KWH * GAS.recovery;
+  // Upgrading losses are not modelled: all captured methane is sold as biomethane.
+  const gasGJ = (capturedM3: number) => capturedM3 * a.methaneLhvKWhPerM3 * GJ_PER_KWH;
 
   type Spec = {
     capex: number;
@@ -59,12 +60,12 @@ export function gasRoutes(site: Site, a: Assumptions): RouteResult[] {
       capex: collectionCapex + mid(a.engineCapexAudPerKW) * peakKW * a.capexMultiplier,
       opex: (p) => collectionOpex + p.electricityMWh * a.engineOpexAudPerMWh,
       revenue: (p) => p.electricityMWh * a.powerPriceAudPerMWh,
-      displaced: (p) => p.electricityMWh * grid,
+      displaced: (p) => p.electricityMWh * (grid ?? 0),
       energy: (p) => ({ kind: "electricity", perYear: p.electricityMWh }),
     },
     biomethane: {
-      capex: collectionCapex + GAS.upgradingCapexAudPerM3hCH4 * peakM3h * a.capexMultiplier,
-      opex: (p) => collectionOpex + gasGJ(p.capturedM3) * GAS.upgradingOpexAudPerGJ,
+      capex: collectionCapex + (GAS.upgradingCapexAudPerM3hCH4 * peakM3h + GAS.connectionCapexAud) * a.capexMultiplier,
+      opex: () => collectionOpex + GAS.upgradingOpexAudPerM3hYr * peakM3h,
       revenue: (p) => gasGJ(p.capturedM3) * GAS.priceAudPerGJ,
       displaced: (p) => gasGJ(p.capturedM3) * GAS.combustionTPerGJ,
       energy: (p) => ({ kind: "gas", perYear: gasGJ(p.capturedM3) }),

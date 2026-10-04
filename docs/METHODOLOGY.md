@@ -119,3 +119,20 @@ The product separates evidence by what each sensor can support:
 - **GHGSat or plume geometry from a licensed high-resolution product** is required for a stronger attribution assessment: plume footprint, origin, acquisition-time wind and repeated detections.
 
 Until the boundary and plume geometry layers are available, the app reports nearby high-resolution evidence and regional corroboration separately and keeps landfill attribution unresolved.
+
+## 11. What to do with the gas (Plan step)
+
+Code: `web/src/model/routes.ts`, figures in `web/src/data/routeFactors.ts`. Every option captures the same gas at the chosen target, with the same plant sizing (peak year) and discounting as section 4, so the methane cut is identical and the **Make electricity** option equals the main model. Cost per tonne counts the methane cut only (credits excluded), so it compares with section 4 and the ACCU price.
+
+| Option | Build | Running cost | Revenue | Fossil emissions replaced |
+|---|---|---|---|---|
+| Leave it | none | none | none | none |
+| Burn it off (flare) | gas collection and flare (EPA, as section 4) | collection O&M | none | none |
+| Make electricity | collection + engines (section 4) | collection + engine O&M | power sales | MWh × grid factor |
+| Clean into biomethane | collection + upgrading (EPA LFG handbook ch. 4, table 4-10: USD 6,200–8,300 per scfm, midpoint) + pipeline and interconnect (USD 1.0M) | collection O&M + USD 1,200–1,400 per scfm a year (same table, includes injection fees) | GJ × AUD 9.08 (AEMO QED Q2 2026 east coast wholesale) | GJ × 51.53 kg CO₂-e (NGA Factors 2024, natural gas) |
+
+US dollars use the same FX and escalation as section 4; 600 scfm of landfill gas is taken as 510 m³/h of methane. Upgrading losses are not modelled.
+
+Grid factors (t CO₂-e/MWh): NSW and ACT 0.66, VIC 0.77, QLD 0.74 (NGA Factors 2024, via the Department of Finance Emissions Reporting Framework 2024-25, table 6); other Australian states use the NGA 2025 national average of 0.62 (secondary sources); New Zealand 0.0787 (Ministry for the Environment, electricity used 2025). No factor was found for Fiji, where thermal plants made 44% of 2025 electricity (EFL Annual Report 2025), so the grid saving there is left out rather than guessed. Both the Australian ACCU method (at least 98%) and US EPA AP-42 (99.9%) treat flares and engines as destroying nearly all the methane they burn, so destruction is taken as complete for every option.
+
+The step-by-step list and environmental notes are standard landfill gas practice written for screening, not site engineering advice. The page prints to PDF through the browser's print dialog.

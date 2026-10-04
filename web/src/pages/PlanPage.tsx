@@ -58,6 +58,7 @@ export function PlanPage({ site, result: r, assumptions: a, go }: Props) {
   const check = useMemo(() => compareWithSatellite(site, satelliteFor(site.id), a), [site, satelliteFor, a]);
 
   const cap = Math.round(site.existingCapture * 100);
+  const grid = gridFactorTPerMWh(site);
   const target = Math.round(a.captureEfficiency * 100);
   const escapingT = r.generationTCH4PerYear * (1 - site.existingCapture);
   const total = (x: RouteResult) => x.methaneCutTCO2ePerYear + x.displacedTCO2ePerYear;
@@ -146,9 +147,12 @@ export function PlanPage({ site, result: r, assumptions: a, go }: Props) {
               Choose what to do with the gas
               <Info label="How the options compare">
                 Every option captures the same gas at a {target}% target, so the methane cut is the same. They differ in what the gas
-                replaces: electricity replaces grid power ({gridFactorTPerMWh(site)} tCO₂-e per MWh in {country(site)}, {GRID_SOURCE[country(site)]}),
-                and biomethane replaces fossil gas ({GAS.combustionTPerGJ * 1000} kg CO₂-e per GJ). Cost per tonne counts methane only,
-                as in the Fund step.
+                replaces. Electricity replaces grid power
+                {grid === null
+                  ? ` (${GRID_SOURCE[country(site)]}, so that saving is left out)`
+                  : ` at ${grid} tCO₂-e per MWh (${GRID_SOURCE[country(site)]})`}
+                . Biomethane replaces fossil gas at {(GAS.combustionTPerGJ * 1000).toFixed(2)} kg CO₂-e per GJ and sells at AUD{" "}
+                {GAS.priceAudPerGJ}/GJ (AEMO, Q2 2026). Cost per tonne counts methane only, as in the Fund step.
               </Info>
             </h2>
             <p className="page-sub">Pick one to see its steps, goals and impact below. The PDF includes your choice.</p>
