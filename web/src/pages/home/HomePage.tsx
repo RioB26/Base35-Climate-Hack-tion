@@ -1,4 +1,4 @@
-import { sites } from "../../data";
+import { useData } from "../../data";
 import { defaultAssumptions } from "../../data/assumptions";
 import { hrefFor } from "../../route";
 import landfillLandscape from "../../assets/home/landfill-energy.webp";
@@ -26,6 +26,7 @@ const BENEFITS = [
 ];
 
 export function HomePage() {
+  const { sites } = useData();
   const australia = sites.filter((site) => site.state !== "NZ").length;
   const revealRoot = useHomeReveal();
 

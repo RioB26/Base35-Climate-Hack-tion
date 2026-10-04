@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { CurrencyProvider, CurrencySelector } from "./components/currency";
 import { Nav } from "./components/Nav";
-import { sites } from "./data";
+import { useData } from "./data";
 import { defaultAssumptions } from "./data/assumptions";
 import { buildPortfolio } from "./model/macc";
 import { computeSite } from "./model/project";
@@ -13,14 +13,14 @@ import { HomePage } from "./pages/home/HomePage";
 import { FundPage } from "./pages/FundPage";
 import { useRoute } from "./route";
 
-const ids = sites.map((s) => s.id);
-
 export default function App() {
+  const { sites } = useData();
+  const ids = useMemo(() => sites.map((s) => s.id), [sites]);
   const [route, go] = useRoute(ids);
   const [assumptions, setAssumptions] = useState<Assumptions>(defaultAssumptions);
   const [budgetShare, setBudgetShare] = useState(0.6);
 
-  const results = useMemo(() => sites.map((s) => computeSite(s, assumptions)), [assumptions]);
+  const results = useMemo(() => sites.map((s) => computeSite(s, assumptions)), [sites, assumptions]);
   const maxBudget = useMemo(
     () => results.filter((r) => Number.isFinite(r.netCostAudPerTCO2e)).reduce((s, r) => s + r.capexMidAud, 0),
     [results],
@@ -28,7 +28,7 @@ export default function App() {
   const budget = budgetShare * maxBudget;
   const portfolio = useMemo(() => buildPortfolio(results, budget), [results, budget]);
 
-  const site = "siteId" in route ? sites.find((s) => s.id === route.siteId)! : null;
+  const site = "siteId" in route ? sites.find((s) => s.id === route.siteId) ?? null : null;
   const result = site ? results.find((r) => r.siteId === site.id)! : null;
 
   return (

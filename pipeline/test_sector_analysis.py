@@ -2,7 +2,7 @@ import math
 import random
 import unittest
 
-from sector_analysis import Overpass, Pixel, Settings, classify, distance_bearing, mean_grid, overpass_delta, wind_summary
+from sector_analysis import Overpass, Pixel, Settings, classify, classify_periods, distance_bearing, mean_grid, overpass_delta, wind_summary
 
 SITE = (-33.8, 150.9)
 
@@ -78,6 +78,15 @@ class SectorTests(unittest.TestCase):
 
     def test_no_data(self):
         self.assertEqual(classify(*SITE, [])["status"], "inconclusive")
+
+    def test_classify_periods_groups_timestamped_overpasses(self):
+        rng = random.Random(6)
+        ops = [ring(4, 4, 8, rng), ring(4, 4, 8, rng), ring(4, 4, 8, rng)]
+        ops[0].date = "2025-01-04T01:00"
+        ops[1].date = "2025-01-18T01:00"
+        ops[2].date = "2025-02-04T01:00"
+        periods = classify_periods(*SITE, ops)
+        self.assertEqual([p["period"] for p in periods], ["2025-01", "2025-02"])
 
 
 if __name__ == "__main__":

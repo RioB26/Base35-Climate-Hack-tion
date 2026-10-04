@@ -146,6 +146,18 @@ def classify(site_lat: float, site_lon: float, overpasses: list[Overpass], s: Se
     return {**record, "status": status, "confidence": confidence, "note": note}
 
 
+def classify_periods(site_lat: float, site_lon: float, overpasses: list[Overpass], s: Settings | None = None) -> list[dict]:
+    """Classify calendar-month windows from the same timestamped overpasses."""
+    by_month: dict[str, list[Overpass]] = {}
+    for op in overpasses:
+        by_month.setdefault(op.date[:7], []).append(op)
+    periods = []
+    for month in sorted(by_month):
+        record = classify(site_lat, site_lon, by_month[month], s)
+        periods.append({"period": month, **record})
+    return periods
+
+
 def mean_grid(overpasses: list[Overpass], bin_deg: float = 0.05, min_samples: int = 3) -> list[list[float]]:
     """Average XCH4 per grid cell across all overpasses, for the map layer.
 

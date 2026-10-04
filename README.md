@@ -1,4 +1,9 @@
+<img src="web/public/brand/lockup-horizontal-light.svg" alt="Sentinel Sniff" width="390" />
+
 # Sentinel Sniff
+
+**Which tip do we fix first?** FIND · CHECK · FIX · FUND
+
 
 An open pre-feasibility screen for landfill methane capture in Australia and New Zealand, built for Climate Hack-tion 2026 (challenge area: **zero waste and methane reduction**, theme "Build for 2035").
 
@@ -47,6 +52,24 @@ python satellite.py --project YOUR_GCP_PROJECT --start 2024-10-01 --end 2025-10-
 python -m unittest -v   # tests for the downwind/upwind statistic, no Earth Engine needed
 ```
 
+The Check step also includes a curated snapshot of the Carbon Mapper public catalog for **Tanager** high-resolution methane observations. The snapshot currently contains plume records near Lucas Heights and Ravenhall; Mugga Lane, Redvale and Kate Valley have an explicit `no_public_coverage` state. Tanager records are corroborating plume evidence, not a replacement for the engineering model or Sentinel-5P screening.
+
+To refresh the high-resolution catalog search for **all five landfills**, run:
+
+```bash
+python carbon_mapper.py --radius 15
+```
+
+This queries the public Carbon Mapper source catalog, follows nearby Tanager plume IDs, and rewrites `web/src/data/tanager.json`. It cannot create observations where Tanager has not acquired or published a scene. For those sites, the result remains `no_public_coverage`; obtaining guaranteed coverage requires a Carbon Mapper/Planet tasking or research request, or licensed GHGSat/airborne data.
+
+The Sentinel-5P pipeline can also export monthly screening periods from the same timestamped overpasses and ERA5 wind:
+
+```bash
+python satellite.py --project YOUR_GCP_PROJECT --start 2024-10-01 --end 2025-10-01
+```
+
+Generated `satellite.json` records include a `periods` array. The Check page uses those periods when present and falls back to the annual result when a refreshed time series is unavailable or a selected period has too few usable passes.
+
 ## Live site (GitHub Pages)
 
 CI (`.github/workflows/ci.yml`) runs the tests and builds on every push and pull request, and deploys `main` to GitHub Pages. One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site then appears at https://riob26.github.io/Base35-Climate-Hack-tion/.
@@ -62,11 +85,26 @@ pipeline/           Sentinel-5P + ERA5 screening pipeline (Earth Engine) and its
 docs/               METHODOLOGY.md, DISCLOSURES.md
 ```
 
+## Adding a landfill from the app
+
+The Find page has an **Add a landfill** button. It posts to a Supabase Edge Function, which validates the site, saves it, and starts a GitHub Action that runs the Sentinel-5P screening (`pipeline/run_site.py`) and writes the result back. The page shows progress live. Everything is on free tiers.
+
+One-time setup:
+
+1. **Supabase project:** apply `supabase/migrations/0001_sites.sql`, then `SUPABASE_URL=... SUPABASE_SERVICE_KEY=... python pipeline/seed_supabase.py` to load the five existing sites.
+2. **Edge Function:** `supabase functions deploy add-site`, then `supabase secrets set ADD_SITE_PASSCODE=... GH_DISPATCH_TOKEN=... GH_REPO=owner/repo`. The token is a fine-grained GitHub token with Actions: write on this repo only.
+3. **Earth Engine:** create a service account, register it with Earth Engine, and store its JSON key as the repo secret `EE_SERVICE_ACCOUNT_KEY`. Also set repo secrets `EE_PROJECT`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` and `SUPABASE_ANON_KEY`.
+4. **Local dev:** put `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `web/.env.local`. Without them the app runs on the bundled data and the button is hidden.
+
+User-added sites are marked as using proxy inputs (default k and L0 unless changed, the waste history as entered). Free Supabase projects pause after a week of inactivity; the bundled data keeps the app working meanwhile. To re-run a failed site, use the **Satellite screening** workflow's "Run workflow" button with the site id.
+
 ## Updating data
 
 - **Sites:** add or edit a row in `web/src/data/sites.json`; the globe, search and ranking pick it up. If a site publishes its emissions, add `reportedEmissions` with a source and the Check step uses it instead of the capture claim. Set `illustrative: false` only when every input has a source in `sources`.
 - **Costs and prices:** edit `web/src/data/assumptions.ts`. Replace each `PLACEHOLDER` with a sourced value and log it in `docs/DISCLOSURES.md`.
-- **Satellite:** run the pipeline, or leave a site as `"status": "not_run"`. Never write a status by hand.
+- **Satellite:** run the Sentinel-5P pipeline, or leave a site as `"status": "not_run"`. Never write a status by hand.
+- **Tanager:** update `web/src/data/tanager.json` only from a recorded Carbon Mapper catalog query, retaining the observation ID, timestamp, coordinates, emission estimate and uncertainty. Recheck the Carbon Mapper Terms of Use before redistributing records or imagery.
+- **High-resolution refresh:** run `python carbon_mapper.py --radius 15` from `pipeline/` after verifying the catalog and licensing terms.
 
 ## Honest limits
 

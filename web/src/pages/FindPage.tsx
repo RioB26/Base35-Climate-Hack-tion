@@ -1,11 +1,19 @@
 import { Suspense, lazy, useMemo, useState } from "react";
-import { regionOf, satelliteFor } from "../data";
+import { AddSiteForm } from "../components/AddSiteForm";
+import { regionOf, useData } from "../data";
 import type { Route } from "../route";
 import type { Site } from "../model/types";
+import { Loading } from "../components/Mark";
 
 const GlobeView = lazy(() => import("../components/GlobeView"));
 
 const STATUS: Record<string, string> = { elevated: "Satellite: elevated", neutral: "Satellite: neutral", inconclusive: "Satellite: inconclusive", not_run: "Satellite: not run" };
+
+function satelliteLabel(state: string, status: string): string {
+  if (state === "running" || state === "pending") return "Satellite: fetching…";
+  if (state === "failed") return "Satellite: failed";
+  return STATUS[status];
+}
 
 const HOW = [
   ["Find", "Pick a landfill on the globe or search for it."],
@@ -17,6 +25,8 @@ const HOW = [
 export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void }) {
   const [query, setQuery] = useState("");
   const [target, setTarget] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const { satelliteFor, statusFor, canAdd } = useData();
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return sites;
@@ -27,7 +37,7 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
   return (
     <>
       <section className="find">
-        <Suspense fallback={<div className="globe-wrap globe-loading">Loading globe…</div>}>
+        <Suspense fallback={<Loading className="globe-wrap globe-loading" label="Loading globe…" />}>
           <GlobeView sites={sites} target={target} onPick={setTarget} onArrive={(id) => go({ page: "check", siteId: id })} />
         </Suspense>
         <div className="find-card">
@@ -60,7 +70,13 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
                 <button type="button" className={target === s.id ? "on" : ""} onClick={() => setTarget(s.id)}>
                   <span className="r-name">{s.name}</span>
                   <span className="r-meta">
-                    {regionOf(s)} · {STATUS[satelliteFor(s.id).status]}
+                    {regionOf(s)} · {satelliteLabel(statusFor(s.id).state, satelliteFor(s.id).status)}
+                    {s.illustrative && (
+                      <>
+                        {" "}
+                        <span className="tag">proxy inputs</span>
+                      </>
+                    )}
                   </span>
                 </button>
               </li>
@@ -68,10 +84,25 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
             {matches.length === 0 && <li className="muted small">No landfill matches "{query}" yet.</li>}
           </ul>
           <p className="fine">
-            {sites.length} landfills so far ({au} in Australia, {sites.length - au} in New Zealand). More are added as data rows.
+            {sites.length} landfills so far ({au} in Australia, {sites.length - au} in New Zealand).
           </p>
+          {canAdd && (
+            <button type="button" className="ghost" onClick={() => setAdding(true)}>
+              Add a landfill
+            </button>
+          )}
         </div>
       </section>
+
+      {adding && (
+        <AddSiteForm
+          onClose={() => setAdding(false)}
+          onAdded={(id) => {
+            setAdding(false);
+            go({ page: "check", siteId: id });
+          }}
+        />
+      )}
 
       <section className="page how">
         <ol className="steps">

@@ -1,16 +1,66 @@
-import { Suspense, lazy, useMemo } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { PageHead } from "../components/Nav";
 import { SignalChart } from "../components/SignalChart";
-import { methaneGrid, regionOf, satelliteFor } from "../data";
+import { regionOf, tanagerFor, useData } from "../data";
+import { isSlow } from "../data/live";
 import { fmtInt, fmtPpb, fmtT } from "../format";
 import { compareWithSatellite, SECTOR_EFFECTIVE_WIDTH_M } from "../model/discrepancy";
 import type { Assumptions, Site } from "../model/types";
 import type { Route } from "../route";
+import { TanagerEvidence } from "../components/TanagerEvidence";
+import { Loading } from "../components/Mark";
 
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
 export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: Assumptions; go: (r: Route) => void }) {
-  const sat = satelliteFor(site.id);
+  const { satelliteFor, gridFor, statusFor, canAdd, retrySite } = useData();
+  const [retryMsg, setRetryMsg] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const onRetry = async () => {
+    let passcode: string | null = null;
+    try {
+      passcode = sessionStorage.getItem("add-site-passcode");
+    } catch {
+      /* storage unavailable */
+    }
+    if (!passcode) passcode = window.prompt("Passcode to retry this site:");
+    if (!passcode) return;
+    setRetrying(true);
+    setRetryMsg(null);
+    const res = await retrySite(site.id, passcode);
+    setRetrying(false);
+    if (res.ok) {
+      try {
+        sessionStorage.setItem("add-site-passcode", passcode);
+      } catch {
+        /* storage unavailable */
+      }
+    } else {
+      setRetryMsg(res.error);
+    }
+  };
+  const annualSat = satelliteFor(site.id);
+  const status = statusFor(site.id);
+  const tanager = tanagerFor(site.id);
+  const timeSeriesDates = [
+    ...tanager.observations.map((observation) => observation.observedAt.slice(0, 10)),
+    ...(annualSat.periods ?? []).map((period) => `${period.period}-28`),
+  ].sort();
+  const latestObservationDate = timeSeriesDates.at(-1) ?? annualSat.windowEnd?.slice(0, 10) ?? "";
+  const [selectedDate, setSelectedDate] = useState(latestObservationDate);
+  useEffect(() => {
+    setSelectedDate(latestObservationDate);
+  }, [site.id, latestObservationDate]);
+  const visibleTanager = useMemo(
+    () => ({ ...tanager, observations: tanager.observations.filter((observation) => observation.observedAt.slice(0, 10) <= selectedDate) }),
+    [tanager, selectedDate],
+  );
+  const sat = annualSat.periods?.filter((period) => period.period <= selectedDate.slice(0, 7)).at(-1) ?? annualSat;
   const c = useMemo(() => compareWithSatellite(site, sat, assumptions), [site, sat, assumptions]);
   const cap = Math.round(site.existingCapture * 100);
   const toFix = () => go({ page: "fix", siteId: site.id });
@@ -42,7 +92,25 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
           <article className="card">
             <h2 className="card-title">What the satellite saw</h2>
             {c.observedPpb === null ? (
-              <p className="muted">The satellite check has not been run for this site yet.</p>
+              <>
+              <p className="muted">
+                {status.state === "running" || status.state === "pending"
+                  ? isSlow(status, now)
+                    ? "This is taking longer than usual. The page updates by itself if the satellite job finishes; if it times out you can retry."
+                    : "Fetching Sentinel-5P data for this site. This usually takes a few minutes; the page updates by itself."
+                  : status.state === "failed"
+                    ? `The satellite check failed${status.error ? `: ${status.error}` : "."}`
+                    : "The satellite check has not been run for this site yet."}
+              </p>
+              {status.state === "failed" && canAdd && (
+                <p>
+                  <button type="button" className="ghost" onClick={onRetry} disabled={retrying}>
+                    {retrying ? "Retrying…" : "Retry"}
+                  </button>
+                  {retryMsg && <span className="small"> {retryMsg}</span>}
+                </p>
+              )}
+              </>
             ) : (
               <>
                 <p className="big-num">
@@ -53,12 +121,18 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
                   95% range {c.observedCi![0].toFixed(1)} to {c.observedCi![1].toFixed(1)} ppb, from {sat.overpassesUsed}{" "}
                   Sentinel-5P passes, {sat.windowStart?.slice(0, 7)} to {sat.windowEnd?.slice(0, 7)}.
                 </p>
+                <p className="fine">
+                  {annualSat.periods?.length
+                    ? "This period uses the generated Sentinel-5P time series and timestamp-matched ERA5 wind."
+                    : "Monthly Sentinel-5P periods are not in this snapshot yet, so the slider uses the annual screening result until the pipeline is refreshed."}
+                </p>
                 <SignalChart c={c} />
               </>
             )}
           </article>
 
           <Verdict site={site} c={c} />
+          <TanagerEvidence site={site} tanager={tanager} comparison={c} selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
           <div className="actions">
             <button type="button" className="cta" onClick={toFix}>
@@ -78,8 +152,8 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
         </div>
 
         <div className="col sticky">
-          <Suspense fallback={<div className="map map-loading">Loading map…</div>}>
-            <SiteMap key={site.id} site={site} sat={sat} grid={methaneGrid[site.id]} />
+          <Suspense fallback={<Loading className="map map-loading" label="Loading map…" />}>
+            <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} tanager={visibleTanager} />
           </Suspense>
         </div>
       </div>
