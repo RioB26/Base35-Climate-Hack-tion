@@ -44,52 +44,54 @@ export function FindPage({ sites, go }: { sites: Site[]; go: (r: Route) => void 
           <GlobeView sites={sites} target={target} onPick={setTarget} onArrive={(id) => go({ page: "check", siteId: id })} />
         </Suspense>
         <div className="find-card">
-          <p className="eyebrow">Step 1 · Find</p>
-          <h1 id="find-title">
-            Which landfills should we <em>fix first</em>?
-          </h1>
-          <p className="lede">
-            Choose a site to screen its methane signal, explore additional gas capture and compare project costs and returns.
-          </p>
-          <form
-            className="search"
-            role="search"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (matches[0]) setTarget(matches[0].id);
-            }}
-          >
-            <input
-              type="search"
-              placeholder="Search landfills, cities or regions"
-              aria-label="Search landfills"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </form>
-          <ul className="results" aria-live="polite">
-            {matches.map((s) => (
-              <li key={s.id}>
-                <button type="button" className={target === s.id ? "on" : ""} aria-pressed={target === s.id} onClick={() => setTarget(s.id)}>
-                  <span className="r-heading">
-                    <span className="r-name">{s.name}</span>
-                    {s.illustrative && <span className="tag">Proxy inputs</span>}
-                  </span>
-                  <span className="r-meta"><span>{regionOf(s)}</span><span className="site-status">{satelliteLabel(statusFor(s.id).state, satelliteFor(s.id).status)}</span></span>
-                </button>
-              </li>
-            ))}
-            {matches.length === 0 && <li className="muted small">No landfill matches "{query}" yet.</li>}
-          </ul>
-          <p className="fine">
-            {sites.length} landfills so far ({listJoin(byCountry)}).
-          </p>
-          <p className="input-note">Proxy inputs are estimates used where site-specific model data is unavailable. Review them before planning a project.</p>
-          {canAdd && (
-            <button type="button" className="ghost" onClick={() => setAdding(true)}>
-              Add a landfill
-            </button>
-          )}
+          <div className="find-card-scroll">
+            <p className="eyebrow">Step 1 · Find</p>
+            <h1 id="find-title">
+              Which landfills should we <em>fix first</em>?
+            </h1>
+            <p className="lede">
+              Choose a site to screen its methane signal, explore additional gas capture and compare project costs and returns.
+            </p>
+            <form
+              className="search"
+              role="search"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (matches[0]) setTarget(matches[0].id);
+              }}
+            >
+              <input
+                type="search"
+                placeholder="Search landfills, cities or regions"
+                aria-label="Search landfills"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </form>
+            <ul className="results" aria-live="polite">
+              {matches.map((s) => (
+                <li key={s.id}>
+                  <button type="button" className={target === s.id ? "on" : ""} aria-pressed={target === s.id} onClick={() => setTarget(s.id)}>
+                    <span className="r-heading">
+                      <span className="r-name">{s.name}</span>
+                      {s.illustrative && <span className="tag">Proxy inputs</span>}
+                    </span>
+                    <span className="r-meta"><span>{regionOf(s)}</span><span className="site-status">{satelliteLabel(statusFor(s.id).state, satelliteFor(s.id).status)}</span></span>
+                  </button>
+                </li>
+              ))}
+              {matches.length === 0 && <li className="muted small">No landfill matches "{query}" yet.</li>}
+            </ul>
+            <p className="fine">
+              {sites.length} landfills so far ({listJoin(byCountry)}).
+            </p>
+            <p className="input-note">Proxy inputs are estimates used where site-specific model data is unavailable. Review them before planning a project.</p>
+            {canAdd && (
+              <button type="button" className="ghost" onClick={() => setAdding(true)}>
+                Add a landfill
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
