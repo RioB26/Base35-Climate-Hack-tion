@@ -39,6 +39,42 @@ describe("validateNewSite", () => {
     expect(validateNewSite({ ...good, name: "!!" }).ok).toBe(false);
   });
 
+  it("rejects overlapping and widely gapped acceptance periods", () => {
+    const overlap = validateNewSite({
+      ...good,
+      acceptance: [
+        { fromYear: 1990, toYear: 2005, tonnesPerYear: 1000 },
+        { fromYear: 2005, toYear: 2020, tonnesPerYear: 1000 },
+      ],
+    });
+    expect(!overlap.ok && overlap.errors.join(" ")).toContain("overlap");
+    const gap = validateNewSite({
+      ...good,
+      acceptance: [
+        { fromYear: 1950, toYear: 1960, tonnesPerYear: 1000 },
+        { fromYear: 2000, toYear: 2010, tonnesPerYear: 1000 },
+      ],
+    });
+    expect(!gap.ok && gap.errors.join(" ")).toContain("gap");
+    const adjacent = validateNewSite({
+      ...good,
+      acceptance: [
+        { fromYear: 1990, toYear: 2004, tonnesPerYear: 1000 },
+        { fromYear: 2005, toYear: 2020, tonnesPerYear: 1000 },
+      ],
+    });
+    expect(adjacent.ok).toBe(true);
+  });
+
+  it("rejects tiny tonnages, swapped or zero coordinates and too-short names", () => {
+    expect(validateNewSite({ ...good, acceptance: [{ fromYear: 2000, toYear: 2010, tonnesPerYear: 5 }] }).ok).toBe(false);
+    const swapped = validateNewSite({ ...good, lat: 150.7, lon: -34.05 });
+    expect(!swapped.ok && swapped.errors.join(" ")).toContain("swapped");
+    const zero = validateNewSite({ ...good, lat: 0, lon: 0 });
+    expect(!zero.ok && zero.errors.join(" ")).toContain("0, 0");
+    expect(validateNewSite({ ...good, name: "!a!" }).ok).toBe(false);
+  });
+
   it("rejects non-object input", () => {
     expect(validateNewSite(null).ok).toBe(false);
     expect(validateNewSite("x").ok).toBe(false);
