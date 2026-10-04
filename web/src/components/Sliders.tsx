@@ -1,4 +1,5 @@
 import { useMoney } from "./currency";
+import { Info } from "./Info";
 import type { Assumptions } from "../model/types";
 
 type NumKey = { [K in keyof Assumptions]: Assumptions[K] extends number ? K : never }[keyof Assumptions];
@@ -35,7 +36,10 @@ export function SliderGroup({ keys, value, onChange }: Props) {
         return (
           <label key={key} className="slider">
             <span className="slider-head">
-              <span>{s.label}</span>
+              <span>
+                {s.label}
+                {s.hint && <Info label={`About ${s.label.toLowerCase()}`}>{s.hint}</Info>}
+              </span>
               <strong>{display(key)}</strong>
             </span>
             <input
@@ -47,7 +51,6 @@ export function SliderGroup({ keys, value, onChange }: Props) {
               aria-valuetext={display(key)}
               onChange={(e) => onChange({ ...value, [key]: Number(e.target.value) })}
             />
-            {s.hint && <span className="slider-hint">{s.hint}</span>}
           </label>
         );
       })}

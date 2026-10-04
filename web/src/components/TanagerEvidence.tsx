@@ -1,6 +1,7 @@
 import type { Site } from "../model/types";
 import type { TanagerSite } from "../data";
 import type { Comparison } from "../model/discrepancy";
+import { Info } from "./Info";
 
 type Props = { site: Site; tanager: TanagerSite; comparison: Comparison; selectedDate: string; onDateChange: (date: string) => void };
 
@@ -35,7 +36,10 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
     return (
       <article className="card high-res-status">
         <div className="status-kicker"><span className="status-dot" /> High-resolution layer</div>
-        <h2 className="card-title">Coverage required for facility-level evidence</h2>
+        <h2 className="card-title">
+          Coverage required for facility-level evidence
+          <Info label="About the map cells">The large cells on the map are not high-resolution plume data and have not been resized to imply precision.</Info>
+        </h2>
         <p className="big-num">
           No Tanager pass <span className="unit">within {tanager.coverageRadiusKm} km</span>
         </p>
@@ -48,7 +52,6 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
           <span><strong>Current map</strong><small>Sentinel-5P regional context only</small></span>
           <span><strong>Resolution target</strong><small>~30 m facility-scale observation</small></span>
         </div>
-        <p className="fine">The large cells on the map are not high-resolution plume data and have not been resized to imply precision.</p>
       </article>
     );
   }
@@ -83,7 +86,16 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
   return (
     <article className="card">
       <div className="status-kicker observed-kicker"><span className="status-dot" /> Verified high-resolution evidence</div>
-      <h2 className="card-title">Tanager plume evidence</h2>
+      <h2 className="card-title">
+        Tanager plume evidence
+        <Info label="What this panel shows">
+          This panel only shows facility-scale detail where a real Tanager observation exists. The map points are catalogue source
+          coordinates, not reconstructed plume polygons. Tanager observations are plume evidence, not a replacement for the
+          engineering model. Emission estimates are catalog values and may be unavailable for some plumes. Distance bands use the
+          registered landfill point, not a verified boundary or plume origin; they are a screening signal, not proof of landfill
+          attribution.
+        </Info>
+      </h2>
       <p className="big-num">
         {tanager.plumeCount} <span className="unit">catalogued CH₄ plumes · {tanager.sourceCount} source clusters</span>
       </p>
@@ -92,7 +104,13 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
         {formatDate(selectedDate)}.
       </p>
       <label className="year-scrubber">
-        <span><strong>Observation year</strong><b>{formatDate(selectedDate)}</b></span>
+        <span>
+          <strong>
+            Observation year
+            <Info label="What the slider changes">The slider changes dated Tanager records and map points. Sentinel-5P remains a multi-pass annual screening result.</Info>
+          </strong>
+          <b>{formatDate(selectedDate)}</b>
+        </span>
         <input
           type="range"
           min={Date.parse(yearStart(tanager.observations))}
@@ -104,11 +122,6 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
         />
         <span className="year-scrubber-range"><small>{formatDate(yearStart(tanager.observations))}</small><small>{formatDate(yearEnd(tanager.observations))}</small></span>
       </label>
-      <p className="fine scrubber-note">The slider changes dated Tanager records and map points. Sentinel-5P remains a multi-pass annual screening result.</p>
-      <p className="small">
-        This panel only shows facility-scale detail where a real Tanager observation exists. The map points are catalogue source
-        coordinates, not reconstructed plume polygons.
-      </p>
       <div className="evidence-stack">
         <div className="evidence-stack-head">
           <span className="status-kicker">Evidence stack</span>
@@ -216,11 +229,6 @@ export function TanagerEvidence({ site, tanager, comparison, selectedDate, onDat
           </div>
         ))}
       </div>
-      <p className="fine">
-        Tanager observations are plume evidence, not a replacement for the engineering model. Emission estimates are
-        catalog values and may be unavailable for some plumes. Distance bands use the registered landfill point, not a
-        verified boundary or plume origin; they are a screening signal, not proof of landfill attribution.
-      </p>
     </article>
   );
 }

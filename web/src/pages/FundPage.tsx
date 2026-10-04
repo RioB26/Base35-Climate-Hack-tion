@@ -1,6 +1,7 @@
 import { Cop31Card } from "../components/Cop31Card";
 import { GenerationChart } from "../components/GenerationChart";
 import { Headline } from "../components/Headline";
+import { Info } from "../components/Info";
 import { HomesPowered } from "../components/HomesPowered";
 import { Macc } from "../components/Macc";
 import { PageHead } from "../components/Nav";
@@ -67,25 +68,33 @@ export function FundPage(p: Props) {
               Budget about <span className="num">{fmtAudM(r.capexMidAud)}</span> to make {name} a methane capture site.
             </p>
             <p className="muted">
-              Range {fmtAudM(r.capexAud[0])} to {fmtAudM(r.capexAud[1])} for gas collection, a flare and{" "}
-              {(r.electricKW / 1000).toFixed(1)} MW of engines. It would capture {fmtInt(r.capturedTCH4PerYear)} t of extra methane
-              a year from {a.commissioningYear} and avoid {fmtT(r.abatementToHorizonTCO2e)} tCO₂-e by {a.horizonYear}.
+              It would capture {fmtInt(r.capturedTCH4PerYear)} t of extra methane a year from {a.commissioningYear} and avoid{" "}
+              {fmtT(r.abatementToHorizonTCO2e)} tCO₂-e by {a.horizonYear}.
+              <Info label="What the budget covers">
+                Range {fmtAudM(r.capexAud[0])} to {fmtAudM(r.capexAud[1])} for gas collection, a flare and{" "}
+                {(r.electricKW / 1000).toFixed(1)} MW of engines, benchmarked against US EPA landfill gas project costs converted to
+                AUD.
+              </Info>
             </p>
           </div>
 
           <div className="stats fund-stats">
-            <Stat label="Electricity" value={`${fmtT(r.electricityMWhPerYear / 1000)} GWh/yr`} sub={`${(r.electricKW / 1000).toFixed(1)} MW of engines on captured gas only`} tone="sky" />
-            <Stat label="Power sales" value={`${fmtAudM(r.annualRevenueAud)}/yr`} sub={`at ${fmtMoney(a.powerPriceAudPerMWh)}/MWh; running costs ${fmtAudM(r.annualOpexAud)}/yr`} />
+            <Stat label="Electricity" value={`${fmtT(r.electricityMWhPerYear / 1000)} GWh/yr`} info={`${(r.electricKW / 1000).toFixed(1)} MW of engines running on the captured gas only.`} tone="sky" />
+            <Stat label="Power sales" value={`${fmtAudM(r.annualRevenueAud)}/yr`} info={`At ${fmtMoney(a.powerPriceAudPerMWh)}/MWh. Running costs are ${fmtAudM(r.annualOpexAud)}/yr.`} />
             <Stat
               label="Carbon credits"
               value={nz ? creditScheme(site) : `${fmtAudM(potentialAccuAud(site, r.generationTCH4PerYear, a))}/yr`}
-              sub={nz ? "not modelled outside Australia" : `potential ACCUs* at ${fmtMoney(a.accuPriceAud)}`}
+              info={
+                nz
+                  ? "Credits are not modelled outside Australia."
+                  : `Potential ACCUs at ${fmtMoney(a.accuPriceAud)} each, subject to eligibility under the landfill gas method. Only capture above the method's baseline (${Math.round(a.accuBaselineProportion * 100)}%) counts.`
+              }
             />
-            <Stat label="Net cost per tonne" value={fmtCostPerT(r.netCostAudPerTCO2e)} sub={`${fmtCostPerT(r.netCostAudPerTCO2eRange[0])} to ${fmtCostPerT(r.netCostAudPerTCO2eRange[1])}, excluding credits`} tone="accent" />
+            <Stat label="Net cost per tonne" value={fmtCostPerT(r.netCostAudPerTCO2e)} info={`Range ${fmtCostPerT(r.netCostAudPerTCO2eRange[0])} to ${fmtCostPerT(r.netCostAudPerTCO2eRange[1])}, excluding credits. Build and running costs minus power sales, over the project life, per tonne of CO₂-e avoided.`} tone="accent" />
             <Stat
               label="Simple payback"
               value={r.simplePaybackYears === null ? "None" : `${r.simplePaybackYears.toFixed(1)} yrs`}
-              sub={a.includeAccu && !nz ? "including potential ACCUs*" : "on electricity alone"}
+              sub={a.includeAccu && !nz ? "including potential ACCUs" : "on electricity alone"}
             />
           </div>
           <HomesPowered site={site} electricityMWhPerYear={r.electricityMWhPerYear} />
@@ -103,11 +112,16 @@ export function FundPage(p: Props) {
         <Cop31Card score={score} />
         {!noProject && (
           <article className="card">
-            <h2 className="card-title">Methane over the project life</h2>
+            <h2 className="card-title">
+              Methane over the project life
+              <Info label="Short-term view">
+                Over 20 years methane traps about 81 times as much heat as CO₂, against 28 over 100 years. On that 20-year view
+                the project avoids {fmtT(r.abatementToHorizonTCO2eGwp20)} tCO₂-e by {a.horizonYear}.
+              </Info>
+            </h2>
             <GenerationChart years={r.years} horizonYear={a.horizonYear} capturedShare={Math.max(0, a.captureEfficiency - site.existingCapture)} width={520} height={320} />
             <p className="small muted">
-              <span className="key line" /> methane the site makes <span className="key area" /> extra methane the project captures ·
-              GWP20 view by {a.horizonYear}: {fmtT(r.abatementToHorizonTCO2eGwp20)} tCO₂-e
+              <span className="key line" /> methane the site makes <span className="key area" /> extra methane the project captures
             </p>
           </article>
         )}
@@ -136,11 +150,14 @@ export function FundPage(p: Props) {
           onSelect={(id) => p.go({ page: "fund", siteId: id })}
         />
         <div className="card">
+          <h2 className="card-title">
+            Cost curve
+            <Info label="How to read the cost curve">
+              Each bar is a site. Height is the net cost per tonne (the line shows its range); width is tonnes avoided a year. Dark
+              green bars fit the budget; grey ones do not.
+            </Info>
+          </h2>
           <Macc portfolio={p.portfolio} results={p.results} sites={p.sites} selectedId={site.id} onSelect={(id) => p.go({ page: "fund", siteId: id })} accuPrice={a.accuPriceAud} />
-          <p className="small muted">
-            Each bar is a site. Height is the net cost per tonne (the line shows its range); width is tonnes avoided a year. Dark green bars
-            fit the budget; grey ones do not.
-          </p>
         </div>
       </section>
 
@@ -148,18 +165,15 @@ export function FundPage(p: Props) {
         <button type="button" className="ghost" onClick={toFix}>
           ← Change the answers
         </button>
-        <a className="cta" href="#/">
+        <button type="button" className="cta" onClick={() => p.go({ page: "plan", siteId: site.id })}>
+          Get the site plan →
+        </button>
+        <a className="ghost" href="#/">
           Check another landfill
         </a>
       </div>
 
       <footer className="limits">
-        {!nz && (
-          <p>
-            *Potential ACCU revenue is subject to eligibility and registration under the landfill gas method. Only capture above the
-            method's baseline ({Math.round(a.accuBaselineProportion * 100)}%) counts.
-          </p>
-        )}
         <p>
           <strong>Pre-feasibility screening, not a business case.</strong> Emissions avoided use GWP100 = 28. Capex is a range
           benchmarked against US EPA landfill gas project costs converted to AUD. NZ and Fiji sites use the same AUD cost and power

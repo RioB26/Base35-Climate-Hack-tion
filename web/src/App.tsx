@@ -10,6 +10,7 @@ import { CheckPage } from "./pages/CheckPage";
 import { FindPage } from "./pages/FindPage";
 import { FixPage } from "./pages/FixPage";
 import { FundPage } from "./pages/FundPage";
+import { PlanPage } from "./pages/PlanPage";
 import { useRoute } from "./route";
 
 export default function App() {
@@ -53,6 +54,7 @@ export default function App() {
           go={go}
         />
       )}
+      {route.page === "plan" && site && result && <PlanPage site={site} result={result} assumptions={assumptions} go={go} />}
       <CurrencySelector />
     </CurrencyProvider>
   );

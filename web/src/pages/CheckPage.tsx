@@ -9,6 +9,7 @@ import type { Assumptions, Site } from "../model/types";
 import type { Route } from "../route";
 import { TanagerEvidence } from "../components/TanagerEvidence";
 import { Loading } from "../components/Mark";
+import { Info } from "../components/Info";
 
 const SiteMap = lazy(() => import("../components/SiteMap"));
 
@@ -71,26 +72,34 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
       <div className="split">
         <div className="col">
           <article className="card">
-            <h2 className="card-title">What the site reports</h2>
+            <h2 className="card-title">
+              What the site reports
+              <Info label="Where this figure comes from">
+                {c.reportedBasis === "reported"
+                  ? `Published figure for ${site.reportedEmissions!.year}: ${site.reportedEmissions!.source}`
+                  : `No published emissions figure for this site, so this is our model's ${c.year} methane (${fmtInt(c.generationT)} t) minus the ${cap}% the site is reported to capture.`}
+              </Info>
+              {c.reportedBasis !== "reported" && <span className="tag">{site.illustrative ? "proxy inputs" : "sourced"}</span>}
+            </h2>
             <p className="big-num">
               {fmtInt(c.reportedEmissionT)} <span className="unit">t CH₄ a year escaping</span>
             </p>
-            {c.reportedBasis === "reported" ? (
-              <p className="muted small">Published figure for {site.reportedEmissions!.year}: {site.reportedEmissions!.source}</p>
-            ) : (
-              <p className="muted small">
-                No published emissions figure for this site, so this is our model's {c.year} methane ({fmtInt(c.generationT)} t)
-                minus the {cap}% the operator says it captures.{" "}
-                <span className="tag">{site.illustrative ? "proxy inputs" : "sourced"}</span>
-              </p>
-            )}
             <p className="small">
               At the site's wind, that would raise methane downwind by about <strong>{fmtPpb(c.expectedPpb)} ppb</strong>.
             </p>
           </article>
 
           <article className="card">
-            <h2 className="card-title">What the satellite saw</h2>
+            <h2 className="card-title">
+              What the satellite saw
+              <Info label="How the comparison works">
+                The methane escaping is spread by the wind ({c.windMs} m/s
+                {c.windAssumed ? ", an assumption until the pipeline exports wind" : ", ERA5 average"}) across the downwind area, about{" "}
+                {Math.round(SECTOR_EFFECTIVE_WIDTH_M / 1000)} km wide, and converted to parts per billion of the air column. It is a
+                screening check, not a measurement: Sentinel-5P pixels are about 5.5 × 7 km and also pick up farms, wetlands, other
+                landfills and gas networks.
+              </Info>
+            </h2>
             {c.observedPpb === null ? (
               <>
               <p className="muted">
@@ -116,15 +125,13 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
                 <p className="big-num">
                   {c.observedPpb > 0 ? "+" : ""}
                   {c.observedPpb.toFixed(1)} <span className="unit">ppb downwind vs upwind</span>
-                </p>
-                <p className="muted small">
-                  95% range {c.observedCi![0].toFixed(1)} to {c.observedCi![1].toFixed(1)} ppb, from {sat.overpassesUsed}{" "}
-                  Sentinel-5P passes, {sat.windowStart?.slice(0, 7)} to {sat.windowEnd?.slice(0, 7)}.
-                </p>
-                <p className="fine">
-                  {annualSat.periods?.length
-                    ? "This period uses the generated Sentinel-5P time series and timestamp-matched ERA5 wind."
-                    : "Monthly Sentinel-5P periods are not in this snapshot yet, so the slider uses the annual screening result until the pipeline is refreshed."}
+                  <Info label="Range and data used">
+                    95% range {c.observedCi![0].toFixed(1)} to {c.observedCi![1].toFixed(1)} ppb, from {sat.overpassesUsed} Sentinel-5P
+                    passes, {sat.windowStart?.slice(0, 7)} to {sat.windowEnd?.slice(0, 7)}.{" "}
+                    {annualSat.periods?.length
+                      ? "This period uses the generated Sentinel-5P time series and timestamp-matched ERA5 wind."
+                      : "Monthly Sentinel-5P periods are not in this snapshot yet, so the slider uses the annual screening result until the pipeline is refreshed."}
+                  </Info>
                 </p>
                 <SignalChart c={c} />
               </>
@@ -142,13 +149,6 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
               ← Back to the globe
             </a>
           </div>
-          <p className="fine">
-            How the comparison works: the methane escaping is spread by the wind ({c.windMs} m/s
-            {c.windAssumed ? ", an assumption until the pipeline exports wind" : ", ERA5 average"}) across the downwind area, about{" "}
-            {Math.round(SECTOR_EFFECTIVE_WIDTH_M / 1000)} km wide, and converted to parts per billion of the air column. It is a
-            screening check, not a measurement: Sentinel-5P pixels are about 5.5 × 7 km and also pick up farms, wetlands, other
-            landfills and gas networks.
-          </p>
         </div>
 
         <div className="col sticky">

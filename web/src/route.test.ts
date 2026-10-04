@@ -10,6 +10,9 @@ describe("routes", () => {
     expect(parseHash("#/site/nowhere/fix", ids)).toEqual({ page: "find" });
     expect(parseHash("#see", ids)).toEqual({ page: "find" });
   });
+  it("parses the plan step", () => {
+    expect(parseHash("#/site/mugga-lane/plan", ids)).toEqual({ page: "plan", siteId: "mugga-lane" });
+  });
   it("round-trips", () => {
     expect(parseHash(hrefFor({ page: "fund", siteId: "mugga-lane" }), ids)).toEqual({ page: "fund", siteId: "mugga-lane" });
   });
