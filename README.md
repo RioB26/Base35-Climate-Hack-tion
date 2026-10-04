@@ -9,8 +9,6 @@ An open pre-feasibility screen for landfill methane capture in Australia and New
 
 > Existing systems tell you where methane is. Sentinel Sniff helps decide what to fund first, and what it could achieve by 2035.
 
-The app is five steps, one landfill at a time:
-=======
 ## The problem and our solution
 
 Organic waste buried in landfills decomposes without oxygen and produces landfill gas, including methane and carbon dioxide. Escaping methane contributes to climate change and loses a potential fuel. Wells and pipes can collect that gas; after treatment, it can fuel electricity generation. Some landfills in our dataset already do this, so we screen opportunities for **additional capture**, rather than treating every site as a new power plant.
@@ -23,7 +21,7 @@ The homepage introduces the project, satellite screening and estimated project b
 
 The homepage separates the methane problem, the investment question and the capture-to-energy solution, with large section headings and the Find → Check → Fix → Fund workflow. Typography, colour roles and card shapes follow the [EU Climate Hacktion Design Brief](<docs/EU Climate Hacktion Design Brief.md>): Fraunces headings, Inter body/UI text, evergreen panels, tangerine emphasis and 18px corners. Find, Check, Fix and Fund share the same typography, content width, warm cards and navigation styling. Home and Find share their workflow copy, and interactive views show a branded fallback if rendering is unavailable. The supplied Sentinel Sniff kit adds its plume-to-leaf mark, roman/italic wordmark, browser favicon and reverse lockup; see [docs/BRAND.md](docs/BRAND.md) for asset provenance. Small tangerine text and the hero emphasis use the darker methane-ramp shade for readability. Sections reveal once as they enter view; reduced-motion preferences, keyboard focus and browsers without intersection observation keep the content immediately visible.
 
-The app is four steps, one landfill at a time:
+The app is five steps, one landfill at a time:
 
 1. **Find:** a globe with every landfill pinned and a search box. Picking one flies in to it.
 2. **Check:** the site's reported figures against an independent Sentinel-5P signal (downwind minus upwind methane over many overpasses), with a map of mean methane and the 10 to 30 km analysis area. If the satellite sees more than the reported capture explains, it shows by how much. This is a screening signal, never a measurement of facility emissions.
@@ -55,9 +53,9 @@ python satellite.py --project YOUR_GCP_PROJECT --start 2024-10-01 --end 2025-10-
 python -m unittest -v   # tests for the downwind/upwind statistic, no Earth Engine needed
 ```
 
-The Check step also includes a curated snapshot of the Carbon Mapper public catalog for **Tanager** high-resolution methane observations. The snapshot currently contains plume records near Lucas Heights and Ravenhall; Mugga Lane, Redvale and Kate Valley have an explicit `no_public_coverage` state. Tanager records are corroborating plume evidence, not a replacement for the engineering model or Sentinel-5P screening.
+The Check step also includes a curated snapshot of the Carbon Mapper public catalog for **Tanager** high-resolution methane observations. The snapshot currently contains plume records near Lucas Heights and Ravenhall; Mugga Lane, Redvale and Kate Valley have an explicit `no_public_coverage` state; Naboro (Fiji) has not been added to the snapshot yet. Tanager records are corroborating plume evidence, not a replacement for the engineering model or Sentinel-5P screening.
 
-To refresh the high-resolution catalog search for **all five landfills**, run:
+To refresh the high-resolution catalog search for **every landfill in `sites.json`** (including Naboro), run:
 
 ```bash
 python carbon_mapper.py --radius 15
@@ -94,7 +92,7 @@ The Find page has an **Add a landfill** button. It posts to a Supabase Edge Func
 
 One-time setup:
 
-1. **Supabase project:** apply `supabase/migrations/0001_sites.sql`, then `SUPABASE_URL=... SUPABASE_SERVICE_KEY=... python pipeline/seed_supabase.py` to load the five existing sites.
+1. **Supabase project:** apply `supabase/migrations/0001_sites.sql`, then `SUPABASE_URL=... SUPABASE_SERVICE_KEY=... python pipeline/seed_supabase.py` to load the six existing sites.
 2. **Edge Function:** `supabase functions deploy add-site`, then `supabase secrets set ADD_SITE_PASSCODE=... GH_DISPATCH_TOKEN=... GH_REPO=owner/repo`. The token is a fine-grained GitHub token with Actions: write on this repo only.
 3. **Earth Engine:** create a service account, register it with Earth Engine, and store its JSON key as the repo secret `EE_SERVICE_ACCOUNT_KEY`. Also set repo secrets `EE_PROJECT`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` and `SUPABASE_ANON_KEY`.
 4. **Local dev:** put `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `web/.env.local`. Without them the app runs on the bundled data and the button is hidden.
