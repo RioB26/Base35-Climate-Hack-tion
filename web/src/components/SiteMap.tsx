@@ -5,7 +5,7 @@ import type { MethaneGrid, TanagerSite } from "../data";
 import { shortName } from "../format";
 import type { SatelliteResult, Site } from "../model/types";
 import { CurrencyAnchor } from "./currency";
-import { bundledStyle, compass, offset, ring, sector } from "./basemap";
+import { bundledStyle, ring, sector } from "./basemap";
 import { VisualFallback } from "./Mark";
 
 type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined; tanager: TanagerSite };
@@ -188,15 +188,22 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
     new maplibregl.Marker({ element: el, anchor: "left" }).setLngLat([site.lon, site.lat]).addTo(m);
     if (showWindRef.current && towards !== null) {
       [
-        { label: "DOWNWIND", bearing: towards, className: "downwind" },
-        { label: "UPWIND", bearing: (towards + 180) % 360, className: "upwind" },
+        { label: "Downwind", bearing: towards, className: "downwind" },
+        { label: "Upwind", bearing: (towards + 180) % 360, className: "upwind" },
       ].forEach(({ label, bearing, className }) => {
         const direction = document.createElement("div");
         direction.className = `wind-direction ${className}`;
-        direction.innerHTML = `<span class="wind-direction-arrow" style="transform: rotate(${bearing}deg)">➤</span><span>${label}</span>`;
+        direction.style.setProperty("--wind-bearing", `${bearing}deg`);
+        const arrow = document.createElement("span");
+        arrow.className = "wind-direction-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        const text = document.createElement("span");
+        text.className = "wind-direction-label";
+        text.textContent = label;
+        direction.append(arrow, text);
         direction.setAttribute("aria-label", `${label.toLowerCase()} wind direction`);
-        const marker = new maplibregl.Marker({ element: direction, anchor: "center" })
-          .setLngLat(offset(site.lat, site.lon, 23, bearing))
+        const marker = new maplibregl.Marker({ element: direction, anchor: "center", offset: windMarkerOffset(bearing) })
+          .setLngLat([site.lon, site.lat])
           .addTo(m);
         windMarkersRef.current.push(marker);
       });
@@ -282,23 +289,6 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
               Wind overlay unavailable
             </div>
           )}
-          <div className="wind-card">
-            {wind && towards !== null ? (
-              <>
-                <svg viewBox="0 0 40 40" className="wind-arrow" style={{ transform: `rotate(${towards}deg)` }} aria-hidden="true">
-                  <path d="M20 4 L28 20 L22 18 L22 36 L18 36 L18 18 L12 20 Z" />
-                </svg>
-                <span>
-                  Wind mostly from the <strong>{compass(wind.fromDeg)}</strong>, {wind.meanSpeedMs.toFixed(1)} m/s on average
-                  <span className="muted"> · ERA5, {sat.overpassesUsed} passes</span>
-                </span>
-              </>
-            ) : (
-              <span className="muted">
-                Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
-              </span>
-            )}
-          </div>
         </div>
         <div className="map-legend">
           {cells.length > 0 ? (
@@ -349,4 +339,10 @@ function cellRange(grid: MethaneGrid[string] | undefined) {
   const cells = grid?.cells ?? [];
   const vals = cells.map((c) => c[2]);
   return { cells, lo: vals.length ? Math.min(...vals) : 0, hi: vals.length ? Math.max(...vals) : 0 };
+}
+
+function windMarkerOffset(bearingDeg: number): [number, number] {
+  const radians = (bearingDeg * Math.PI) / 180;
+  const distancePx = 46;
+  return [Math.round(Math.sin(radians) * distancePx), Math.round(-Math.cos(radians) * distancePx)];
 }
