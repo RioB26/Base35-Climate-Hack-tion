@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-export type Step = "check" | "fix" | "fund";
+export type Step = "check" | "fix" | "fund" | "plan";
 export type Route = { page: "home" } | { page: "find" } | { page: Step; siteId: string };
 
 export const STEPS: { page: "find" | Step; label: string }[] = [
@@ -8,12 +8,13 @@ export const STEPS: { page: "find" | Step; label: string }[] = [
   { page: "check", label: "Check" },
   { page: "fix", label: "Fix" },
   { page: "fund", label: "Fund" },
+  { page: "plan", label: "Plan" },
 ];
 
 /** Hash routes keep deep links working on GitHub Pages: #/site/<id>/<step>. */
 export function parseHash(hash: string, knownIds: string[]): Route {
   if (hash === "#/landfills") return { page: "find" };
-  const m = hash.match(/^#\/site\/([\w-]+)\/(check|fix|fund)$/);
+  const m = hash.match(/^#\/site\/([\w-]+)\/(check|fix|fund|plan)$/);
   if (m && knownIds.includes(m[1])) return { page: m[2] as Step, siteId: m[1] };
   return { page: "home" };
 }

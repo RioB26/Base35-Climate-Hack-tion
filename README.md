@@ -9,6 +9,9 @@ An open pre-feasibility screen for landfill methane capture in Australia and New
 
 > Existing systems tell you where methane is. Sentinel Sniff helps decide what to fund first, and what it could achieve by 2035.
 
+<<<<<<< HEAD
+The app is five steps, one landfill at a time:
+=======
 ## The problem and our solution
 
 Organic waste buried in landfills decomposes without oxygen and produces landfill gas, including methane and carbon dioxide. Escaping methane contributes to climate change and loses a potential fuel. Wells and pipes can collect that gas; after treatment, it can fuel electricity generation. Some landfills in our dataset already do this, so we screen opportunities for **additional capture**, rather than treating every site as a new power plant.
@@ -22,11 +25,13 @@ The homepage introduces the project, satellite screening and estimated project b
 The homepage separates the methane problem, the investment question and the capture-to-energy solution, with large section headings and the Find → Check → Fix → Fund workflow. Typography, colour roles and card shapes follow the [EU Climate Hacktion Design Brief](<docs/EU Climate Hacktion Design Brief.md>): Fraunces headings, Inter body/UI text, evergreen panels, tangerine emphasis and 18px corners. Find, Check, Fix and Fund share the same typography, content width, warm cards and navigation styling. Home and Find share their workflow copy, and interactive views show a branded fallback if rendering is unavailable. The supplied Sentinel Sniff kit adds its plume-to-leaf mark, roman/italic wordmark, browser favicon and reverse lockup; see [docs/BRAND.md](docs/BRAND.md) for asset provenance. Small tangerine text and the hero emphasis use the darker methane-ramp shade for readability. Sections reveal once as they enter view; reduced-motion preferences, keyboard focus and browsers without intersection observation keep the content immediately visible.
 
 The app is four steps, one landfill at a time:
+>>>>>>> d67c0d723833a6fd2d61607e6b44d8f834bf992d
 
 1. **Find:** a globe with every landfill pinned and a search box. Picking one flies in to it.
 2. **Check:** the site's reported figures against an independent Sentinel-5P signal (downwind minus upwind methane over many overpasses), with a map of mean methane and the 10 to 30 km analysis area. If the satellite sees more than the reported capture explains, it shows by how much. This is a screening signal, never a measurement of facility emissions.
 3. **Fix:** a short questionnaire (target capture, start year, power price, costs, carbon credits) next to a 3D landfill model in three size classes. Methane comes from a first-order decay model (LandGEM-style, adjustable k and L0).
 4. **Fund:** the budget needed, electricity and money the project makes, the levelised **net cost per tCO₂-e abated**, a transparent COP31 alignment check, and a marginal abatement cost curve ranking every site with a budget slider.
+5. **Plan:** a printable (PDF) step-by-step plan for the site that compares leaving it, flaring, electricity and biomethane by climate benefit, energy, budget and cost per tonne.
 
 It is a **pre-feasibility screen**, not a business case or feasibility study. It ranks candidates for detailed study.
 
@@ -79,7 +84,7 @@ CI (`.github/workflows/ci.yml`) runs the tests and builds on every push and pull
 ```
 web/src/model/      methane generation, project economics, MACC, satellite comparison, COP31 rubric (+ tests)
 web/src/data/       sites.json, assumptions.ts, satellite.json (inputs; every value needs a source)
-web/src/pages/      the four steps: Find, Check, Fix, Fund
+web/src/pages/      the five steps: Find, Check, Fix, Fund, Plan
 web/src/components/ globe, site map, 3D landfill, charts, sliders
 pipeline/           Sentinel-5P + ERA5 screening pipeline (Earth Engine) and its tests
 docs/               METHODOLOGY.md, DISCLOSURES.md
