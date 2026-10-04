@@ -7,6 +7,7 @@ import { fmtInt, fmtPpb, fmtT } from "../format";
 import { compareWithSatellite, SECTOR_EFFECTIVE_WIDTH_M } from "../model/discrepancy";
 import type { Assumptions, Site } from "../model/types";
 import type { Route } from "../route";
+import { ObservationScrubber } from "../components/ObservationScrubber";
 import { TanagerEvidence } from "../components/TanagerEvidence";
 import { Loading } from "../components/Mark";
 import { Info } from "../components/Info";
@@ -159,7 +160,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
 
       <div className="split check">
         <div className="col workflow-stack">
-          <TanagerEvidence site={site} tanager={tanager} comparison={c} selectedDate={selectedDate} onDateChange={setSelectedDate} />
+          <TanagerEvidence site={site} tanager={tanager} comparison={c} selectedDate={selectedDate} />
 
           <div className="actions">
             <button type="button" className="cta" onClick={toFix}>
@@ -175,6 +176,7 @@ export function CheckPage({ site, assumptions, go }: { site: Site; assumptions: 
           <Suspense fallback={<Loading className="map map-loading" label="Loading map…" />}>
             <SiteMap key={site.id} site={site} sat={sat} grid={gridFor(site.id)} tanager={visibleTanager} />
           </Suspense>
+          <ObservationScrubber observations={tanager.observations} selectedDate={selectedDate} onDateChange={setSelectedDate} />
         </div>
       </div>
     </main>
