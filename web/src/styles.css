@@ -118,6 +118,10 @@ button.ghost:hover { border-color: var(--iron); }
 .map { flex: 1; width: 100%; min-height: 400px; }
 .map-loading { display: grid; place-items: center; color: var(--muted); position: relative; min-height: 400px; border-radius: var(--radius); background: var(--surface-2); }
 .map-legend { position: absolute; left: 12px; bottom: 48px; background: rgba(255, 254, 251, 0.94); border-radius: 12px; padding: 10px 12px; font-size: 12px; display: flex; flex-direction: column; gap: 4px; max-width: 260px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+.map-legend { gap: 0; padding: 8px 10px; cursor: default; outline-offset: 2px; }
+.map-legend-head { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 11px; color: var(--muted); }
+.map-legend-body { display: none; flex-direction: column; gap: 4px; margin-top: 8px; }
+.map-legend:hover .map-legend-body, .map-legend:focus-within .map-legend-body, .map-legend:focus .map-legend-body { display: flex; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
 .legend-row.toggle { margin: 0; font-size: 12px; }
 .swatch { width: 12px; height: 12px; border-radius: 50%; flex: none; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15); }
@@ -337,7 +341,7 @@ a.ghost:hover { border-color: var(--iron); }
 @media (max-width: 900px) { .split, .split.fund { grid-template-columns: 1fr; } .col.sticky { position: static; order: -1; } }
 @media (max-width: 900px) { .map-wrap, .map { min-height: 380px; } }
 
-.map-overlay-head { position: absolute; z-index: 3; top: 12px; left: 12px; right: 56px; display: grid; justify-items: start; gap: 8px; }
+.map-toolbar-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .map-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); }
 .map-panel .map-wrap { border: 0; border-radius: 0; box-shadow: none; }
 .map-toolbar { padding: 18px 20px; border-bottom: 1px solid var(--line); }

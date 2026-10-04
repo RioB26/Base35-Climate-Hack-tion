@@ -6,6 +6,7 @@ import { shortName } from "../format";
 import type { SatelliteResult, Site } from "../model/types";
 import { CurrencyAnchor } from "./currency";
 import { bundledStyle, ring, sector } from "./basemap";
+import { Info } from "./Info";
 import { VisualFallback } from "./Mark";
 
 type Props = { site: Site; sat: SatelliteResult; grid: MethaneGrid[string] | undefined; tanager: TanagerSite };
@@ -268,11 +269,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
             </button>
           </div>
         ) : <p>Sentinel-5P regional context. Facility-scale observations are unavailable.</p>}
-      </div>
-      <div className="map-wrap">
-        <div ref={container} className="map" />
-        <CurrencyAnchor />
-        <div className="map-overlay-head">
+        <div className="map-toolbar-row">
           {windAvailable ? (
             <button
               type="button"
@@ -289,8 +286,21 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
               Wind overlay unavailable
             </div>
           )}
+          <Info label="About the wind overlay">
+            Each satellite pass is split by that hour's wind. Prevailing wind for the arrow is not exported yet.
+          </Info>
         </div>
-        <div className="map-legend">
+      </div>
+      <div className="map-wrap">
+        <div ref={container} className="map" />
+        <CurrencyAnchor />
+        <div className="map-legend" tabIndex={0} aria-label="Map legend">
+          <span className="map-legend-head">
+            <span className="swatch ring" />
+            {tanager.observations.length > 0 && <span className="swatch tanager" />}
+            Legend
+          </span>
+          <div className="map-legend-body">
           {cells.length > 0 ? (
             <>
               {(mapLayer === "low" || !hasHighResolution) && (
@@ -328,6 +338,7 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
               <span className="swatch down" /> downwind <span className="swatch up" /> upwind
             </span>
           )}
+          </div>
         </div>
         {fallback && <div className="map-error">Street tiles could not load, so a simple coastline map is shown.</div>}
       </div>
