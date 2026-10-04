@@ -52,19 +52,18 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           data: {
             type: "FeatureCollection",
             features: cells.map(([lat, lon, ppb]) => {
-              const latHalf = CELL_DEG / 2;
-              const lonHalf = latHalf / Math.max(0.65, Math.cos((lat * Math.PI) / 180));
+              const half = CELL_DEG / 2;
               return {
                 type: "Feature",
                 properties: { ppb, norm: hi > lo ? (ppb - lo) / (hi - lo) : 0.5 },
                 geometry: {
                   type: "Polygon",
                   coordinates: [[
-                    [lon - lonHalf, lat - latHalf],
-                    [lon + lonHalf, lat - latHalf],
-                    [lon + lonHalf, lat + latHalf],
-                    [lon - lonHalf, lat + latHalf],
-                    [lon - lonHalf, lat - latHalf],
+                    [lon - half, lat - half],
+                    [lon + half, lat - half],
+                    [lon + half, lat + half],
+                    [lon - half, lat + half],
+                    [lon - half, lat - half],
                   ]],
                 },
               };
@@ -214,13 +213,6 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
           </span>
         )}
       </div>
-      {tanager.status === "no_public_coverage" && (
-        <div className="map-coverage-empty">
-          <span className="status-dot" />
-          <strong>No high-resolution methane scene loaded</strong>
-          <small>{shortName(site.name)} is shown with Sentinel-5P&apos;s coarse regional squares only. Those cells are screening context, not a facility-scale plume.</small>
-        </div>
-      )}
       <div className="map-legend">
         {cells.length > 0 ? (
           <>

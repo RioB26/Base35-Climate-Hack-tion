@@ -305,9 +305,6 @@ a.ghost:hover { border-color: var(--iron); }
 .high-res-options strong { font-size: 12px; }
 .high-res-options small { color: var(--muted); font-size: 10px; line-height: 1.35; }
 .coverage-gap { display: flex; align-items: center; gap: 8px; padding-top: 6px; color: var(--tangerine); font-weight: 800; }
-.map-coverage-empty { position: absolute; z-index: 2; top: 76px; left: 50%; width: min(360px, calc(100% - 36px)); transform: translateX(-50%); display: grid; gap: 7px; padding: 16px 18px; border: 1px solid rgba(196, 82, 53, .35); border-radius: 14px; background: rgba(255, 254, 251, .95); box-shadow: 0 10px 28px rgba(48, 55, 50, .12); color: var(--ink); text-align: center; }
-.map-coverage-empty .status-dot { margin: 0 auto 2px; }
-.map-coverage-empty small { color: var(--muted); font-size: 11px; line-height: 1.4; }
 .map-error { top: auto; bottom: 12px; left: auto; right: 12px; max-width: 280px; }
 
 .signal { width: 100%; height: auto; display: block; margin-top: 10px; }
