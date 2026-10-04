@@ -26,6 +26,12 @@ GRID = {"windowStart": "a", "windowEnd": "b", "cells": []}
 
 
 class ProcessTests(unittest.TestCase):
+    def setUp(self):
+        # Keep the tests offline: an empty catalog means no plumes near the site.
+        patcher = mock.patch.object(run_site, "get_json", return_value={"features": []})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def test_success_writes_results_and_marks_done(self):
         db = FakeDb(SITE)
         with mock.patch.object(run_site, "screen_site", return_value=(RESULT, GRID)):
@@ -39,7 +45,7 @@ class ProcessTests(unittest.TestCase):
         with mock.patch.object(run_site, "screen_site", side_effect=RuntimeError("EE quota")):
             self.assertFalse(run_site.process(db, lambda: object(), "new-landfill", "a", "b"))
         self.assertEqual(db.statuses[-1], ("failed", "RuntimeError: EE quota"))
-        self.assertEqual(db.rows, {})
+        self.assertEqual(set(db.rows), {"tanager_results"})  # plumes do not depend on Earth Engine
 
     def test_earth_engine_auth_failure_is_recorded(self):
         db = FakeDb(SITE)
@@ -49,6 +55,26 @@ class ProcessTests(unittest.TestCase):
 
         self.assertFalse(run_site.process(db, bad_init, "new-landfill", "a", "b"))
         self.assertEqual(db.statuses[-1], ("failed", "RuntimeError: no credentials"))
+
+    def test_plumes_are_written(self):
+        db = FakeDb(SITE)
+        plumes = {"status": "observed", "sourceCount": 1, "plumeCount": 1, "observations": []}
+        with mock.patch.object(run_site, "screen_site", return_value=(RESULT, GRID)), \
+             mock.patch.object(run_site, "get_json", return_value={}), \
+             mock.patch.object(run_site, "plumes_for_site", return_value=plumes):
+            self.assertTrue(run_site.process(db, lambda: object(), "new-landfill", "a", "b"))
+        written = db.rows["tanager_results"]
+        self.assertEqual(written["site_id"], "new-landfill")
+        self.assertEqual(written["data"]["status"], "observed")
+        self.assertEqual(written["data"]["coverageRadiusKm"], run_site.TANAGER_RADIUS_KM)
+
+    def test_plume_failure_does_not_fail_the_site(self):
+        db = FakeDb(SITE)
+        with mock.patch.object(run_site, "screen_site", return_value=(RESULT, GRID)), \
+             mock.patch.object(run_site, "get_json", side_effect=OSError("catalog down")):
+            self.assertTrue(run_site.process(db, lambda: object(), "new-landfill", "a", "b"))
+        self.assertEqual(db.statuses[-1], ("done", None))
+        self.assertNotIn("tanager_results", db.rows)
 
     def test_unknown_site_exits(self):
         with self.assertRaises(SystemExit):
