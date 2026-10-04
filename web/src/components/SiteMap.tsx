@@ -52,6 +52,12 @@ export default function SiteMap({ site, sat, grid, tanager }: Props) {
       return;
     }
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    // MapLibre opens the compact attribution by default; collapse it once after the first render.
+    m.once("idle", () => {
+      const attrib = m.getContainer().querySelector(".maplibregl-ctrl-attrib");
+      attrib?.classList.remove("maplibregl-compact-show");
+      attrib?.removeAttribute("open");
+    });
     let failed = false;
     m.on("error", () => {
       if (failed || m.isStyleLoaded()) return;
